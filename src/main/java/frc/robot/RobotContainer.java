@@ -12,7 +12,9 @@ public class RobotContainer {
     configureBindings();
   }
 
-  private void configureBindings() {}
+  private void configureBindings() {
+    //this is a test comment to make sure everything is working with the uploading.
+  }
 
   public Command getAutonomousCommand() {
     return Commands.print("No autonomous command configured");

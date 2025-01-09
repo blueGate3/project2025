@@ -2,16 +2,13 @@ package frc.robot;
 
 public final class Constants {
     public static final class IntakeConstants { 
-        public static final int kFrontRightMotor = 0;
-        public static final int kFrontLeftMotor = 0;
-        public static final int kAbsoluteEncoderPort = 0;
+        // Roller motors:
+        public static final int kRightUpperMotor = 0;
+        public static final int kRightLowerLeftMotor = 0;
 
-        public static final double kRotationP = 0.0; // NO PID CURRENTLY
-        public static final double kRotationI = 0.0;
-        public static final double kRotationD = 0.0;
-
-        public static final double kRunningSpeed = 0.0; //  None currently
-        public static final double kHomePosition = 0.0; // No current home position
+        public static final int kLeftUpperMotor = 0;
+        public static final int kLeftLowerLeftMotor = 0;
+        
     }
     public static final class SwerveConstants { 
         // Module 1:

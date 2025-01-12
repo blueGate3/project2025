@@ -40,5 +40,9 @@ public final class Constants {
     public static final class BindingConstants {
         // No current buttons have been added
     }
+
+    public static final class SparkMaxIDs {
+        //swerve is already taken care of in SwerveConstants
+    }
     
 }

@@ -1,17 +1,10 @@
-<<<<<<< Updated upstream
-package frc.robot;
+package frc.robot.Subsystems;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-=======
-<<<<<<<< Updated upstream:src/main/java/frc/robot/Subsystems/VisionSubsystem.java
-package frc.robot.Subsystems;
-========
-package frc.robot.subsystems;
->>>>>>>> Stashed changes:src/main/java/frc/robot/subsystems/VisionSubsystem.java
->>>>>>> Stashed changes
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class VisionSubsystem extends SubsystemBase {

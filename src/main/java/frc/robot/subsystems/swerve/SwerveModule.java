@@ -16,6 +16,8 @@ import com.revrobotics.spark.*;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.*;
 import com.revrobotics.spark.config.*;
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -39,6 +41,8 @@ public class SwerveModule extends SubsystemBase {
 
         private final SparkMax m_driveMotor;
         private final SparkMax m_turningMotor;
+        private SparkClosedLoopController turnPID;
+        private SparkMaxConfig m_turnPIDConfig;
         private SparkMaxConfig m_driveMotorConfig;
         private SparkMaxConfig m_turningMotorConfig;
 
@@ -48,13 +52,14 @@ public class SwerveModule extends SubsystemBase {
         private final RelativeEncoder m_driveEncoder;
         private final DigitalInput m_TurnEncoderInput;
         private final DutyCycle m_TurnPWMEncoder;
-        
+        private final FeedbackSensor m_turnFeedbackSensor;
+
         private double turnEncoderOffset;
         private double encoderBias = 0; //encoder stuff for rotation
         private int turnPWMChannel;
 
         private final PIDController m_turningPIDController = new PIDController(0.4, 0, 0.01); //HOPEFULLY THIS COMMENT FLAGS ME DOWN BECAUSE THIS IS THE MOST IMPORTANT THING IF YOU READ FROM THE SIDE THIS IS PID also k is generally .45yy
-        private SparkClosedLoopController turnPID;
+        
         /**
          * Constructs a SwerveModule with a drive motor, turning motor, drive encoder and turning encoder.
          *
@@ -66,44 +71,48 @@ public class SwerveModule extends SubsystemBase {
          */
         
         public SwerveModule(int driveMotorChannel, int turningMotorChannel, int turnEncoderPWMChannel, double turnOffset, boolean driveInverted, boolean turnInverted) {
+            //spark max built-in encoder
+            m_driveEncoder = m_driveMotor.getEncoder();
+            // m_driveEncoder.setVelocityConversionFactor(rpmToVelocityScaler);
+            //PWM encoder from CTRE mag encoders
+            // turnPWMChannel = turnEncoderPWMChannel;
+            turnEncoderOffset = turnOffset;
+            m_TurnPWMEncoder = new DutyCycle(new DigitalInput(turnPWMChannel));
+            m_turnFeedbackSensor = new FeedbackSensor();
+            
+
             // can spark max motor controller objects
             m_driveMotor = new SparkMax(driveMotorChannel, SparkLowLevel.MotorType.kBrushless);
             m_turningMotor = new SparkMax(turningMotorChannel, SparkLowLevel.MotorType.kBrushless);
+            turnPID = m_turningMotor.getClosedLoopController();
 
             m_driveMotorConfig = new SparkMaxConfig();
             m_turningMotorConfig = new SparkMaxConfig();
+            m_turnPIDConfig = new SparkMaxConfig();
 
             m_driveMotorConfig.inverted(driveInverted);
             m_turningMotorConfig.inverted(turnInverted);
             m_driveMotorConfig.closedLoopRampRate(0.1);
-            
 
-            turnPID = m_turningMotor.getClosedLoopController();
+            m_turningMotorConfig.encoder.velocityConversionFactor(rpmToVelocityScaler);
+            //m_turningMotorConfig.encoder.
             
+            m_turnPIDConfig.closedLoop.feedbackSensor(m_TurnPWMEncoder);
+            m_turnPIDConfig.closedLoop.pid(.4, 0, .01); //TODO test to find what values work best
             
-            //m_drivePID = m_driveMotor.getPIDController();
-            // m_drivePID.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 0);
-            // m_drivePID.setSmartMotionMaxAccel(0.2, 0);// oooohhhhhh see what happens if we run the hell up on the max accel
-            // m_drivePID.setReference(0, CANSparkMax.ControlType.kSmartMotion);
-
-            //spark max built-in encoder
-            m_driveEncoder = m_driveMotor.getEncoder();
-            m_driveEncoder.setVelocityConversionFactor(rpmToVelocityScaler);
-            //PWM encoder from CTRE mag encoders
-            turnPWMChannel = turnEncoderPWMChannel;
-            m_TurnEncoderInput = new DigitalInput(turnEncoderPWMChannel);
-            m_TurnPWMEncoder = new DutyCycle(m_TurnEncoderInput);
-            turnEncoderOffset = turnOffset;
-
             // Limit the PID Controller's input range between -pi and pi and set the input
             // to be continuous.
             m_turningPIDController.enableContinuousInput(-Math.PI, Math.PI); //this looks fun try 0 instead of pi may solve doubling issue.
             m_turningPIDController.setTolerance(0.01);
             encoderBias = m_driveEncoder.getPosition();
-
-        //     System.out.println("Encoder " + Integer.toString(turnPWMChannel) + " "+ (m_TurnPWMEncoder.getOutput()));
+            //System.out.println("Encoder " + Integer.toString(turnPWMChannel) + " "+ (m_TurnPWMEncoder.getOutput()));
+            m_driveMotor.configure(m_driveMotorConfig, null, null);
+            m_turningMotor.configure(m_turningMotorConfig, null, null);
+            //TODO figure out how to configure PID
          }
     
+
+         
         /**
          * Returns the current state of the module.
          *

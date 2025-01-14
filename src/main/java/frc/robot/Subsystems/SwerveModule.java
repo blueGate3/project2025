@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.Subsystems.swerve;
+package frc.robot.Subsystems;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -42,6 +42,8 @@ public class SwerveModule extends SubsystemBase {
         private final SparkMax m_driveMotor;
         private final SparkMax m_turningMotor;
         private SparkClosedLoopController turnPID;
+        private final AbsoluteEncoder m_AbsoluteEncoder;
+        private final AbsoluteEncoderConfig m_AbsoluteEncoderConfig;
         private SparkMaxConfig m_turnPIDConfig;
         private SparkMaxConfig m_driveMotorConfig;
         private SparkMaxConfig m_turningMotorConfig;
@@ -50,9 +52,8 @@ public class SwerveModule extends SubsystemBase {
         private final ClosedLoopConfig m_ClosedLoopConfig;
 
         private final RelativeEncoder m_driveEncoder;
-        private final DigitalInput m_TurnEncoderInput;
+        //private final DigitalInput m_TurnEncoderInput; used to be two until Brayden suggested combining directly into duty cycle
         private final DutyCycle m_TurnPWMEncoder;
-        private final FeedbackSensor m_turnFeedbackSensor;
 
         private double turnEncoderOffset;
         private double encoderBias = 0; //encoder stuff for rotation
@@ -78,8 +79,9 @@ public class SwerveModule extends SubsystemBase {
             // turnPWMChannel = turnEncoderPWMChannel;
             turnEncoderOffset = turnOffset;
             m_TurnPWMEncoder = new DutyCycle(new DigitalInput(turnPWMChannel));
-            m_turnFeedbackSensor = new FeedbackSensor();
             
+            m_AbsoluteEncoderConfig = new AbsoluteEncoderConfig();
+            m_AbsoluteEncoderConfig.apply(m_AbsoluteEncoderConfig);
 
             // can spark max motor controller objects
             m_driveMotor = new SparkMax(driveMotorChannel, SparkLowLevel.MotorType.kBrushless);
@@ -96,8 +98,23 @@ public class SwerveModule extends SubsystemBase {
 
             m_turningMotorConfig.encoder.velocityConversionFactor(rpmToVelocityScaler);
             //m_turningMotorConfig.encoder.
+
+            m_AbsoluteEncoder = new AbsoluteEncoder() {
+                public double getPosition() {
+                    m_TurnPWMEncoder.getOutput();
+                }
+
+                @Override
+                public double getVelocity() {
+                    // TODO work on this
+                    m_turningMotor.get(); //TODO output value is between 0 and 1, will need to scale
+                    //(or at least figure out if we NEED to scale in the first place, may need the 0-1 value for something else later on.)
+                }
+
+            };
             
-            m_turnPIDConfig.closedLoop.feedbackSensor(m_TurnPWMEncoder);
+            
+            m_turnPIDConfig.closedLoop.feedbackSensor();
             m_turnPIDConfig.closedLoop.pid(.4, 0, .01); //TODO test to find what values work best
             
             // Limit the PID Controller's input range between -pi and pi and set the input

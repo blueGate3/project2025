@@ -44,12 +44,11 @@ public class SwerveModule extends SubsystemBase {
         private SparkClosedLoopController turnPID;
         private final AbsoluteEncoder m_AbsoluteEncoder;
         private final AbsoluteEncoderConfig m_AbsoluteEncoderConfig;
-        private SparkMaxConfig m_turnPIDConfig;
         private SparkMaxConfig m_driveMotorConfig;
         private SparkMaxConfig m_turningMotorConfig;
 
-        private final PIDController m_drivePID;
-        private final ClosedLoopConfig m_ClosedLoopConfig;
+        //private final PIDController m_drivePID;
+        private final ClosedLoopConfig m_turnPIDConfig;
 
         private final RelativeEncoder m_driveEncoder;
         //private final DigitalInput m_TurnEncoderInput; used to be two until Brayden suggested combining directly into duty cycle
@@ -72,16 +71,9 @@ public class SwerveModule extends SubsystemBase {
          */
         
         public SwerveModule(int driveMotorChannel, int turningMotorChannel, int turnEncoderPWMChannel, double turnOffset, boolean driveInverted, boolean turnInverted) {
-            //spark max built-in encoder
-            m_driveEncoder = m_driveMotor.getEncoder();
-            // m_driveEncoder.setVelocityConversionFactor(rpmToVelocityScaler);
-            //PWM encoder from CTRE mag encoders
-            // turnPWMChannel = turnEncoderPWMChannel;
-            turnEncoderOffset = turnOffset;
-            m_TurnPWMEncoder = new DutyCycle(new DigitalInput(turnPWMChannel));
+            
             
             m_AbsoluteEncoderConfig = new AbsoluteEncoderConfig();
-            m_AbsoluteEncoderConfig.apply(m_AbsoluteEncoderConfig);
 
             // can spark max motor controller objects
             m_driveMotor = new SparkMax(driveMotorChannel, SparkLowLevel.MotorType.kBrushless);
@@ -90,7 +82,15 @@ public class SwerveModule extends SubsystemBase {
 
             m_driveMotorConfig = new SparkMaxConfig();
             m_turningMotorConfig = new SparkMaxConfig();
-            m_turnPIDConfig = new SparkMaxConfig();
+            m_turnPIDConfig = new ClosedLoopConfig();
+
+            //spark max built-in encoder
+            m_driveEncoder = m_driveMotor.getEncoder();
+            // m_driveEncoder.setVelocityConversionFactor(rpmToVelocityScaler);
+            //PWM encoder from CTRE mag encoders
+            // turnPWMChannel = turnEncoderPWMChannel;
+            turnEncoderOffset = turnOffset;
+            m_TurnPWMEncoder = new DutyCycle(new DigitalInput(turnPWMChannel));
 
             m_driveMotorConfig.inverted(driveInverted);
             m_turningMotorConfig.inverted(turnInverted);
@@ -101,21 +101,20 @@ public class SwerveModule extends SubsystemBase {
 
             m_AbsoluteEncoder = new AbsoluteEncoder() {
                 public double getPosition() {
-                    m_TurnPWMEncoder.getOutput();
+                    return m_TurnPWMEncoder.getOutput();
                 }
 
                 @Override
                 public double getVelocity() {
                     // TODO work on this
-                    m_turningMotor.get(); //TODO output value is between 0 and 1, will need to scale
+                    return m_turningMotor.get(); //TODO output value is between 0 and 1, will need to scale
                     //(or at least figure out if we NEED to scale in the first place, may need the 0-1 value for something else later on.)
                 }
 
             };
+            m_turnPIDConfig.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
+            m_turnPIDConfig.pid(.4, 0, .01); //TODO test to find what values work best
             
-            
-            m_turnPIDConfig.closedLoop.feedbackSensor();
-            m_turnPIDConfig.closedLoop.pid(.4, 0, .01); //TODO test to find what values work best
             
             // Limit the PID Controller's input range between -pi and pi and set the input
             // to be continuous.
@@ -125,6 +124,7 @@ public class SwerveModule extends SubsystemBase {
             //System.out.println("Encoder " + Integer.toString(turnPWMChannel) + " "+ (m_TurnPWMEncoder.getOutput()));
             m_driveMotor.configure(m_driveMotorConfig, null, null);
             m_turningMotor.configure(m_turningMotorConfig, null, null);
+            
             //TODO figure out how to configure PID
          }
     

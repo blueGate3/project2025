@@ -60,10 +60,11 @@ public class Drivetrain extends SubsystemBase {
     //also try doubling it if it's still off, thats what last year has it as so :| (thats a face for when i confuse myself).
 
     // Constructor for each swerve module
-    private final SwerveModule m_frontRight = new SwerveModule(2, 1, 12, 0.4024186725604668+0.001694975042374376, false, false); //
-    private final SwerveModule m_frontLeft = new SwerveModule(4, 3, 13, 0.929912523247813+0.017896575447414385, true, false); //.8100
-    private final SwerveModule m_backLeft = new SwerveModule(6, 5, 18, 0.737657+0.050024, true, false); //0.020214250505356263
-    private final SwerveModule m_backRight = new SwerveModule(8, 7, 20, 0.5010000125250003-0.006383125159578129, true, false); //0.82150
+    private final SwerveModule m_frontRight = new SwerveModule(2, 1, 12, 0.4024186725604668+0.001694975042374376, false, false); //.4024186725604668+0.001694975042374376
+    private final SwerveModule m_frontLeft = new SwerveModule(4, 3, 13, 0.929912523247813+0.017896575447414385, true, false); //0.929912523247813+0.017896575447414385
+    private final SwerveModule m_backLeft = new SwerveModule(6, 5, 18, 0.737657+0.050024, true, false); //0.737657+0.050024
+    private final SwerveModule m_backRight = new SwerveModule(8, 7, 20, 0.5010000125250003-0.006383125159578129, true, false); //0.5010000125250003-0.006383125159578129
+    //note, it is possible that we will need to change all of these channels, if this is the case then according to https://docs.revrobotics.com/brushless/spark-max/encoders/absolute, we will need to change all ports to 6
 
     // Swerve Drive Kinematics (note the ordering [frontRight, frontLeft, backLeft, backRight] [counterclockwise from the frontRight])
     private final SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(m_frontRightLocation, m_frontLeftLocation, m_backLeftLocation, m_backRightLocation);

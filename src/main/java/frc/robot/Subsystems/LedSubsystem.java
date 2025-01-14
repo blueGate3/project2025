@@ -8,7 +8,7 @@ public class LedSubsystem extends Command {
     private final PWM pwmChannel = new  PWM(0);
     public LedSubsystem(){
         pwmChannel.setPeriodMultiplier(PeriodMultiplier.k1X);
-        pwmChannel.setBoundsMicroseconds(2000, 1600, 1500, 1400, 1000); // note: unsure about dbm, center, and dbmin
+        pwmChannel.setBoundsMicroseconds(2000, 1600, 1500, 1400, 1000); 
     }
     public enum LedState{
         kPARTY_PALETTE,

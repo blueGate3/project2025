@@ -19,7 +19,4 @@ public class Looper implements ILooper {
             loop.onLoop();
         }
     }
-    public synchronized void stopLoops(){
-        procedures.clear();
-    }
 }

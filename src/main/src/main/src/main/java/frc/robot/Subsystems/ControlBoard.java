@@ -30,5 +30,6 @@ public class ControlBoard {
                 // Jack add drive commands here, note from brayden 😘
             }
         };
+       driveLooper.register(runnableDrive);
     }
 }

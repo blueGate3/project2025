@@ -27,7 +27,7 @@ public class ControlBoard {
             }
             @Override
             public void onLoop() {
-                // Jack add drive commands here, note from brayden :kissface:
+                // Jack add drive commands here, note from brayden 😘
             }
         };
     }

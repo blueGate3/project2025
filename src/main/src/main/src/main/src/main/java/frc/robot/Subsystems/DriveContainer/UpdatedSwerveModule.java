@@ -10,10 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 
-import com.revrobotics.spark.SparkLowLevel;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.*;
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.*;
 import com.revrobotics.spark.config.*;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
@@ -24,42 +21,39 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkClosedLoopController;
+
+/**
+ * NOTE
+ * BRAYDEN
+ * THIS IS JUST TEMPORARY WHILE I FIX EVERYTHING
+ * COZ I WAS HALFWAY THROUGH STUFF LAST TIME I WANTED TO
+ * JUST HAVE ANOTHER THING I CAN LOOK AT, SHOULD BE GONE BY NEXT MEETING HOPEFULLY.
+ */
 
 /**
  * This is the code to run a single swerve module <br><br>
  * It is called by the Drivetrain subsysem
  */
-public class SwerveModule extends SubsystemBase {
+public class UpdatedSwerveModule extends SubsystemBase {
         
         private static final double kWheelDiameter = .1016; // 0.1016 M wheel diameter (4"), used to be 4 inches if this breaks it look here
         private static final double kWheelCircumference = Math.PI * kWheelDiameter;
         private static final double rpmToVelocityScaler = (kWheelCircumference / 6.12) / 60; //SDS Mk3 standard gear ratio from motor to wheel, divide by 60 to go from secs to mins
-        //kWheelCircumference used to be 
-        //private static final double kModuleMaxAngularVelocity = Drivetrain.kMaxAngularSpeed; // radians per second
         private static final double kModuleMaxAngularAcceleration = 2 * Math.PI; // radians per second squared
 
         private final SparkMax m_driveMotor;
-        private final SparkMax m_turningMotor;
-        private SparkClosedLoopController turnPID;
-        private final AbsoluteEncoder m_AbsoluteEncoder;
-        private final AbsoluteEncoderConfig m_AbsoluteEncoderConfig;
         private SparkMaxConfig m_driveMotorConfig;
-        private SparkMaxConfig m_turningMotorConfig;
-
-        //private final PIDController m_drivePID;
-        private final ClosedLoopConfig m_turnPIDConfig;
-
         private final RelativeEncoder m_driveEncoder;
-        //private final DigitalInput m_TurnEncoderInput; used to be two until Brayden suggested combining directly into duty cycle
-        private final DutyCycle m_TurnPWMEncoder;
+
+        private final SparkFlex m_turningMotor;
+        private SparkFlexConfig m_turningMotorConfig;
+        private AbsoluteEncoder m_turningEncoder;
+        
+        private SparkClosedLoopController m_turnController;
 
         private double turnEncoderOffset;
         private double encoderBias = 0; //encoder stuff for rotation
-        private int turnPWMChannel;
 
-        private final PIDController m_turningPIDController = new PIDController(0.4, 0, 0.01); //HOPEFULLY THIS COMMENT FLAGS ME DOWN BECAUSE THIS IS THE MOST IMPORTANT THING IF YOU READ FROM THE SIDE THIS IS PID also k is generally .45yy
-        
         /**
          * Constructs a SwerveModule with a drive motor, turning motor, drive encoder and turning encoder.
          *
@@ -71,64 +65,28 @@ public class SwerveModule extends SubsystemBase {
          */
         
         public SwerveModule(int driveMotorChannel, int turningMotorChannel, int turnEncoderPWMChannel, double turnOffset, boolean driveInverted, boolean turnInverted) {
-            
-            
-            m_AbsoluteEncoderConfig = new AbsoluteEncoderConfig();
-
-            // can spark max motor controller objects
+            //drive setup, neo 550 with SPARK MAX motor controllers, relative encoders are the ones built into the motor.
             m_driveMotor = new SparkMax(driveMotorChannel, SparkLowLevel.MotorType.kBrushless);
-            m_turningMotor = new SparkMax(turningMotorChannel, SparkLowLevel.MotorType.kBrushless);
-            turnPID = m_turningMotor.getClosedLoopController();
-
             m_driveMotorConfig = new SparkMaxConfig();
-            m_turningMotorConfig = new SparkMaxConfig();
-            m_turnPIDConfig = new ClosedLoopConfig();
-
-            //spark max built-in encoder
-            m_driveEncoder = m_driveMotor.getEncoder();
-            // m_driveEncoder.setVelocityConversionFactor(rpmToVelocityScaler);
-            //PWM encoder from CTRE mag encoders
-            // turnPWMChannel = turnEncoderPWMChannel;
-            turnEncoderOffset = turnOffset;
-            m_TurnPWMEncoder = new DutyCycle(new DigitalInput(turnPWMChannel));
-
+            m_driveEncoder = m_driveMotor.getEncoder(); //spark max built-in encoder
             m_driveMotorConfig.inverted(driveInverted);
+            m_driveMotorConfig.closedLoopRampRate(0.1); //.1 seconds until max speed
+
+            //turning motor setup, using cancoders, spark flexes and neo vortexes.
+            m_turningMotor = new SparkFlex(turningMotorChannel, SparkLowLevel.MotorType.kBrushless);
+            m_turningMotorConfig = new SparkFlexConfig();
             m_turningMotorConfig.inverted(turnInverted);
-            m_driveMotorConfig.closedLoopRampRate(0.1);
-
-            m_turningMotorConfig.encoder.velocityConversionFactor(rpmToVelocityScaler);
-            //m_turningMotorConfig.encoder.
-
-            m_AbsoluteEncoder = new AbsoluteEncoder() {
+            m_turningEncoder = new AbsoluteEncoder() {
                 public double getPosition() {
-                    return m_TurnPWMEncoder.getOutput();
+                    m_turningMotor.getAbsoluteEncoder().getPosition();
                 }
-
-                @Override
                 public double getVelocity() {
-                    // TODO work on this
-                    return m_turningMotor.get(); //TODO output value is between 0 and 1, will need to scale
-                    //(or at least figure out if we NEED to scale in the first place, may need the 0-1 value for something else later on.)
+                    m_turningMotor.getAbsoluteEncoder().getVelocity(); //currently in rpm
                 }
-
             };
-            m_turnPIDConfig.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
-            m_turnPIDConfig.pid(.4, 0, .01); //TODO test to find what values work best
-            
-            
-            // Limit the PID Controller's input range between -pi and pi and set the input
-            // to be continuous.
-            m_turningPIDController.enableContinuousInput(-Math.PI, Math.PI); //this looks fun try 0 instead of pi may solve doubling issue.
-            m_turningPIDController.setTolerance(0.01);
-            encoderBias = m_driveEncoder.getPosition();
-            //System.out.println("Encoder " + Integer.toString(turnPWMChannel) + " "+ (m_TurnPWMEncoder.getOutput()));
-            m_driveMotor.configure(m_driveMotorConfig, null, null);
-            m_turningMotor.configure(m_turningMotorConfig, null, null);
-            
-            //TODO figure out how to configure PID
-         }
-    
 
+            m_turnController = new SparkClosedLoopController();
+        }
          
         /**
          * Returns the current state of the module.
@@ -166,9 +124,9 @@ public class SwerveModule extends SubsystemBase {
          * @return Angle of the absolute encoder in radians
          */
         public double getTurnEncoderRadians() {
-            double appliedOffset = (m_TurnPWMEncoder.getOutput() - turnEncoderOffset) % 1;
+            double appliedOffset = (m_TurnPWMEncoder.getOutput() - turnEncoderOffset) % 1; //TODO why mod 1?!?!
             //if (turnPWMChannel == 18) { 
-                System.out.println("Encoder " + Integer.toString(turnPWMChannel) + " "+ (m_TurnPWMEncoder));
+                //System.out.println("Encoder " + Integer.toString(turnPWMChannel) + " "+ (m_TurnPWMEncoder));
                 
             //} 
             

@@ -10,11 +10,11 @@ import frc.robot.Subsystems.ControlBoard;
 import frc.robot.Subsystems.LoopManager.Looper;
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
-  private final Auto m_robotContainer;
+  private final Auto m_Auto;
   private final ControlBoard m_ControlBoard;
   private final Looper m_Looper;
   public Robot() {
-    m_robotContainer = new Auto();
+    m_Auto = new Auto();
     m_ControlBoard = new ControlBoard();
     m_Looper = Looper.getInstance();
   }
@@ -36,7 +36,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    m_autonomousCommand = m_Auto.getAutonomousCommand();
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();

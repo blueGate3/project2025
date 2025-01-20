@@ -76,7 +76,7 @@ public class UpdatedSwerveModule extends SubsystemBase {
             m_turningMotor = new SparkFlex(turningMotorChannel, SparkLowLevel.MotorType.kBrushless);
             m_turningMotorConfig = new SparkFlexConfig();
             m_turningMotorConfig.inverted(turnInverted);
-            m_turningEncoder = new AbsoluteEncoder() {
+            m_turningEncoder = new AbsoluteEncoder() { //TODO configure this and get more research about cancoders
                 public double getPosition() {
                     m_turningMotor.getAbsoluteEncoder().getPosition();
                 }

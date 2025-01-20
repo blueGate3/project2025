@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.Subsystems.DriveContainer;
+package frc.robot.Subsystems;
 import com.studica.frc.AHRS;
 // import com.pathplanner.lib.auto.AutoBuilder;
 // import com.pathplanner.lib.commands.FollowPathCommand;
@@ -39,17 +39,6 @@ public class Drivetrain extends SubsystemBase {
     public static final double kMaxAngularSpeed = Math.PI; // 1/2 rotation per second
 
     private final AHRS navx = new AHRS(null); //TODO need to know
-    public boolean donePlace = false;
-    //private PIDController xController = new PIDController(1/100, 0, 0);
-    //private PIDController yController = new PIDController(1/100, 0, 0);
-    private double timerNow = 0;
-    private double timerPrevious = 0;
-    private double anglePreviousRoll = 0;
-    private double anglePreviousPitch = 0;
-    private double xControl = 0;
-    private double yControl = 0;
-    public double kPBal = .01485; //.014
-    public double kDBal = 0.001;//.0019;
 
     //i am so dumb im a failure 
     // Locations pf each swerve module relative to the center of the robot
@@ -171,7 +160,6 @@ public class Drivetrain extends SubsystemBase {
         positions[1] = new SwerveModulePosition(m_backLeft.getDifferentState().speedMetersPerSecond, m_backLeft.getState().angle);
         positions[2] = new SwerveModulePosition(m_backRight.getDifferentState().speedMetersPerSecond, m_backRight.getState().angle);
         positions[3] = new SwerveModulePosition(m_frontRight.getDifferentState().speedMetersPerSecond, m_frontRight.getState().angle);
-       
 
         Pose2d m_distance = m_odometry.update(navx.getRotation2d(), positions);
     }
@@ -199,24 +187,5 @@ public class Drivetrain extends SubsystemBase {
      */
     public ChassisSpeeds getChassisSpeeds() {
         return m_kinematics.toChassisSpeeds(m_backLeft.getState(), m_frontLeft.getState(), m_backRight.getState(), m_frontRight.getState());
-    }
-
-    /**
-     * Custom PID controller that observes the rate at which the pitch and roll are changing
-     * @param dt double - change in time
-     */
-    public void PIDCalculator (double dt) {
-        double thisPitch = -navx.getPitch();
-        double thisRoll = navx.getRoll();
-        double dPitch = thisPitch - anglePreviousPitch; 
-        double dRoll = thisRoll - anglePreviousRoll;
-    
-        xControl = -thisPitch*kPBal; //+ (dPitch/dt) * kDBal; //xController.calculate(-Objects.navx.getPitch(), 0);//(-Objects.navx.getPitch()*kPBal); 
-        yControl = -thisRoll*kPBal;// + (dRoll/dt) * kDBal;//yController.calculate(Objects.navx.getRoll(), 0);//(*kPBal);
-        anglePreviousPitch = thisPitch;
-        anglePreviousRoll = thisRoll;
-        // SmartDashboard.putNumber("PitchGyro", dPitch/dt);
-        // SmartDashboard.putNumber("Rollgyro", dRoll/dt);
-        
     }
 }

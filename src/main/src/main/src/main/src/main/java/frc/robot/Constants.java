@@ -24,9 +24,9 @@ public final class Constants {
         public static final int kBackLeftTurnMotorId = 0;
         public static final int kBackLeftEncoderPortId = 0;
 
-        public static final double kRotationP = 0.0; // NO PID CURRENTLY
-        public static final double kRotationI = 0.0;
-        public static final double kRotationD = 0.0;
+        public static final double kPTurnVal = 0.0; // NO PID CURRENTLY
+        public static final double kITurnVal = 0.0;
+        public static final double kDTurnVal = 0.0;
 
     }
     public static final class IOConstants {

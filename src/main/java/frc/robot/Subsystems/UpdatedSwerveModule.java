@@ -41,11 +41,11 @@ public class UpdatedSwerveModule extends SubsystemBase {
         private static final double rpmToVelocityScaler = (kWheelCircumference / 6.12) / 60; //SDS Mk3 standard gear ratio from motor to wheel, divide by 60 to go from secs to mins
         private static final double kModuleMaxAngularAcceleration = 2 * Math.PI; // radians per second squared
 
-        private final SparkMax m_driveMotor;
-        private SparkMaxConfig m_driveMotorConfig;
+        private final SparkFlex m_driveMotor;
+        private SparkFlexConfig m_driveMotorConfig;
         private final RelativeEncoder m_driveEncoder;
 
-        private final SparkFlex m_turningMotor;
+        private final SparkMax m_turningMotor;
         private SparkFlexConfig m_turningMotorConfig;
         private AbsoluteEncoder m_turningEncoder;
         
@@ -65,25 +65,27 @@ public class UpdatedSwerveModule extends SubsystemBase {
          */
         
         public SwerveModule(int driveMotorChannel, int turningMotorChannel, int turnEncoderPWMChannel, double turnOffset, boolean driveInverted, boolean turnInverted) {
+            m_driveMotor = new SparkFlex(driveMotorChannel, SparkLowLevel.MotorType.kBrushless);
+            m_turningMotor = new SparkMax(turningMotorChannel, SparkLowLevel.MotorType.kBrushless);
+            m_driveMotorConfig = new SparkFlexConfig();
+            m_turningMotorConfig = new SparkMaxConfig();
+
+            /** from revlib coding example:
+             * The RestoreFactoryDefaults method can be used to reset the configuration parameters
+             * in the SPARK MAX to their factory default state. If no argument is passed, these
+             * parameters will not persist between power cycles
+             */
+            //m_motor.restoreFactoryDefaults(); TODO look into setting up configs for this.
+
+
             //drive setup, neo 550 with SPARK MAX motor controllers, relative encoders are the ones built into the motor.
-            m_driveMotor = new SparkMax(driveMotorChannel, SparkLowLevel.MotorType.kBrushless);
-            m_driveMotorConfig = new SparkMaxConfig();
             m_driveEncoder = m_driveMotor.getEncoder(); //spark max built-in encoder
             m_driveMotorConfig.inverted(driveInverted);
             m_driveMotorConfig.closedLoopRampRate(0.1); //.1 seconds until max speed
 
             //turning motor setup, using cancoders, spark flexes and neo vortexes.
-            m_turningMotor = new SparkFlex(turningMotorChannel, SparkLowLevel.MotorType.kBrushless);
-            m_turningMotorConfig = new SparkFlexConfig();
             m_turningMotorConfig.inverted(turnInverted);
-            m_turningEncoder = new AbsoluteEncoder() { //TODO configure this and get more research about cancoders
-                public double getPosition() {
-                    m_turningMotor.getAbsoluteEncoder().getPosition();
-                }
-                public double getVelocity() {
-                    m_turningMotor.getAbsoluteEncoder().getVelocity(); //currently in rpm
-                }
-            };
+            m_turningEncoder = m_turningMotor.getEncoder();
 
             m_turnController = m_turningMotor.getClosedLoopController();
             m_turningMotorConfig.closedLoop
@@ -92,6 +94,7 @@ public class UpdatedSwerveModule extends SubsystemBase {
                     .d(0.0)
                     .outputRange(kMinOutput, kMaxOutput);
                 //TODO tune PID
+                m_turningMotorConfig.closedLoop.feedbackSensor(turningEncoder);
             
             m_driveMotor.configure(m_driveMotorConfig, ResetMode.kResetSafeParameters, null);
             m_turningMotor.configure(m_turningMotorConfig, ResetMode.kResetSafeParameters, null);
@@ -104,10 +107,14 @@ public class UpdatedSwerveModule extends SubsystemBase {
         public void setDesiredState(SwerveModuleState desiredState) {
             double encoderOffset = turnEncoderOffset - m_TurnPWMEncoder.getOutput();
             // Optimize the reference state to avoid spinning further than 90 degrees
-            SwerveModuleState state = SwerveModuleState.optimize(desiredState, Rotation2d.fromRotations(encoderOffset));
-
-            m_turningMotor.set(m_turningPIDController.calculate(Rotation2d.fromRotations(encoderOffset).getRadians(), state.angle.getRadians()));
-
+            SwerveModuleState state = SwerveModuleState.optimize(desiredState, Rotation2d.fromRotations(encoderOffset)); //TODO need to get a new way to get state variable
+        
+            state.optimize((m_turningMotor.getEncoder().getPosition())); //my code, TODO need to add offsets here
+            //TODO config optimizatgion
+            
+            m_turningMotor.set(m_turningPIDController.calculate(Rotation2d.fromRotations(encoderOffset).getRadians(), state.angle.getRadians())); //old code
+               
+            m_turnController.setReference(state.angle, ControlType.kPosition);//my code
             double drivePower = state.speedMetersPerSecond; 
             m_driveMotor.set(drivePower);
 

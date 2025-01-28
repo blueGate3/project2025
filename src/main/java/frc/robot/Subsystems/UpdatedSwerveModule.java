@@ -41,11 +41,11 @@ public class UpdatedSwerveModule extends SubsystemBase {
         private static final double rpmToVelocityScaler = (kWheelCircumference / 6.12) / 60; //SDS Mk3 standard gear ratio from motor to wheel, divide by 60 to go from secs to mins
         private static final double kModuleMaxAngularAcceleration = 2 * Math.PI; // radians per second squared
 
-        private final SparkFlex m_driveMotor;
+        private SparkFlex m_driveMotor;
         private SparkFlexConfig m_driveMotorConfig;
-        private final RelativeEncoder m_driveEncoder;
+        private RelativeEncoder m_driveEncoder;
 
-        private final SparkMax m_turningMotor;
+        private SparkMax m_turningMotor;
         private SparkFlexConfig m_turningMotorConfig;
         private AbsoluteEncoder m_turningEncoder;
         

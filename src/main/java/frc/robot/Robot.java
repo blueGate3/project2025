@@ -7,23 +7,19 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Subsystems.ControlBoard;
-import frc.robot.Subsystems.LoopManager.Looper;
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
   private final Auto m_Auto;
   private final ControlBoard m_ControlBoard;
-  private final Looper m_Looper;
   
   public Robot() {
     m_Auto = new Auto();
     m_ControlBoard = new ControlBoard();
-    m_Looper = Looper.getInstance();
   }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-    m_Looper.run();
   }
 
   @Override

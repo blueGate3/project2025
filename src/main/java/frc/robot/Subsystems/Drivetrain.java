@@ -6,11 +6,11 @@ package frc.robot.Subsystems;
 import com.studica.frc.AHRS;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.FollowPathCommand;
-import com.pathplanner.lib.commands.FollowPathHolonomic;
+//import com.pathplanner.lib.commands.FollowPathHolonomic;
 import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
-import com.pathplanner.lib.util.PIDConstants;
-import com.pathplanner.lib.util.ReplanningConfig;
+// import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+// import com.pathplanner.lib.util.PIDConstants;
+// import com.pathplanner.lib.util.ReplanningConfig;
 
 
 
@@ -35,13 +35,12 @@ public class Drivetrain extends SubsystemBase {
 
     // kMaxSpeed was 2 AND kmaxangularspeed was pi/3 (before testing [district champs])
     // SOLID SPEEDS 3.25 M/S /AND PI/2.25 ROT/S
-    public static final double kMaxSpeed = 3.25; // 3.68 meters per second or 12.1 ft/s (max speed of SDS Mk3 with Neo motor)
+    public static final double kMaxSpeed = 3.25; // 3.68 meters per second or 12.1 ft/s (max speed of SDS Mk3 with Neo motor) TODO change max speed coz hell yea
     public static final double kMaxAngularSpeed = Math.PI; // 1/2 rotation per second
 
     private final AHRS navx = new AHRS(null); //TODO need to know
 
-    //i am so dumb im a failure 
-    // Locations pf each swerve module relative to the center of the robot
+    // Locations of each swerve module relative to the center of the robot
     private final Translation2d m_frontRightLocation = new Translation2d( 0.2667, 0.2667); // set for 10.5 inches, that's respectable ig
     private final Translation2d m_frontLeftLocation = new Translation2d(0.2667,  -0.2667);
     private final Translation2d m_backLeftLocation = new Translation2d(-0.2667,  -0.2667);

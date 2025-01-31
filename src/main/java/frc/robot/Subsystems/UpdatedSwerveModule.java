@@ -11,6 +11,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 
 import com.revrobotics.spark.*;
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.*;
 import com.revrobotics.spark.config.*;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
@@ -46,7 +47,7 @@ public class UpdatedSwerveModule extends SubsystemBase {
         private RelativeEncoder m_driveEncoder;
 
         private SparkMax m_turningMotor;
-        private SparkFlexConfig m_turningMotorConfig;
+        private SparkMaxConfig m_turningMotorConfig;
         private AbsoluteEncoder m_turningEncoder;
         
         private SparkClosedLoopController m_turnController;
@@ -64,7 +65,7 @@ public class UpdatedSwerveModule extends SubsystemBase {
          * @param turnOffset offset from 0 to 1 for the home position of the encoder
          */
         
-        public SwerveModule(int driveMotorChannel, int turningMotorChannel, int turnEncoderPWMChannel, double turnOffset, boolean driveInverted, boolean turnInverted) {
+        public UpdatedSwerveModule(int driveMotorChannel, int turningMotorChannel, int turnEncoderPWMChannel, double turnOffset, boolean driveInverted, boolean turnInverted) {
             m_driveMotor = new SparkFlex(driveMotorChannel, SparkLowLevel.MotorType.kBrushless);
             m_turningMotor = new SparkMax(turningMotorChannel, SparkLowLevel.MotorType.kBrushless);
             m_driveMotorConfig = new SparkFlexConfig();
@@ -85,19 +86,21 @@ public class UpdatedSwerveModule extends SubsystemBase {
 
             //turning motor setup, using cancoders, spark flexes and neo vortexes.
             m_turningMotorConfig.inverted(turnInverted);
-            m_turningEncoder = m_turningMotor.getEncoder();
+            m_turningEncoder = m_turningMotor.getAbsoluteEncoder();
 
-            m_turnController = m_turningMotor.getClosedLoopController();
             m_turningMotorConfig.closedLoop
                     .p(0.0) //TODO eventually update these from constants 
                     .i(0.0) 
                     .d(0.0)
-                    .outputRange(kMinOutput, kMaxOutput);
+                    .outputRange((-Math.PI), Math.PI);
                 //TODO tune PID
-                m_turningMotorConfig.closedLoop.feedbackSensor(turningEncoder);
-            
+            m_turningMotorConfig.closedLoop
+                    .feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
+
             m_driveMotor.configure(m_driveMotorConfig, ResetMode.kResetSafeParameters, null);
             m_turningMotor.configure(m_turningMotorConfig, ResetMode.kResetSafeParameters, null);
+
+            m_turnController = m_turningMotor.getClosedLoopController();
         }
 
         /**
@@ -112,9 +115,8 @@ public class UpdatedSwerveModule extends SubsystemBase {
             state.optimize((m_turningMotor.getEncoder().getPosition())); //my code, TODO need to add offsets here
             //TODO config optimizatgion
             
-            m_turningMotor.set(m_turningPIDController.calculate(Rotation2d.fromRotations(encoderOffset).getRadians(), state.angle.getRadians())); //old code
-               
-            m_turnController.setReference(state.angle, ControlType.kPosition);//my code
+            //m_turningMotor.set(m_turningPIDController.calculate(Rotation2d.fromRotations(encoderOffset).getRadians(), state.angle.getRadians())); //old code
+            m_turnController.setReference(state.angle.getRadians(), ControlType.kPosition);//my code
             double drivePower = state.speedMetersPerSecond; 
             m_driveMotor.set(drivePower);
 

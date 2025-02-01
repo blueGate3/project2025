@@ -12,6 +12,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 
 import com.revrobotics.spark.*;
 import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.*;
 import com.revrobotics.spark.config.*;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
@@ -49,6 +50,8 @@ public class UpdatedSwerveModule extends SubsystemBase {
         private SparkMax m_turningMotor;
         private SparkMaxConfig m_turningMotorConfig;
         private AbsoluteEncoder m_turningEncoder;
+        public final DutyCycle m_TurnPWMEncoder;
+        public double turnOffset;
         
         private SparkClosedLoopController m_turnController;
 
@@ -71,6 +74,8 @@ public class UpdatedSwerveModule extends SubsystemBase {
             m_driveMotorConfig = new SparkFlexConfig();
             m_turningMotorConfig = new SparkMaxConfig();
 
+            this.turnOffset = turnOffset;
+
             /** from revlib coding example:
              * The RestoreFactoryDefaults method can be used to reset the configuration parameters
              * in the SPARK MAX to their factory default state. If no argument is passed, these
@@ -86,7 +91,9 @@ public class UpdatedSwerveModule extends SubsystemBase {
 
             //turning motor setup, using cancoders, spark flexes and neo vortexes.
             m_turningMotorConfig.inverted(turnInverted);
-            m_turningEncoder = m_turningMotor.getAbsoluteEncoder();
+            m_turningEncoder = m_turningMotor.getAbsoluteEncoder();//if we are doing the throughbore encoders
+
+            m_TurnPWMEncoder = new DutyCycle(new DigitalInput(turnEncoderPWMChannel)); //if we are doing what we had last year
 
             m_turningMotorConfig.closedLoop
                     .p(0.0) //TODO eventually update these from constants 
@@ -108,15 +115,15 @@ public class UpdatedSwerveModule extends SubsystemBase {
          * @param desiredState Desired state with speed and angle.
          */
         public void setDesiredState(SwerveModuleState desiredState) {
-            double encoderOffset = turnEncoderOffset - m_TurnPWMEncoder.getOutput();
+            double encoderValue = turnOffset - m_TurnPWMEncoder.getOutput();
             // Optimize the reference state to avoid spinning further than 90 degrees
-            SwerveModuleState state = SwerveModuleState.optimize(desiredState, Rotation2d.fromRotations(encoderOffset)); //TODO need to get a new way to get state variable
+            SwerveModuleState state = SwerveModuleState.optimize(desiredState, Rotation2d.fromRotations(encoderValue)); //TODO need to get a new way to get state variable
         
-            state.optimize((m_turningMotor.getEncoder().getPosition())); //my code, TODO need to add offsets here
-            //TODO config optimizatgion
-            
+            state.optimize(Rotation2d.fromRotations(encoderValue)); //my code, TODO need to add offsets here possibly
+
+            //PIDController m_turningPIDController = new PIDController(encoderValue, encoderValue, encoderValue); //this is made just to interact with the like below.
             //m_turningMotor.set(m_turningPIDController.calculate(Rotation2d.fromRotations(encoderOffset).getRadians(), state.angle.getRadians())); //old code
-            m_turnController.setReference(state.angle.getRadians(), ControlType.kPosition);//my code
+            m_turnController.setReference(state.angle.getRadians(), ControlType.kPosition);//my code TODO may need to factor in gear ratio
             double drivePower = state.speedMetersPerSecond; 
             m_driveMotor.set(drivePower);
 

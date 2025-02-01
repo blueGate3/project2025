@@ -35,24 +35,25 @@ public class Drivetrain extends SubsystemBase {
 
     // kMaxSpeed was 2 AND kmaxangularspeed was pi/3 (before testing [district champs])
     // SOLID SPEEDS 3.25 M/S /AND PI/2.25 ROT/S
-    public static final double kMaxSpeed = 3.25; // 3.68 meters per second or 12.1 ft/s (max speed of SDS Mk3 with Neo motor) TODO change max speed coz hell yea
+    public static final double kMaxSpeed = 3.25; // 3.68 meters per second or 12.1 ft/s (max speed of SDS Mk3 with Neo motor) TODO change max speed coz hellllll yea
     public static final double kMaxAngularSpeed = Math.PI; // 1/2 rotation per second
 
     private final AHRS navx = new AHRS(null); //TODO need to know
 
     // Locations of each swerve module relative to the center of the robot
-    private final Translation2d m_frontRightLocation = new Translation2d( 0.2667, 0.2667); // set for 10.5 inches, that's respectable ig
-    private final Translation2d m_frontLeftLocation = new Translation2d(0.2667,  -0.2667);
-    private final Translation2d m_backLeftLocation = new Translation2d(-0.2667,  -0.2667);
-    private final Translation2d m_backRightLocation = new Translation2d( -0.2667, 0.2667); //Was using hypotenuse before, but I flipped negatives to test. This is how I think it's SUPPOSED to be done, not sure though. Try making this double negative and the one above it a y-positive only if it isnt aligned. 
-    //also try doubling it if it's still off, thats what last year has it as so :| (thats a face for when i confuse myself).
+    private final Translation2d m_frontRightLocation = new Translation2d( 0.37465, 0.37465);//side length total is at 29.5 inches including modules. Divided by 2 and set to meters is .37465 meters from one side to the tip of the module
+    private final Translation2d m_frontLeftLocation = new Translation2d(0.37465,  -0.37465);
+    private final Translation2d m_backLeftLocation = new Translation2d(-0.37465,  -0.37465);
+    private final Translation2d m_backRightLocation = new Translation2d( -0.37465, 0.37465); //Try making this double negative and the one above it a y-positive only if it isnt aligned. also try doubling it if it's still off, thats what last year has it as
 
     // Constructor for each swerve module
-    private final SwerveModule m_frontRight = new SwerveModule(2, 1, 12, 0.4024186725604668+0.001694975042374376, false, false); //.4024186725604668+0.001694975042374376
-    private final SwerveModule m_frontLeft = new SwerveModule(4, 3, 13, 0.929912523247813+0.017896575447414385, true, false); //0.929912523247813+0.017896575447414385
-    private final SwerveModule m_backLeft = new SwerveModule(6, 5, 18, 0.737657+0.050024, true, false); //0.737657+0.050024
-    private final SwerveModule m_backRight = new SwerveModule(8, 7, 20, 0.5010000125250003-0.006383125159578129, true, false); //0.5010000125250003-0.006383125159578129
-    //note, it is possible that we will need to change all of these channels, if this is the case then according to https://docs.revrobotics.com/brushless/spark-max/encoders/absolute, we will need to change all ports to 6
+    //Turn encoder values run through NAVX ports last year iirc, the port numbers dont match with what's printed so we have to run it through 
+    private final SwerveModule m_frontRight = new SwerveModule(1, 2, 12, 0, false, false); //
+    private final SwerveModule m_frontLeft = new SwerveModule(2, 4, 13, 0, true, false); //
+    private final SwerveModule m_backLeft = new SwerveModule(3, 6, 18, 0, true, false); //
+    private final SwerveModule m_backRight = new SwerveModule(4, 8, 20, 0, true, false); //
+    //note, it is possible that we will need to change all of these channels, if this is the case then according to https://docs.revrobotics.com/brushless/spark-max/encoders/absolute, we will need to change all ports to 6 //probably not
+
 
     // Swerve Drive Kinematics (note the ordering [frontRight, frontLeft, backLeft, backRight] [counterclockwise from the frontRight])
     private final SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(m_frontRightLocation, m_frontLeftLocation, m_backLeftLocation, m_backRightLocation);

@@ -49,11 +49,11 @@ public class Drivetrain extends SubsystemBase {
     // Constructor for each swerve module
     //Turn encoder values run through NAVX ports last year iirc, the port numbers dont match with what's printed so we have to run it through 
     private final SwerveModule m_frontRight = new SwerveModule(1, 2, 12, 0, false, false); //
-    private final SwerveModule m_frontLeft = new SwerveModule(2, 4, 13, 0, true, false); //
-    private final SwerveModule m_backLeft = new SwerveModule(3, 6, 18, 0, true, false); //
-    private final SwerveModule m_backRight = new SwerveModule(4, 8, 20, 0, true, false); //
+    private final SwerveModule m_frontLeft = new SwerveModule(3, 4, 13, 0, false, false); //
+    private final SwerveModule m_backLeft = new SwerveModule(5, 6, 18, 0, false, false); //
+    private final SwerveModule m_backRight = new SwerveModule(7, 8, 20, 0, false, false); //
     //note, it is possible that we will need to change all of these channels, if this is the case then according to https://docs.revrobotics.com/brushless/spark-max/encoders/absolute, we will need to change all ports to 6 //probably not
-
+    //TODO must work on motor inversion.
 
     // Swerve Drive Kinematics (note the ordering [frontRight, frontLeft, backLeft, backRight] [counterclockwise from the frontRight])
     private final SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(m_frontRightLocation, m_frontLeftLocation, m_backLeftLocation, m_backRightLocation);

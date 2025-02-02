@@ -12,9 +12,6 @@ import com.pathplanner.lib.path.PathPlannerPath;
 // import com.pathplanner.lib.util.PIDConstants;
 // import com.pathplanner.lib.util.ReplanningConfig;
 
-
-
-
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -25,6 +22,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -38,13 +36,16 @@ public class Drivetrain extends SubsystemBase {
     public static final double kMaxSpeed = 3.25; // 3.68 meters per second or 12.1 ft/s (max speed of SDS Mk3 with Neo motor) TODO change max speed coz hellllll yea
     public static final double kMaxAngularSpeed = Math.PI; // 1/2 rotation per second
 
+    int invert = 1; //this will change depending on the alliance we are put on, it will be multiplied by -1 if we are red alliance and then multiplied by all of the drive inputs so we still drive the correct way and can remain blue alliance oriented for apriltags. 
+    //more information can be found at https://docs.wpilib.org/en/stable/docs/software/basic-programming/coordinate-system.html 
+
     private final AHRS navx = new AHRS(null); //TODO need to know
 
     // Locations of each swerve module relative to the center of the robot
-    private final Translation2d m_frontRightLocation = new Translation2d( 0.37465, 0.37465);//side length total is at 29.5 inches including modules. Divided by 2 and set to meters is .37465 meters from one side to the tip of the module
-    private final Translation2d m_frontLeftLocation = new Translation2d(0.37465,  -0.37465);
-    private final Translation2d m_backLeftLocation = new Translation2d(-0.37465,  -0.37465);
-    private final Translation2d m_backRightLocation = new Translation2d( -0.37465, 0.37465); //Try making this double negative and the one above it a y-positive only if it isnt aligned. also try doubling it if it's still off, thats what last year has it as
+    private final Translation2d m_frontRightLocation = new Translation2d( 0.37465, -0.37465);//side length total is at 29.5 inches including modules. Divided by 2 and set to meters is .37465 meters from one side to the tip of the module
+    private final Translation2d m_frontLeftLocation = new Translation2d(0.37465,  0.37465);//the frc kinematics section has the coordinates so x is front-back, where front is positive, and y is left-right, where left is positive. it's communist to the extreme but will affect the way we initialize our module locations.
+    private final Translation2d m_backLeftLocation = new Translation2d(-0.37465,  0.37465);//continued: that's the reason for the strange abnormal abhorrent disgusting affronts-before-God translation signs. 
+    private final Translation2d m_backRightLocation = new Translation2d( -0.37465, -0.37465); //Try making this double negative and the one above it a y-positive only if it isnt aligned. also try doubling it if it's still off, thats what last year has it as
 
     // Constructor for each swerve module
     //Turn encoder values run through NAVX ports last year iirc, the port numbers dont match with what's printed so we have to run it through 
@@ -58,7 +59,6 @@ public class Drivetrain extends SubsystemBase {
     // Swerve Drive Kinematics (note the ordering [frontRight, frontLeft, backLeft, backRight] [counterclockwise from the frontRight])
     private final SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(m_frontRightLocation, m_frontLeftLocation, m_backLeftLocation, m_backRightLocation);
 
-
     //INITIAL POSITIONS to help define swerve drive odometry. THis was a headache
     public SwerveModulePosition positionFrontLeft = new SwerveModulePosition(0.0,new Rotation2d(0.0));
     public SwerveModulePosition positionFrontRight = new SwerveModulePosition(0.0,new Rotation2d(0.0));
@@ -69,12 +69,7 @@ public class Drivetrain extends SubsystemBase {
     public SwerveModulePosition[] positions = new SwerveModulePosition[4];
     
     public final SwerveDriveOdometry m_odometry;
-    
     public final SwerveModule Swerves[] = {m_frontRight, m_frontLeft, m_backLeft, m_backRight};
-
-    
-
-
     
     // Constructor
     public Drivetrain() {
@@ -84,64 +79,21 @@ public class Drivetrain extends SubsystemBase {
             m_kinematics, 
             navx.getRotation2d(), initialPositions
         );
+        var alliance = DriverStation.getAlliance(); //see information where we set up the invert integer. 
+        if (alliance.isPresent() && alliance.get() == Alliance.Red) {
+            invert = -1;
+        }
         // m_visionSubsystem = new VisionSubsystem();
         // Configure AutoBuilder last i added all this in.
   }
-
 
     @Override
     public void periodic () {
         updateOdometry();
         //SmartDashboard.putNumber("xOdometry", getCurrentPose2d().getX());
 
-    }
-    /**
-     * Method to drive the robot using joystick info.
-     *
-     * @param xSpeed Speed of the robot in the x direction (forward).
-     * @param ySpeed Speed of the robot in the y direction (sideways).
-     * @param rot Angular rate of the robot.
-     * @param fieldRelative Whether the provided x and y speeds are relative to the field.
-     * @param defenseHoldingMode Whether we invert our wheels to prevent slide during defense.
-     * @param reefRotateCorresponder int between 1 and 3, where 1 is do nothing, 2 is rotate clockwise, 3 is rotate counterclockwise
-     */
-//    public SwerveModulePosition[] initialPositions = {positionFrontRight, positionFrontLeft, positionBackLeft, positionBackRight};
-
-     //possible paramaters:driverXStick, -driverYStick, -driverRotateStick,
-     //used to be: (double xSpeed, double ySpeed, double rot, boolean fieldRelative, boolean defenseHoldingMode)
-    @SuppressWarnings("ParameterName")
-    public void drive(double driverXStick, double driverYStick, double driverRotateStick, boolean fieldRelative, boolean defenseHoldingMode, int reefRotateCorresponder) {
+        double gyroAngle = navx.getAngle();
         
-        double offset = (navx.getAngle());
-        double offsetRadians = Math.toRadians(offset);
-        Rotation2d robotRotation = new Rotation2d(offsetRadians); 
-        var swerveModuleStates = m_kinematics.toSwerveModuleStates(fieldRelative ? ChassisSpeeds.fromFieldRelativeSpeeds(driverXStick, driverYStick, driverRotateStick, robotRotation): new ChassisSpeeds(driverXStick, driverYStick, driverYStick));
-
-        if (fieldRelative) {
-
-            var swerveModuleStates = m_kinematics.toSwerveModuleStates((ChassisSpeeds.fromFieldRelativeSpeeds(driverXStick, driverYStick, driverRotateStick, robotRotation)));
-
-        } else if(!fieldRelative) {
-
-            var swerveModuleStates = m_kinematics.toSwerveModuleStates(new ChassisSpeeds(driverXStick, driverYStick, driverYStick));
-
-        }
-
-        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
-        if (!defenseHoldingMode) {
-            m_frontRight.setDesiredState(swerveModuleStates[0]);
-            m_frontLeft.setDesiredState(swerveModuleStates[1]);
-            m_backLeft.setDesiredState(swerveModuleStates[2]);//NOTE FIX THESE TWO BACK ONES LATER WE MAY NEED THESE IN RIGHT ORDER IN AUTO.
-            m_backRight.setDesiredState(swerveModuleStates[3]);
-        } 
-        else {
-             m_backLeft.setDesiredState(new SwerveModuleState(0, new Rotation2d(3*(Math.PI / 4))));
-             m_frontLeft.setDesiredState(new SwerveModuleState(0, new Rotation2d( (Math.PI / 4))));
-             m_backRight.setDesiredState(new SwerveModuleState(0, new Rotation2d((Math.PI / 4))));
-             m_frontRight.setDesiredState(new SwerveModuleState(0, new Rotation2d(3*(Math.PI / 4))));
-         
-    }
-
     }
 
     /**
@@ -167,23 +119,14 @@ public class Drivetrain extends SubsystemBase {
      * Updates the position of the robot relative to where its starting position
      */
     public void updateOdometry() { //it may have to be in the right order
-        positions[0] = new SwerveModulePosition(m_frontLeft.getDifferentState().speedMetersPerSecond, m_frontLeft.getState().angle);
-        positions[1] = new SwerveModulePosition(m_backLeft.getDifferentState().speedMetersPerSecond, m_backLeft.getState().angle);
-        positions[2] = new SwerveModulePosition(m_backRight.getDifferentState().speedMetersPerSecond, m_backRight.getState().angle);
-        positions[3] = new SwerveModulePosition(m_frontRight.getDifferentState().speedMetersPerSecond, m_frontRight.getState().angle);
+        positions[0] = new SwerveModulePosition(m_frontRight.getDifferentState().speedMetersPerSecond, m_frontRight.getState().angle);
+        positions[1] = new SwerveModulePosition(m_frontLeft.getDifferentState().speedMetersPerSecond, m_frontLeft.getState().angle);
+        positions[2] = new SwerveModulePosition(m_backLeft.getDifferentState().speedMetersPerSecond, m_backLeft.getState().angle);
+        positions[3] = new SwerveModulePosition(m_backRight.getDifferentState().speedMetersPerSecond, m_backRight.getState().angle);
 
         Pose2d m_distance = m_odometry.update(navx.getRotation2d(), positions);
     }
 
-    /**
-     * Reset the navx and set a starting angle
-     * @param initialAngle starting angle
-     */
-    public Command resetNavxMark (double initialAngle) {
-        navx.reset(); //90 because of the feild orientation vs our driver fov
-        navx.setAngleAdjustment(-initialAngle); //TO DO negative because navx has a goofy coordinate system
-        return null;
-    }
     /**
      * Gives the current position and rotation of the robot (meters) based on the wheel odometry from where the robot started
      * @return Pose2d of current robot position
@@ -193,10 +136,62 @@ public class Drivetrain extends SubsystemBase {
     }
 
     /**
-     * Converts raw module states into chassis speeds
+     * Converts raw module states into chassis speeds 
      * @return chassis speeds object
      */
     public ChassisSpeeds getChassisSpeeds() {
         return m_kinematics.toChassisSpeeds(m_backLeft.getState(), m_frontLeft.getState(), m_backRight.getState(), m_frontRight.getState());
     }
+
+    /**
+     * Method to drive the robot using joystick info.
+     *
+     * @param xSpeed Speed of the robot in the x direction (forward).
+     * @param ySpeed Speed of the robot in the y direction (sideways).
+     * @param rot Angular rate of the robot.
+     * @param fieldRelative Whether the provided x and y speeds are relative to the field.
+     * @param defenseHoldingMode Whether we invert our wheels to prevent slide during defense.
+     * @param reefRotateCorresponder int between 0 and 2, where 0 is do nothing, 1 is rotate clockwise, 2 is rotate counterclockwise
+     */
+     @SuppressWarnings("ParameterName")
+     public void drive(double driverXStick, double driverYStick, double driverRotateStick, boolean fieldRelative, boolean defenseHoldingMode, int reefRotateCorresponder) {
+         
+         double offset = (navx.getAngle());
+         double offsetRadians = Math.toRadians(offset);
+         Rotation2d robotRotation = new Rotation2d(offsetRadians); 
+         
+         //reefRotater setup. Basically, we get our robot pose from whatever way, then we figure out if we are doing rotator or not. If no, we set our center of rotation to the center of the robot, and if yes, we set our center of rotation to the center of the reef. 
+         //then, we are able to automatically rotate around it at a fixed radius, which we can look into changing using the triggers later if we really care. 
+         if (reefRotateCorresponder == 0) {
+             var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(driverXStick * invert, driverYStick* invert, driverRotateStick* invert, robotRotation));
+ 
+             SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
+ 
+             m_frontRight.setDesiredState(swerveModuleStates[0]);
+             m_frontLeft.setDesiredState(swerveModuleStates[1]);
+             m_backLeft.setDesiredState(swerveModuleStates[2]);//NOTE FIX THESE TWO BACK ONES LATER WE MAY NEED THESE IN RIGHT ORDER IN AUTO.
+             m_backRight.setDesiredState(swerveModuleStates[3]);
+         } else if(reefRotateCorresponder == 1) {
+ 
+             var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, .5, robotRotation));
+ 
+             SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
+ 
+             m_frontRight.setDesiredState(swerveModuleStates[0]);
+             m_frontLeft.setDesiredState(swerveModuleStates[1]);
+             m_backLeft.setDesiredState(swerveModuleStates[2]);
+             m_backRight.setDesiredState(swerveModuleStates[3]);
+         } else if (reefRotateCorresponder == 2) {
+             var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, -.5, robotRotation));
+ 
+             SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
+ 
+             m_frontRight.setDesiredState(swerveModuleStates[0]);
+             m_frontLeft.setDesiredState(swerveModuleStates[1]);
+             m_backLeft.setDesiredState(swerveModuleStates[2]);
+             m_backRight.setDesiredState(swerveModuleStates[3]);
+         }
+          
+     }
+
 }

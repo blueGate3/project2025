@@ -102,20 +102,31 @@ public class Drivetrain extends SubsystemBase {
      * @param ySpeed Speed of the robot in the y direction (sideways).
      * @param rot Angular rate of the robot.
      * @param fieldRelative Whether the provided x and y speeds are relative to the field.
+     * @param defenseHoldingMode Whether we invert our wheels to prevent slide during defense.
+     * @param reefRotateCorresponder int between 1 and 3, where 1 is do nothing, 2 is rotate clockwise, 3 is rotate counterclockwise
      */
 //    public SwerveModulePosition[] initialPositions = {positionFrontRight, positionFrontLeft, positionBackLeft, positionBackRight};
 
      //possible paramaters:driverXStick, -driverYStick, -driverRotateStick,
      //used to be: (double xSpeed, double ySpeed, double rot, boolean fieldRelative, boolean defenseHoldingMode)
     @SuppressWarnings("ParameterName")
-    public void drive(double driverXStick, double driverYStick, double driverRotateStick, boolean fieldRelative, boolean defenseHoldingMode) {
+    public void drive(double driverXStick, double driverYStick, double driverRotateStick, boolean fieldRelative, boolean defenseHoldingMode, int reefRotateCorresponder) {
         
-        //SmartDashboard.putNumber("X Speed", driverXStick);
-        double offset = (navx.getAngle());//or get angle adjustment
-        double realOffset = Math.toRadians(offset);//if the line below no worky add this in front //also it used to be navx.getRotation2d().getRadians()-offset or offset was realOffset
-        Rotation2d robotRotation = new Rotation2d(realOffset); //+ angleOffset); //DriverStation.getAlliance() == Alliance.Blue ? new Rotation2d(navx.getRotation2d().getDegrees() + 180) : navx.getRotation2d();
-        // SmartDashboard.putNumber ( "inputRotiation", robotRotation.getDegrees());
+        double offset = (navx.getAngle());
+        double offsetRadians = Math.toRadians(offset);
+        Rotation2d robotRotation = new Rotation2d(offsetRadians); 
         var swerveModuleStates = m_kinematics.toSwerveModuleStates(fieldRelative ? ChassisSpeeds.fromFieldRelativeSpeeds(driverXStick, driverYStick, driverRotateStick, robotRotation): new ChassisSpeeds(driverXStick, driverYStick, driverYStick));
+
+        if (fieldRelative) {
+
+            var swerveModuleStates = m_kinematics.toSwerveModuleStates((ChassisSpeeds.fromFieldRelativeSpeeds(driverXStick, driverYStick, driverRotateStick, robotRotation)));
+
+        } else if(!fieldRelative) {
+
+            var swerveModuleStates = m_kinematics.toSwerveModuleStates(new ChassisSpeeds(driverXStick, driverYStick, driverYStick));
+
+        }
+
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
         if (!defenseHoldingMode) {
             m_frontRight.setDesiredState(swerveModuleStates[0]);

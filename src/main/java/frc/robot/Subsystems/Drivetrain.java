@@ -4,6 +4,7 @@
 
 package frc.robot.Subsystems;
 import com.studica.frc.AHRS;
+import com.thethriftybot.Conversion;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.FollowPathCommand;
 //import com.pathplanner.lib.commands.FollowPathHolonomic;
@@ -21,6 +22,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -102,6 +104,36 @@ public class Drivetrain extends SubsystemBase {
     public void setPose (Pose2d pose) {
         m_odometry.resetPosition(new Rotation2d(pose.getRotation().getRadians()), initialPositions, pose);
         }
+
+    /**
+     * Takes in the current position of the robot, then figures out the distance to the center of the reef, and returns the center of rotation as the center of the reef
+     * @param currentPose the current position of the robot.
+     * @param allianceColor boolean for determining alliance color, as of now blue is false and red is true (to invert).
+     */
+    public Translation2d getPoseToReefCenter(Pose2d currentPose, boolean allianceColor) {
+
+        /**
+         * Notes about coordinate system: First off, the pose from the odometry should be reset at the end of the autonomous period to whatever our final pose is.
+         * Second, the WPILib coordinate system uses North, West Up system as their positives. See initialization of inverter for why I hate it so much.
+         * Third, 0 degrees/0 radians on the unit circle is at the front of the robot and 90 degrees is at the west position. However, East is -90 degrees rather than 270.
+         * Fourth, the origin is always at the blue side of the field, all the way to the right when standing behind the driver stations. 
+         * Fifth, the center of the reef:
+         * 176.75 from driverstation wall to center along x. 144 inches from driverstation to edge of reef, reef if 65.5 inches wide excluding tape, divide by 2 and add 144 to get 176.75. must be converted to meters.
+         * it's 109.13 inches along the y axis from the edge of the driverstation, but this is not taking into account the coral loading area thing.
+         * 158.5 is the y axis, i used the apriltag map and matched y coords of tags 18 and 21. confirmed x value at 176.745
+         */
+
+        //from blue alliance origin, may need to convert for red alliance. 
+        final double reefCenterXBlue = 4.48945; //in meters, 176.75 inches
+        final double reefCenterYBlue = 4.0259; //in meters, 158.5 inches.
+
+        double xDistanceToCenter = reefCenterXBlue - currentPose.getX(); //where we need to be vs where we are
+        double yDistanceToCenter = reefCenterYBlue - currentPose.getY();
+
+        Translation2d coordinatesToCenterOfReef = new Translation2d(xDistanceToCenter, yDistanceToCenter);
+
+        return  coordinatesToCenterOfReef;
+    }
     
     /**
      * Drives with swerve during the autonomous period
@@ -124,7 +156,7 @@ public class Drivetrain extends SubsystemBase {
         positions[2] = new SwerveModulePosition(m_backLeft.getDifferentState().speedMetersPerSecond, m_backLeft.getState().angle);
         positions[3] = new SwerveModulePosition(m_backRight.getDifferentState().speedMetersPerSecond, m_backRight.getState().angle);
 
-        Pose2d m_distance = m_odometry.update(navx.getRotation2d(), positions);
+        Pose2d m_pose = m_odometry.update(navx.getRotation2d(), positions);
     }
 
     /**
@@ -133,6 +165,7 @@ public class Drivetrain extends SubsystemBase {
      */
     public Pose2d getCurrentPose2d() {
         return m_odometry.getPoseMeters();
+        
     }
 
     /**
@@ -154,8 +187,7 @@ public class Drivetrain extends SubsystemBase {
      * @param reefRotateCorresponder int between 0 and 2, where 0 is do nothing, 1 is rotate clockwise, 2 is rotate counterclockwise
      */
      @SuppressWarnings("ParameterName")
-     public void drive(double driverXStick, double driverYStick, double driverRotateStick, boolean fieldRelative, boolean defenseHoldingMode, int reefRotateCorresponder) {
-         
+     public void drive(double driverXStick, double driverYStick, double driverRotateStick, boolean fieldRelative, boolean defenseHoldingMode, int reefRotateCorresponder, boolean onBlueAlliance) {
          double offset = (navx.getAngle());
          double offsetRadians = Math.toRadians(offset);
          Rotation2d robotRotation = new Rotation2d(offsetRadians); 
@@ -173,7 +205,7 @@ public class Drivetrain extends SubsystemBase {
              m_backRight.setDesiredState(swerveModuleStates[3]);
          } else if(reefRotateCorresponder == 1) {
  
-             var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, .5, robotRotation));
+             var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, .5, robotRotation), getPoseToReefCenter(getCurrentPose2d(), onBlueAlliance));
  
              SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
  
@@ -182,7 +214,7 @@ public class Drivetrain extends SubsystemBase {
              m_backLeft.setDesiredState(swerveModuleStates[2]);
              m_backRight.setDesiredState(swerveModuleStates[3]);
          } else if (reefRotateCorresponder == 2) {
-             var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, -.5, robotRotation));
+             var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, -.5, robotRotation), getPoseToReefCenter(getCurrentPose2d(), onBlueAlliance));
  
              SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
  

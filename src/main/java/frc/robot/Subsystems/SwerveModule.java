@@ -49,13 +49,11 @@ public class SwerveModule extends SubsystemBase {
 
         private SparkMax m_turningMotor;
         private SparkMaxConfig m_turningMotorConfig;
-        private AbsoluteEncoder m_turningEncoder;
         public final DutyCycle m_TurnPWMEncoder;
         public double turnOffset;
         
         private SparkClosedLoopController m_turnController;
 
-        private double turnEncoderOffset;
         private double encoderBias = 0; //encoder stuff for rotation
 
         /**
@@ -91,7 +89,6 @@ public class SwerveModule extends SubsystemBase {
 
             //turning motor setup, using cancoders, spark flexes and neo vortexes.
             m_turningMotorConfig.inverted(turnInverted);
-            m_turningEncoder = m_turningMotor.getAbsoluteEncoder();//if we are doing the throughbore encoders
 
             m_TurnPWMEncoder = new DutyCycle(new DigitalInput(turnEncoderPWMChannel)); //if we are doing what we had last year
 
@@ -149,7 +146,7 @@ public class SwerveModule extends SubsystemBase {
          * @return Angle of the absolute encoder in radians
          */
         public double getTurnEncoderRadians() {
-            double appliedOffset = (m_TurnPWMEncoder.getOutput() - turnEncoderOffset) % 1; //TODO why mod 1?!?!
+            double appliedOffset = (turnOffset - m_TurnPWMEncoder.getOutput()) % 1;//it may need to be the other way around, position-offset
             //if (turnPWMChannel == 18) { 
                 //System.out.println("Encoder " + Integer.toString(turnPWMChannel) + " "+ (m_TurnPWMEncoder));
                 

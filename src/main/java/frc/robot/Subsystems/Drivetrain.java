@@ -37,6 +37,7 @@ public class Drivetrain extends SubsystemBase {
     // SOLID SPEEDS 3.25 M/S /AND PI/2.25 ROT/S
     public static final double kMaxSpeed = 3.25; // 3.68 meters per second or 12.1 ft/s (max speed of SDS Mk3 with Neo motor) TODO change max speed coz hellllll yea
     public static final double kMaxAngularSpeed = Math.PI; // 1/2 rotation per second
+    boolean onBlueAlliance;
 
     int invert = 1; //this will change depending on the alliance we are put on, it will be multiplied by -1 if we are red alliance and then multiplied by all of the drive inputs so we still drive the correct way and can remain blue alliance oriented for apriltags. 
     //more information can be found at https://docs.wpilib.org/en/stable/docs/software/basic-programming/coordinate-system.html 
@@ -83,6 +84,7 @@ public class Drivetrain extends SubsystemBase {
         );
         var alliance = DriverStation.getAlliance(); //see information where we set up the invert integer. 
         if (alliance.isPresent() && alliance.get() == Alliance.Red) {
+            onBlueAlliance = false;
             invert = -1;
         }
         // m_visionSubsystem = new VisionSubsystem();
@@ -93,8 +95,7 @@ public class Drivetrain extends SubsystemBase {
     public void periodic () {
         updateOdometry();
         //SmartDashboard.putNumber("xOdometry", getCurrentPose2d().getX());
-
-        double gyroAngle = navx.getAngle();
+        
         
     }
 
@@ -187,7 +188,7 @@ public class Drivetrain extends SubsystemBase {
      * @param reefRotateCorresponder int between 0 and 2, where 0 is do nothing, 1 is rotate clockwise, 2 is rotate counterclockwise
      */
      @SuppressWarnings("ParameterName")
-     public void drive(double driverXStick, double driverYStick, double driverRotateStick, boolean fieldRelative, boolean defenseHoldingMode, int reefRotateCorresponder, boolean onBlueAlliance) {
+     public void drive(double driverXStick, double driverYStick, double driverRotateStick, boolean fieldRelative, boolean defenseHoldingMode, int reefRotateCorresponder) {
          double offset = (navx.getAngle());
          double offsetRadians = Math.toRadians(offset);
          Rotation2d robotRotation = new Rotation2d(offsetRadians); 
@@ -195,13 +196,13 @@ public class Drivetrain extends SubsystemBase {
          //reefRotater setup. Basically, we get our robot pose from whatever way, then we figure out if we are doing rotator or not. If no, we set our center of rotation to the center of the robot, and if yes, we set our center of rotation to the center of the reef. 
          //then, we are able to automatically rotate around it at a fixed radius, which we can look into changing using the triggers later if we really care. 
          if (reefRotateCorresponder == 0) {
-             var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(driverXStick * invert, driverYStick* invert, driverRotateStick* invert, robotRotation));
+             var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(driverXStick * invert, driverYStick * invert, driverRotateStick * invert, robotRotation));
  
              SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
  
              m_frontRight.setDesiredState(swerveModuleStates[0]);
              m_frontLeft.setDesiredState(swerveModuleStates[1]);
-             m_backLeft.setDesiredState(swerveModuleStates[2]);//NOTE FIX THESE TWO BACK ONES LATER WE MAY NEED THESE IN RIGHT ORDER IN AUTO.
+             m_backLeft.setDesiredState(swerveModuleStates[2]);
              m_backRight.setDesiredState(swerveModuleStates[3]);
          } else if(reefRotateCorresponder == 1) {
  

@@ -27,6 +27,7 @@ public class RobotContainer {
 
     XboxController driverController = new XboxController(0); // 0 is the USB Port to be used as indicated on the Driver Station
     XboxController operatorController = new XboxController(1);
+    int reefRotate;
 
     public RobotContainer () {
         setDefaultCommands();
@@ -37,8 +38,18 @@ public class RobotContainer {
 
 
     public void configureButtonBindings () {
-        var alliance = DriverStation.getAlliance();
-        drivetrain.drive(driverController.getLeftX(), driverController.getLeftY(), driverController.getRightX(), true, false, 0);
+        if(driverController.getLeftBumperButtonPressed()){
+            reefRotate=2; //left is rotate counterclockwise
+        } else if (driverController.getRightBumperButtonPressed()) {
+            reefRotate = 1;
+        } else {
+            reefRotate = 0;
+        }
+
+        
+        drivetrain.drive(driverController.getLeftX(), driverController.getLeftY(), driverController.getRightX(), true, false, reefRotate);
+    
+
     }
 
     public void setDefaultCommands () {

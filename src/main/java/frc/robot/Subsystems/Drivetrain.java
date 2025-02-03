@@ -42,6 +42,7 @@ public class Drivetrain extends SubsystemBase {
     int invert = 1; //this will change depending on the alliance we are put on, it will be multiplied by -1 if we are red alliance and then multiplied by all of the drive inputs so we still drive the correct way and can remain blue alliance oriented for apriltags. 
     //more information can be found at https://docs.wpilib.org/en/stable/docs/software/basic-programming/coordinate-system.html 
 
+    Pose2d m_pose;
     private final AHRS navx = new AHRS(null); //TODO need to know
 
     // Locations of each swerve module relative to the center of the robot
@@ -151,13 +152,13 @@ public class Drivetrain extends SubsystemBase {
     /**
      * Updates the position of the robot relative to where its starting position
      */
-    public void updateOdometry() { //it may have to be in the right order
+    public void updateOdometry() {
         positions[0] = new SwerveModulePosition(m_frontRight.getDifferentState().speedMetersPerSecond, m_frontRight.getState().angle);
         positions[1] = new SwerveModulePosition(m_frontLeft.getDifferentState().speedMetersPerSecond, m_frontLeft.getState().angle);
         positions[2] = new SwerveModulePosition(m_backLeft.getDifferentState().speedMetersPerSecond, m_backLeft.getState().angle);
         positions[3] = new SwerveModulePosition(m_backRight.getDifferentState().speedMetersPerSecond, m_backRight.getState().angle);
 
-        Pose2d m_pose = m_odometry.update(navx.getRotation2d(), positions);
+        m_pose = m_odometry.update(navx.getRotation2d(), positions);
     }
 
     /**
@@ -165,7 +166,8 @@ public class Drivetrain extends SubsystemBase {
      * @return Pose2d of current robot position
      */
     public Pose2d getCurrentPose2d() {
-        return m_odometry.getPoseMeters();
+        m_pose = m_odometry.getPoseMeters();
+        return m_pose;
         
     }
 

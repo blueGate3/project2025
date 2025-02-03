@@ -46,9 +46,13 @@ public class RobotContainer {
             reefRotate = 0;
         }
 
-        
+
         drivetrain.drive(driverController.getLeftX(), driverController.getLeftY(), driverController.getRightX(), true, false, reefRotate);
-    
+        SmartDashboard.putNumber("X Axis", driverController.getLeftX());
+        SmartDashboard.putNumber("Y Axis", driverController.getLeftY());
+        SmartDashboard.putNumber("Rot Axis", driverController.getRightX());
+        SmartDashboard.putBoolean("Field Relative", true);
+        
 
     }
 

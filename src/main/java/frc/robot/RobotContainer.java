@@ -38,9 +38,9 @@ public class RobotContainer {
 
 
     public void configureButtonBindings () {
-        if(driverController.getPOV() == 270){
+        if(driverController.getLeftBumperButtonPressed()){
             reefRotate=2; //left is rotate counterclockwise
-        } else if (driverController.getPOV() == 90) {
+        } else if (driverController.getRightBumperButtonPressed()) {
             reefRotate = 1;
         } else {
             reefRotate = 0;

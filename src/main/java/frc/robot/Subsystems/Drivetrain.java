@@ -53,7 +53,7 @@ public class Drivetrain extends SubsystemBase {
 
     // Constructor for each swerve module
     //Turn encoder values run through NAVX ports last year iirc, the port numbers dont match with what's printed so we have to run it through 
-    private final SwerveModule m_frontRight = new SwerveModule(1, 2, 12, 0, false, false); //
+    private final SwerveModule m_frontRight = new SwerveModule(1, 2, 12, 0,false, false); //
     private final SwerveModule m_frontLeft = new SwerveModule(3, 4, 13, 0, false, false); //
     private final SwerveModule m_backLeft = new SwerveModule(5, 6, 18, 0, false, false); //
     private final SwerveModule m_backRight = new SwerveModule(7, 8, 20, 0, false, false); //

@@ -3,15 +3,28 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot;
+import edu.wpi.first.wpilibj.AddressableLED;
+import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
   private final Auto m_Auto;
-  
+  public int LEDPortNumber;
+
+
   public Robot() {
     m_Auto = new Auto();
+
+    //LED code for Bradley
+
+    int LEDBufferLength = 60;
+
+    AddressableLED m_led = new AddressableLED(LEDPortNumber);
+    AddressableLEDBuffer m_LEDBuffer = new AddressableLEDBuffer(LEDBufferLength);
+    m_led.setLength(m_LEDBuffer.getLength());
+    
   }
 
   @Override

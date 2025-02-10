@@ -9,6 +9,8 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import 
+edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 import com.revrobotics.spark.*;
 import com.revrobotics.spark.SparkBase.ControlType;
@@ -47,7 +49,6 @@ public class SwerveModule extends SubsystemBase {
         private SparkFlex m_driveMotor;
         private SparkFlexConfig m_driveMotorConfig;
         private RelativeEncoder m_driveEncoder;
-
         private SparkMax m_turningMotor;
         private SparkMaxConfig m_turningMotorConfig;
         public AbsoluteEncoder m_turningEncoder;
@@ -82,20 +83,20 @@ public class SwerveModule extends SubsystemBase {
             //drive setup, neo 550 with SPARK MAX motor controllers, relative encoders are the ones built into the motor.
             m_driveEncoder = m_driveMotor.getEncoder(); //nneo built in encoder
             m_driveMotorConfig.inverted(driveInverted);
-            m_driveMotorConfig.closedLoopRampRate(0.1); //.1 seconds until max speed
+            //m_driveMotorConfig.closedLoopRampRate(0.1); //.1 seconds until max speed
 
-            //turning motor setup, using cancoders, spark flexes and neo vortexes.
+            //turning motor setup, using rev throughbore encoders, brushless neo 1.1s, and built in encoders.
             m_turningMotorConfig.inverted(turnInverted);
 
             // m_turningEncoder = m_turningMotor.getAbsoluteEncoder(); readd after
             turnEncoderDutyCycle = new DutyCycle(new DigitalInput(encoderChannel)); //if we are doing what we had last year
 
             m_turningMotorConfig.closedLoop
-                    .p(0.1) //TODO eventually update these from constants 
+                    .p(.4) //TODO eventually update these from constants 
                     .i(0.0) 
                     .d(0.01)
                     .outputRange((-Math.PI), Math.PI);
-                //TODO tune PID
+                //TODO tune PID, this is what we used last year
             m_turningMotorConfig.closedLoop
                     .feedbackSensor(FeedbackSensor.kAlternateOrExternalEncoder);
 
@@ -114,8 +115,8 @@ public class SwerveModule extends SubsystemBase {
             double encoderValue = turnEncoderDutyCycle.getOutput();
             // Optimize the reference state to avoid spinning further than 90 degrees
             //SwerveModuleState state = SwerveModuleState.optimize(desiredState, Rotation2d.fromRotations(encoderValue)); //TODO need to get a new way to get state variable
-            SwerveModuleState state = new SwerveModuleState();
-            state.optimize(Rotation2d.fromRotations(encoderValue)); //my code, TODO need to add offsets here possibly
+            SwerveModuleState state = new SwerveModuleState(desiredState.speedMetersPerSecond, Rotation2d.fromRotations(desiredState.angle.getRotations()));
+            state.optimize(Rotation2d.fromRotations(encoderValue)); 
 
             m_turnController.setReference(state.angle.getRadians(), ControlType.kPosition);//my code TODO may need to factor in gear ratio
             double drivePower = state.speedMetersPerSecond; 
@@ -147,7 +148,6 @@ public class SwerveModule extends SubsystemBase {
             //if (turnPWMChannel == 18) { 
                 //System.out.println("Encoder " + Integer.toString(turnPWMChannel) + " "+ (m_TurnPWMEncoder));
             //} 
-            //SmartDashboard.putNumber("PWMChannel " + Integer.toString(turnPWMChannel), m_TurnPWMEncoder.getOutput());
             return appliedOffset * 2 * Math.PI;
         }
 }

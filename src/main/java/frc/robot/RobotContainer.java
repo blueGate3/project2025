@@ -36,16 +36,17 @@ public class RobotContainer {
 
 
     public void configureButtonBindings () {
-        // if(driverController.getPOV() == 270){
+        // if(driverController.getLeftBumperButtonPressed()){
         //     reefRotate=2; //left is rotate counterclockwise
-        // } else if (driverController.getPOV() == 90) {
+        // } else if (driverController.getRightBumperButtonPressed()) {
         //     reefRotate = 1;
         // } else {
-             reefRotate = 0;
-        //}
+        //     reefRotate = 0;
+        // }
+        reefRotate = 0;
 
-        //drivetrain.drive(driverController.getAxisType(0), driverController.getAxisType(1), driverController.getAxisType(4), true, false, reefRotate);
-        drivetrain.drive(.1, .1, 0, false, false, 0);
+        drivetrain.drive(driverController.getAxisType(1), driverController.getAxisType(2), driverController.getAxisType(4), true, false, reefRotate);
+        
         
 
     }

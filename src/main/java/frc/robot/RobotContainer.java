@@ -38,20 +38,17 @@ public class RobotContainer {
 
 
     public void configureButtonBindings () {
-        if(driverController.getLeftBumperButtonPressed()){
-            reefRotate=2; //left is rotate counterclockwise
-        } else if (driverController.getRightBumperButtonPressed()) {
-            reefRotate = 1;
-        } else {
-            reefRotate = 0;
-        }
+        // if(driverController.getLeftBumperButtonPressed()){
+        //     reefRotate=2; //left is rotate counterclockwise
+        // } else if (driverController.getRightBumperButtonPressed()) {
+        //     reefRotate = 1;
+        // } else {
+        //     reefRotate = 0;
+        // }
+        reefRotate = 0;
 
-
-        drivetrain.drive(driverController.getLeftX(), driverController.getLeftY(), driverController.getRightX(), true, false, reefRotate);
-        SmartDashboard.putNumber("X Axis", driverController.getLeftX());
-        SmartDashboard.putNumber("Y Axis", driverController.getLeftY());
-        SmartDashboard.putNumber("Rot Axis", driverController.getRightX());
-        SmartDashboard.putBoolean("Field Relative", true);
+        drivetrain.drive(driverController.getAxisType(1), driverController.getAxisType(2), driverController.getAxisType(4), true, false, reefRotate);
+        
         
 
     }

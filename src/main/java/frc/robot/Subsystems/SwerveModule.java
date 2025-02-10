@@ -9,6 +9,8 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import 
+edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 import com.revrobotics.spark.*;
 import com.revrobotics.spark.SparkBase.ControlType;
@@ -46,27 +48,26 @@ public class SwerveModule extends SubsystemBase {
         private SparkFlex m_driveMotor;
         private SparkFlexConfig m_driveMotorConfig;
         private RelativeEncoder m_driveEncoder;
-
         private SparkMax m_turningMotor;
         private SparkMaxConfig m_turningMotorConfig;
-        public final DutyCycle m_TurnPWMEncoder;
+        public final DutyCycleEncoder m_TurnDIOEncoder;
         public double turnOffset;
         
         private SparkClosedLoopController m_turnController;
 
-        private double encoderBias = 0; //encoder stuff for rotation
 
         /**
          * Constructs a SwerveModule with a drive motor, turning motor, drive encoder and turning encoder.
          *
          * @param driveMotorChannel CAN ID for the drive motor.
          * @param turningMotorChannel CAN ID for the turning motor.
-         * @param driveEncoder DIO input for the drive encoder channel A
-         * @param turnEncoderPWMChannel DIO input for the drive encoder channel B
+         * @param turnEncoderDIOChannel DIO input for the turning encoder, rev throughbore. port on the roboRIO.
          * @param turnOffset offset from 0 to 1 for the home position of the encoder
+         * @param driveInverted for testing, drives motor inverted. shouldn't need. 
+         * @param turnInverted for testing, turns motor inverted. shouldn't need.
          */
         
-        public SwerveModule(int driveMotorChannel, int turningMotorChannel, int turnEncoderPWMChannel, double turnOffset, boolean driveInverted, boolean turnInverted) {
+        public SwerveModule(int driveMotorChannel, int turningMotorChannel, int turnEncoderDIOChannel, double turnOffset, boolean driveInverted, boolean turnInverted) {
             m_driveMotor = new SparkFlex(driveMotorChannel, SparkLowLevel.MotorType.kBrushless);
             m_turningMotor = new SparkMax(turningMotorChannel, SparkLowLevel.MotorType.kBrushless);
             m_driveMotorConfig = new SparkFlexConfig();
@@ -85,19 +86,20 @@ public class SwerveModule extends SubsystemBase {
             //drive setup, neo 550 with SPARK MAX motor controllers, relative encoders are the ones built into the motor.
             m_driveEncoder = m_driveMotor.getEncoder(); //spark max built-in encoder
             m_driveMotorConfig.inverted(driveInverted);
-            m_driveMotorConfig.closedLoopRampRate(0.1); //.1 seconds until max speed
+            //m_driveMotorConfig.closedLoopRampRate(0.1); //.1 seconds until max speed
 
-            //turning motor setup, using cancoders, spark flexes and neo vortexes.
+            //turning motor setup, using rev throughbore encoders, brushless neo 1.1s, and built in encoders.
             m_turningMotorConfig.inverted(turnInverted);
 
-            m_TurnPWMEncoder = new DutyCycle(new DigitalInput(turnEncoderPWMChannel)); //if we are doing what we had last year
+            m_TurnDIOEncoder = new DutyCycleEncoder(new DutyCycle(new DigitalInput(turnEncoderDIOChannel))); //sets up dio for rev throughbore encoder probably
+            
 
             m_turningMotorConfig.closedLoop
-                    .p(0.0) //TODO eventually update these from constants 
+                    .p(.4) //TODO eventually update these from constants 
                     .i(0.0) 
-                    .d(0.0)
+                    .d(0.01)
                     .outputRange((-Math.PI), Math.PI);
-                //TODO tune PID
+                //TODO tune PID, this is what we used last year
             m_turningMotorConfig.closedLoop
                     .feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
 
@@ -112,17 +114,14 @@ public class SwerveModule extends SubsystemBase {
          * @param desiredState Desired state with speed and angle.
          */
         public void setDesiredState(SwerveModuleState desiredState) {
-            double encoderValue = turnOffset - m_TurnPWMEncoder.getOutput();
-            // Optimize the reference state to avoid spinning further than 90 degrees
-            SwerveModuleState state = SwerveModuleState.optimize(desiredState, Rotation2d.fromRotations(encoderValue)); //TODO need to get a new way to get state variable
-        
-            state.optimize(Rotation2d.fromRotations(encoderValue)); //my code, TODO need to add offsets here possibly
+            double encoderValue = turnOffset - m_TurnDIOEncoder.;
+            //SwerveModuleState state = SwerveModuleState.optimize(desiredState, Rotation2d.fromRotations(encoderValue)); //TODO need to get a new way to get state variable
+            SwerveModuleState state = new SwerveModuleState(desiredState.speedMetersPerSecond, Rotation2d.fromRotations(desiredState.angle.getRotations()));
+            state.optimize(Rotation2d.fromRotations(encoderValue)); 
 
-            //PIDController m_turningPIDController = new PIDController(encoderValue, encoderValue, encoderValue); //this is made just to interact with the like below.
-            //m_turningMotor.set(m_turningPIDController.calculate(Rotation2d.fromRotations(encoderOffset).getRadians(), state.angle.getRadians())); //old code
             m_turnController.setReference(state.angle.getRadians(), ControlType.kPosition);//my code TODO may need to factor in gear ratio
-            double drivePower = state.speedMetersPerSecond; 
-            m_driveMotor.set(drivePower);
+            double drivePower = state.speedMetersPerSecond; //TODO convert max speed here 
+            m_driveMotor.set(drivePower); //TODO need to convert to max speed
 
         }
          
@@ -149,35 +148,7 @@ public class SwerveModule extends SubsystemBase {
             double appliedOffset = (turnOffset - m_TurnPWMEncoder.getOutput()) % 1;//it may need to be the other way around, position-offset
             //if (turnPWMChannel == 18) { 
                 //System.out.println("Encoder " + Integer.toString(turnPWMChannel) + " "+ (m_TurnPWMEncoder));
-                
             //} 
-            
-            //SmartDashboard.putNumber("PWMChannel " + Integer.toString(turnPWMChannel), m_TurnPWMEncoder.getOutput());
             return appliedOffset * 2 * Math.PI;
-        }
-
-
-        /**
-         * Calculates the closest angle and direction between two points on a circle.
-         * @param currentAngle <ul><li>where you currently are</ul></li>
-         * @param desiredAngle <ul><li>where you want to end up</ul></li>
-         * @return <ul><li>signed double of the angle (rad) between the two points</ul></li>
-         */
-        public double closestAngleCalculator(double currentAngle, double desiredAngle) {
-            double signedDiff = 0.0;
-            double rawDiff = currentAngle > desiredAngle ? currentAngle - desiredAngle : desiredAngle - currentAngle; // find the positive raw distance between the angles
-            double modDiff = rawDiff % (2 * Math.PI); // constrain the difference to a full circle
-
-            if (modDiff > Math.PI) { // if the angle is greater than half a rotation, go backwards
-                signedDiff = ((2 * Math.PI) - modDiff); //full circle minus the angle
-                if (desiredAngle > currentAngle) signedDiff = signedDiff * -1; // get the direction that was lost calculating raw diff
-            }
-
-            else {
-                signedDiff = modDiff;
-                if (currentAngle > desiredAngle) signedDiff = signedDiff * -1;
-            }
-            
-            return signedDiff;
         }
 }

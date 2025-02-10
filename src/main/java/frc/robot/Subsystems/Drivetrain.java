@@ -4,6 +4,7 @@
 
 package frc.robot.Subsystems;
 import com.studica.frc.AHRS;
+import com.studica.frc.AHRS.NavXComType;
 import com.thethriftybot.Conversion;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.FollowPathCommand;
@@ -43,7 +44,7 @@ public class Drivetrain extends SubsystemBase {
     //more information can be found at https://docs.wpilib.org/en/stable/docs/software/basic-programming/coordinate-system.html 
 
     Pose2d m_pose;
-    private final AHRS navx = new AHRS(null); //TODO need to know
+    private final AHRS navx = new AHRS(NavXComType.kMXP_SPI); //TODO need to know
 
     // Locations of each swerve module relative to the center of the robot
     private final Translation2d m_frontRightLocation = new Translation2d( 0.37465, -0.37465);//side length total is at 29.5 inches including modules. Divided by 2 and set to meters is .37465 meters from one side to the tip of the module
@@ -53,10 +54,10 @@ public class Drivetrain extends SubsystemBase {
 
     // Constructor for each swerve module
     //Turn encoder values run through NAVX ports last year iirc, the port numbers dont match with what's printed so we have to run it through 
-    private final SwerveModule m_frontRight = new SwerveModule(1, 2, 12, 0, false, false); //
-    private final SwerveModule m_frontLeft = new SwerveModule(3, 4, 13, 0, false, false); //
-    private final SwerveModule m_backLeft = new SwerveModule(5, 6, 18, 0, false, false); //
-    private final SwerveModule m_backRight = new SwerveModule(7, 8, 20, 0, false, false); //
+    private final SwerveModule m_frontRight = new SwerveModule(1, 2, 0, 0, false, false); //
+    private final SwerveModule m_frontLeft = new SwerveModule(3, 4, 1, 0, false, false); //
+    private final SwerveModule m_backLeft = new SwerveModule(5, 6, 2, 0, false, false); //
+    private final SwerveModule m_backRight = new SwerveModule(7, 8, 3, 0, false, false); //
     //note, it is possible that we will need to change all of these channels, if this is the case then according to https://docs.revrobotics.com/brushless/spark-max/encoders/absolute, we will need to change all ports to 6 //probably not
     //TODO must work on motor inversion.
 
@@ -197,7 +198,7 @@ public class Drivetrain extends SubsystemBase {
          
          //reefRotater setup. Basically, we get our robot pose from whatever way, then we figure out if we are doing rotator or not. If no, we set our center of rotation to the center of the robot, and if yes, we set our center of rotation to the center of the reef. 
          //then, we are able to automatically rotate around it at a fixed radius, which we can look into changing using the triggers later if we really care. 
-         if (reefRotateCorresponder == 0) {
+         //if (reefRotateCorresponder == 0) {
              var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(driverXStick * invert, driverYStick * invert, driverRotateStick * invert, robotRotation));
  
              SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
@@ -206,26 +207,26 @@ public class Drivetrain extends SubsystemBase {
              m_frontLeft.setDesiredState(swerveModuleStates[1]);
              m_backLeft.setDesiredState(swerveModuleStates[2]);
              m_backRight.setDesiredState(swerveModuleStates[3]);
-         } else if(reefRotateCorresponder == 1) {
+        //  } else if(reefRotateCorresponder == 1) {
  
-             var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, .5, robotRotation), getPoseToReefCenter(getCurrentPose2d(), onBlueAlliance));
+        //      var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, .5, robotRotation), getPoseToReefCenter(getCurrentPose2d(), onBlueAlliance));
  
-             SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
+        //      SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
  
-             m_frontRight.setDesiredState(swerveModuleStates[0]);
-             m_frontLeft.setDesiredState(swerveModuleStates[1]);
-             m_backLeft.setDesiredState(swerveModuleStates[2]);
-             m_backRight.setDesiredState(swerveModuleStates[3]);
-         } else if (reefRotateCorresponder == 2) {
-             var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, -.5, robotRotation), getPoseToReefCenter(getCurrentPose2d(), onBlueAlliance));
+        //      m_frontRight.setDesiredState(swerveModuleStates[0]);
+        //      m_frontLeft.setDesiredState(swerveModuleStates[1]);
+        //      m_backLeft.setDesiredState(swerveModuleStates[2]);
+        //      m_backRight.setDesiredState(swerveModuleStates[3]);
+        //  } else if (reefRotateCorresponder == 2) {
+        //      var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, -.5, robotRotation), getPoseToReefCenter(getCurrentPose2d(), onBlueAlliance));
  
-             SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
+        //      SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
  
-             m_frontRight.setDesiredState(swerveModuleStates[0]);
-             m_frontLeft.setDesiredState(swerveModuleStates[1]);
-             m_backLeft.setDesiredState(swerveModuleStates[2]);
-             m_backRight.setDesiredState(swerveModuleStates[3]);
-         }
+        //      m_frontRight.setDesiredState(swerveModuleStates[0]);
+        //      m_frontLeft.setDesiredState(swerveModuleStates[1]);
+        //      m_backLeft.setDesiredState(swerveModuleStates[2]);
+        //      m_backRight.setDesiredState(swerveModuleStates[3]);
+        //  }
           
      }
 

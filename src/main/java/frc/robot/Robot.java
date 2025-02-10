@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
   private final Auto m_Auto;
-  
+  public RobotContainer m_RobotContainer;
   public Robot() {
     m_Auto = new Auto();
   }
@@ -53,7 +53,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-    
+    m_RobotContainer.configureButtonBindings();
   }
 
   @Override

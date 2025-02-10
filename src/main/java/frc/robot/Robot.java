@@ -12,6 +12,7 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
   private final Auto m_Auto;
   public int LEDPortNumber;
+  public RobotContainer m_RobotContainer;
 
 
   public Robot() {
@@ -24,7 +25,7 @@ public class Robot extends TimedRobot {
     AddressableLED m_led = new AddressableLED(LEDPortNumber);
     AddressableLEDBuffer m_LEDBuffer = new AddressableLEDBuffer(LEDBufferLength);
     m_led.setLength(m_LEDBuffer.getLength());
-    
+    m_RobotContainer = new RobotContainer();
   }
 
   @Override
@@ -67,6 +68,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     
+    m_RobotContainer.configureButtonBindings();
   }
 
   @Override

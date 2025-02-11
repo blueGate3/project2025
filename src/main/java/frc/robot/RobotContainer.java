@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.Subsystems.Drivetrain;
 
@@ -45,7 +46,7 @@ public class RobotContainer {
         // }
         reefRotate = 0;
 
-        drivetrain.drive(driverController.getAxisType(1), driverController.getAxisType(2), driverController.getAxisType(4), true, false, reefRotate);
+        drivetrain.drive(driverController.getRawAxis(0), -driverController.getRawAxis(1), driverController.getRawAxis(2), true, false, reefRotate);
         
         
 

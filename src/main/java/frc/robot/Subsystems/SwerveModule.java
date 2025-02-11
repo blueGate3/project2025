@@ -54,7 +54,7 @@ public class SwerveModule extends SubsystemBase {
         public AbsoluteEncoder m_turningEncoder;
 
         public DutyCycle turnEncoderDutyCycle;
-        
+        private int encoderChannelNumber;
         private SparkClosedLoopController m_turnController;
 
         /**
@@ -66,11 +66,12 @@ public class SwerveModule extends SubsystemBase {
          * @param turnInverted turn motor inverted, used for testing.
          */
         
-        public SwerveModule(int driveMotorChannel, int turningMotorChannel, int encoderChannel, boolean driveInverted, boolean turnInverted) {
+        public SwerveModule(int driveMotorChannel, int turningMotorChannel, int encoderChannel, double offset, boolean driveInverted, boolean turnInverted) {
             m_driveMotor = new SparkFlex(driveMotorChannel, SparkLowLevel.MotorType.kBrushless);
             m_turningMotor = new SparkMax(turningMotorChannel, SparkLowLevel.MotorType.kBrushless);
             m_driveMotorConfig = new SparkFlexConfig();
             m_turningMotorConfig = new SparkMaxConfig(); 
+            int encoderChannelNumber = encoderChannel;
             //TODO update to throughbore encoders
 
             /** from revlib coding example:
@@ -81,9 +82,9 @@ public class SwerveModule extends SubsystemBase {
             //m_motor.restoreFactoryDefaults(); TODO look into setting up configs for this.
 
             //drive setup, neo 550 with SPARK MAX motor controllers, relative encoders are the ones built into the motor.
-            m_driveEncoder = m_driveMotor.getEncoder(); //nneo built in encoder
+            m_driveEncoder = m_driveMotor.getEncoder(); //neo built in encoder
             m_driveMotorConfig.inverted(driveInverted);
-            //m_driveMotorConfig.closedLoopRampRate(0.1); //.1 seconds until max speed
+            m_driveMotorConfig.closedLoopRampRate(1); //.1 seconds until max speed
 
             //turning motor setup, using rev throughbore encoders, brushless neo 1.1s, and built in encoders.
             m_turningMotorConfig.inverted(turnInverted);
@@ -92,18 +93,20 @@ public class SwerveModule extends SubsystemBase {
             turnEncoderDutyCycle = new DutyCycle(new DigitalInput(encoderChannel)); //if we are doing what we had last year
 
             m_turningMotorConfig.closedLoop
-                    .p(.4) //TODO eventually update these from constants 
+                    .p(.3) //TODO eventually update these from constants 
                     .i(0.0) 
                     .d(0.01)
                     .outputRange((-Math.PI), Math.PI);
                 //TODO tune PID, this is what we used last year
-            m_turningMotorConfig.closedLoop
-                    .feedbackSensor(FeedbackSensor.kAlternateOrExternalEncoder);
+            //m_turningMotorConfig.closedLoop
+            //        .feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
 
             m_driveMotor.configure(m_driveMotorConfig, ResetMode.kResetSafeParameters, null);
             m_turningMotor.configure(m_turningMotorConfig, ResetMode.kResetSafeParameters, null);
-
+            
             m_turnController = m_turningMotor.getClosedLoopController();
+            System.out.println("Encoder Channel: " + encoderChannel + ", Encoder Value: "+ (turnEncoderDutyCycle.getOutput()));
+            
         }
 
         /**
@@ -119,10 +122,14 @@ public class SwerveModule extends SubsystemBase {
             state.optimize(Rotation2d.fromRotations(encoderValue)); 
 
             m_turnController.setReference(state.angle.getRadians(), ControlType.kPosition);//my code TODO may need to factor in gear ratio
-            double drivePower = state.speedMetersPerSecond; 
-            m_driveMotor.set(drivePower); // use pid control type velocity - brayden
 
+            double drivePower = state.speedMetersPerSecond; 
+            m_driveMotor.set(drivePower/10); 
         }
+
+        // public double getTurnEncoder () {
+        //     return m_turningEncoder.getPosition() ;
+        // }
          
         /**
          * Returns the current state of the module.
@@ -144,10 +151,9 @@ public class SwerveModule extends SubsystemBase {
          * @return Angle of the absolute encoder in radians
          */
         public double getTurnEncoderRadians() {
-            double appliedOffset = (turnEncoderDutyCycle.getOutput()) % 1;//it may need to be the other way around, position-offset
             //if (turnPWMChannel == 18) { 
-                //System.out.println("Encoder " + Integer.toString(turnPWMChannel) + " "+ (m_TurnPWMEncoder));
+                //System.out.println("Encoder Value "+ (turnEncoderDutyCycle.getOutput()));
             //} 
-            return appliedOffset * 2 * Math.PI;
+            return turnEncoderDutyCycle.getOutput() * 2 * Math.PI;
         }
 }

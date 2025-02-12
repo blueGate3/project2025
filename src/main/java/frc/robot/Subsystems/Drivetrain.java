@@ -87,6 +87,7 @@ public class Drivetrain extends SubsystemBase {
             onBlueAlliance = false;
             invert = -1;
         }
+        
         // m_visionSubsystem = new VisionSubsystem();
         // Configure AutoBuilder last i added all this in.
   }
@@ -117,6 +118,7 @@ public class Drivetrain extends SubsystemBase {
         m_backRight.setDesiredState(moduleStates[3]);
         
     }
+    
     /**
      * Updates the position of the robot relative to where its starting position
      */
@@ -125,7 +127,6 @@ public class Drivetrain extends SubsystemBase {
         positions[1] = new SwerveModulePosition(m_frontLeft.getDifferentState().speedMetersPerSecond, m_frontLeft.getState().angle);
         positions[2] = new SwerveModulePosition(m_backLeft.getDifferentState().speedMetersPerSecond, m_backLeft.getState().angle);
         positions[3] = new SwerveModulePosition(m_backRight.getDifferentState().speedMetersPerSecond, m_backRight.getState().angle);
-
         m_pose = m_odometry.update(navx.getRotation2d(), positions);
     }
 

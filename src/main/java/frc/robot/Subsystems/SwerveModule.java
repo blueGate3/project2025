@@ -26,15 +26,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-
-/**
- * NOTE
- * BRAYDEN
- * THIS IS JUST TEMPORARY WHILE I FIX EVERYTHING
- * COZ I WAS HALFWAY THROUGH STUFF LAST TIME I WANTED TO
- * JUST HAVE ANOTHER THING I CAN LOOK AT, SHOULD BE GONE BY NEXT MEETING HOPEFULLY.
- */
-
 /**
  * This is the code to run a single swerve module <br><br>
  * It is called by the Drivetrain subsysem
@@ -47,6 +38,7 @@ public class SwerveModule extends SubsystemBase {
         private static final double drivingWheelGearRatio = 6.12; //L3 gear ratio for driving, max velocity of 19.3 ft/sec
         private static final double rpmToVelocityScaler = (kWheelCircumference / drivingWheelGearRatio) / 60; //SDS Mk4I standard gear ratio from motor to wheel, divide by 60 to go from secs to mins
         private static final double kModuleMaxAngularAcceleration = 2 * Math.PI; // radians per second squared
+        public static final double kMaxSpeed = 5.88; // 5.88 meters per second or 19.3 ft/s (max speed of SDS Mk4i with Vortex motor)
 
         private SparkFlex m_driveMotor;
         private SparkFlexConfig m_driveMotorConfig;
@@ -68,7 +60,6 @@ public class SwerveModule extends SubsystemBase {
          * @param driveInverted drive the motor inverted, used for testing
          * @param turnInverted turn motor inverted, used for testing.
          */
-        
         public SwerveModule(int driveMotorChannel, int turningMotorChannel, int encoderChannel, double offset, boolean driveInverted, boolean turnInverted) {
             m_driveMotor = new SparkFlex(driveMotorChannel, SparkLowLevel.MotorType.kBrushless);
             m_turningMotor = new SparkMax(turningMotorChannel, SparkLowLevel.MotorType.kBrushless);
@@ -101,15 +92,17 @@ public class SwerveModule extends SubsystemBase {
          * @param desiredState Desired state with speed and angle.
          */
         public void setDesiredState(SwerveModuleState desiredState) {
-            double encoderValue = turnEncoderDutyCycle.getOutput();
             // Optimize the reference state to avoid spinning further than 90 degrees
-            SwerveModuleState state = new SwerveModuleState(desiredState.speedMetersPerSecond, Rotation2d.fromRadians(getTurnEncoderOutput(true))); //TODO look at this line if it breaks, before it was from rotations.
-            state.optimize(Rotation2d.fromRadians(getTurnEncoderOutput(true))); //TODO look at this line if it breaks, before it was from rotations.
+            //SwerveModuleState state = new SwerveModuleState(desiredState.speedMetersPerSecond, desiredState.angle); //TODO look at this line if it breaks, before it was from rotations.
+            //state.optimize(Rotation2d.fromRadians(getTurnEncoderOutput(true))); //TODO look at this line if it breaks, before it was from rotations.
+            // double drivePower = state.speedMetersPerSecond; 
+            // m_driveMotor.set(drivePower/10); 
 
-            m_turnController.setReference(state.angle.getRadians(), ControlType.kPosition);//my code TODO may need to factor in gear ratio
-            double drivePower = state.speedMetersPerSecond; 
-            m_driveMotor.set(drivePower/10); 
+            desiredState.optimize(Rotation2d.fromRadians(getTurnEncoderOutput(true)));
+            m_driveMotor.set(desiredState.speedMetersPerSecond/kMaxSpeed); //divided by max speed so the output cannot be greater than 1. 
+            m_turnController.setReference(desiredState.angle.getRotations(), ControlType.kPosition);//my code TODO may need to factor in gear ratio, also used to be state.angle.getRadians()
         }
+
         /**
          * Returns the current state of the module.
          *

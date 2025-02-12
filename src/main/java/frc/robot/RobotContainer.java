@@ -46,7 +46,7 @@ public class RobotContainer {
         // }
         reefRotate = 0;
 
-        drivetrain.drive(driverController.getRawAxis(0), -driverController.getRawAxis(1), driverController.getRawAxis(2), true, false, reefRotate);
+        drivetrain.drive(driverController.getRawAxis(0), -driverController.getRawAxis(1), driverController.getRawAxis(2), true, false, reefRotate); //negative y value coz its backwards
         
         
 

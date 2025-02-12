@@ -33,10 +33,9 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 /** Represents a swerve drive style drivetrain. */
 
 public class Drivetrain extends SubsystemBase {
-
     // kMaxSpeed was 2 AND kmaxangularspeed was pi/3 (before testing [district champs])
     // SOLID SPEEDS 3.25 M/S /AND PI/2.25 ROT/S
-    public static final double kMaxSpeed = 3.25; // 3.68 meters per second or 12.1 ft/s (max speed of SDS Mk3 with Neo motor) TODO change max speed coz hellllll yea
+    public static final double kMaxSpeed = 5.88; // 5.88 meters per second or 19.3 ft/s (max speed of SDS Mk4i with Vortex motor)
     public static final double kMaxAngularSpeed = Math.PI; // 1/2 rotation per second
     boolean onBlueAlliance;
 
@@ -44,13 +43,13 @@ public class Drivetrain extends SubsystemBase {
     //more information can be found at https://docs.wpilib.org/en/stable/docs/software/basic-programming/coordinate-system.html 
 
     Pose2d m_pose;
-    private final AHRS navx = new AHRS(NavXComType.kMXP_SPI); //TODO need to know
+    private final AHRS navx = new AHRS(NavXComType.kMXP_SPI); 
 
     // Locations of each swerve module relative to the center of the robot
     private final Translation2d m_frontRightLocation = new Translation2d( 0.37465, -0.37465);//side length total is at 29.5 inches including modules. Divided by 2 and set to meters is .37465 meters from one side to the tip of the module
     private final Translation2d m_frontLeftLocation = new Translation2d(0.37465,  0.37465);//the frc kinematics section has the coordinates so x is front-back, where front is positive, and y is left-right, where left is positive. it's communist to the extreme but will affect the way we initialize our module locations.
     private final Translation2d m_backLeftLocation = new Translation2d(-0.37465,  0.37465);//continued: that's the reason for the strange abnormal abhorrent disgusting affronts-before-God translation signs. 
-    private final Translation2d m_backRightLocation = new Translation2d( -0.37465, -0.37465); //Try making this double negative and the one above it a y-positive only if it isnt aligned. also try doubling it if it's still off, thats what last year has it as
+    private final Translation2d m_backRightLocation = new Translation2d( -0.37465, -0.37465);
 
     // Constructor for each swerve module
     //Turn encoder values run through NAVX ports last year iirc, the port numbers dont match with what's printed so we have to run it through 
@@ -58,8 +57,7 @@ public class Drivetrain extends SubsystemBase {
     private final SwerveModule m_frontLeft = new SwerveModule(3, 4, 1, 0.5804735895118397, false, false); //
     private final SwerveModule m_backLeft = new SwerveModule(5, 6, 2, 0.2016005800400145, false, false); //
     private final SwerveModule m_backRight = new SwerveModule(7, 8, 3, 0.7020164425504111, false, false); //
-    //note, it is possible that we will need to change all of these channels, if this is the case then according to https://docs.revrobotics.com/brushless/spark-max/encoders/absolute, we will need to change all ports to 6 //probably not
-    //TODO must work on motor inversion.
+    //channels run through the DIO ports on the roboRIO, 0-3.
 
     // Swerve Drive Kinematics (note the ordering [frontRight, frontLeft, backLeft, backRight] [counterclockwise from the frontRight])
     private final SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(m_frontRightLocation, m_frontLeftLocation, m_backLeftLocation, m_backRightLocation);
@@ -97,46 +95,15 @@ public class Drivetrain extends SubsystemBase {
     public void periodic () {
         updateOdometry();
         //SmartDashboard.putNumber("xOdometry", getCurrentPose2d().getX());
-        
-        
     }
 
     /**
-     * Update the odometry and vision poses
+     * Updates the odometry pose
+     * @param pose Current pose of the robot. TODO allow for correction using apriltag to set pose. 
      */
     public void setPose (Pose2d pose) {
         m_odometry.resetPosition(new Rotation2d(pose.getRotation().getRadians()), initialPositions, pose);
         }
-
-    /**
-     * Takes in the current position of the robot, then figures out the distance to the center of the reef, and returns the center of rotation as the center of the reef
-     * @param currentPose the current position of the robot.
-     * @param allianceColor boolean for determining alliance color, as of now blue is false and red is true (to invert).
-     */
-    public Translation2d getPoseToReefCenter(Pose2d currentPose, boolean allianceColor) {
-
-        /**
-         * Notes about coordinate system: First off, the pose from the odometry should be reset at the end of the autonomous period to whatever our final pose is.
-         * Second, the WPILib coordinate system uses North, West Up system as their positives. See initialization of inverter for why I hate it so much.
-         * Third, 0 degrees/0 radians on the unit circle is at the front of the robot and 90 degrees is at the west position. However, East is -90 degrees rather than 270.
-         * Fourth, the origin is always at the blue side of the field, all the way to the right when standing behind the driver stations. 
-         * Fifth, the center of the reef:
-         * 176.75 from driverstation wall to center along x. 144 inches from driverstation to edge of reef, reef if 65.5 inches wide excluding tape, divide by 2 and add 144 to get 176.75. must be converted to meters.
-         * it's 109.13 inches along the y axis from the edge of the driverstation, but this is not taking into account the coral loading area thing.
-         * 158.5 is the y axis, i used the apriltag map and matched y coords of tags 18 and 21. confirmed x value at 176.745
-         */
-
-        //from blue alliance origin, may need to convert for red alliance. 
-        final double reefCenterXBlue = 4.48945; //in meters, 176.75 inches
-        final double reefCenterYBlue = 4.0259; //in meters, 158.5 inches.
-
-        double xDistanceToCenter = reefCenterXBlue - currentPose.getX(); //where we need to be vs where we are
-        double yDistanceToCenter = reefCenterYBlue - currentPose.getY();
-
-        Translation2d coordinatesToCenterOfReef = new Translation2d(xDistanceToCenter, yDistanceToCenter);
-
-        return  coordinatesToCenterOfReef;
-    }
     
     /**
      * Drives with swerve during the autonomous period
@@ -169,7 +136,6 @@ public class Drivetrain extends SubsystemBase {
     public Pose2d getCurrentPose2d() {
         m_pose = m_odometry.getPoseMeters();
         return m_pose;
-        
     }
 
     /**
@@ -195,41 +161,51 @@ public class Drivetrain extends SubsystemBase {
          double offset = (navx.getAngle());
          double offsetRadians = Math.toRadians(offset);
          Rotation2d robotRotation = new Rotation2d(offsetRadians); 
+         var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(driverXStick * invert, driverYStick * invert, driverRotateStick * invert, robotRotation));
+            
          
          //reefRotater setup. Basically, we get our robot pose from whatever way, then we figure out if we are doing rotator or not. If no, we set our center of rotation to the center of the robot, and if yes, we set our center of rotation to the center of the reef. 
          //then, we are able to automatically rotate around it at a fixed radius, which we can look into changing using the triggers later if we really care. 
-         //if (reefRotateCorresponder == 0) {
-            var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(driverXStick * invert, driverYStick * invert, driverRotateStick * invert, robotRotation));
-            System.out.println();
-             SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
- 
+        if(reefRotateCorresponder == 1) {
+        swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, .5, robotRotation), getPoseToReefCenter(getCurrentPose2d(), onBlueAlliance));
+        } else if (reefRotateCorresponder == 2) {
+        swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, -.5, robotRotation), getPoseToReefCenter(getCurrentPose2d(), onBlueAlliance));
+        }
+
+        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
             m_frontRight.setDesiredState(swerveModuleStates[0]);
             m_frontLeft.setDesiredState(swerveModuleStates[1]);
             m_backLeft.setDesiredState(swerveModuleStates[2]);
             m_backRight.setDesiredState(swerveModuleStates[3]);
-            
-
-        //  } else if(reefRotateCorresponder == 1) {
- 
-        //      var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, .5, robotRotation), getPoseToReefCenter(getCurrentPose2d(), onBlueAlliance));
- 
-        //      SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
- 
-        //      m_frontRight.setDesiredState(swerveModuleStates[0]);
-        //      m_frontLeft.setDesiredState(swerveModuleStates[1]);
-        //      m_backLeft.setDesiredState(swerveModuleStates[2]);
-        //      m_backRight.setDesiredState(swerveModuleStates[3]);
-        //  } else if (reefRotateCorresponder == 2) {
-        //      var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, -.5, robotRotation), getPoseToReefCenter(getCurrentPose2d(), onBlueAlliance));
- 
-        //      SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
- 
-        //      m_frontRight.setDesiredState(swerveModuleStates[0]);
-        //      m_frontLeft.setDesiredState(swerveModuleStates[1]);
-        //      m_backLeft.setDesiredState(swerveModuleStates[2]);
-        //      m_backRight.setDesiredState(swerveModuleStates[3]);
-        //  }
           
      }
+
+     /**
+     * Takes in the current position of the robot, then figures out the distance to the center of the reef, and returns the center of rotation as the center of the reef
+     * @param currentPose the current position of the robot.
+     * @param allianceColor boolean for determining alliance color, as of now blue is false and red is true (to invert).
+     */
+    public Translation2d getPoseToReefCenter(Pose2d currentPose, boolean allianceColor) {
+        /**
+         * Notes about coordinate system: First off, the pose from the odometry should be reset at the end of the autonomous period to whatever our final pose is.
+         * Second, the WPILib coordinate system uses North, West Up system as their positives. See initialization of inverter for why I hate it so much.
+         * Third, 0 degrees/0 radians on the unit circle is at the front of the robot and 90 degrees is at the west position. However, East is -90 degrees rather than 270.
+         * Fourth, the origin is always at the blue side of the field, all the way to the right when standing behind the driver stations. 
+         * Fifth, the center of the reef:
+         * 176.75 from driverstation wall to center along x. 144 inches from driverstation to edge of reef, reef if 65.5 inches wide excluding tape, divide by 2 and add 144 to get 176.75. must be converted to meters.
+         * it's 109.13 inches along the y axis from the edge of the driverstation, but this is not taking into account the coral loading area thing.
+         * 158.5 is the y axis, i used the apriltag map and matched y coords of tags 18 and 21. confirmed x value at 176.745
+         */
+        //from blue alliance origin, may need to convert for red alliance. 
+        final double reefCenterXBlue = 4.48945; //in meters, 176.75 inches
+        final double reefCenterYBlue = 4.0259; //in meters, 158.5 inches.
+
+        double xDistanceToCenter = reefCenterXBlue - currentPose.getX(); //where we need to be vs where we are
+        double yDistanceToCenter = reefCenterYBlue - currentPose.getY();
+
+        Translation2d coordinatesToCenterOfReef = new Translation2d(xDistanceToCenter, yDistanceToCenter);
+
+        return  coordinatesToCenterOfReef;
+    }
 
 }

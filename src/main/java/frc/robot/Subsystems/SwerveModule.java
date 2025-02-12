@@ -43,7 +43,9 @@ public class SwerveModule extends SubsystemBase {
         
         private static final double kWheelDiameter = .1016; // 0.1016 M wheel diameter (4"), used to be 4 inches if this breaks it look here
         private static final double kWheelCircumference = Math.PI * kWheelDiameter;
-        private static final double rpmToVelocityScaler = (kWheelCircumference / 6.12) / 60; //SDS Mk3 standard gear ratio from motor to wheel, divide by 60 to go from secs to mins
+        private static final double turningWheelGearRatio = 150/7; //standard steering gear ratio on MK4i 
+        private static final double drivingWheelGearRatio = 6.12; //L3 gear ratio for driving, max velocity of 19.3 ft/sec
+        private static final double rpmToVelocityScaler = (kWheelCircumference / drivingWheelGearRatio) / 60; //SDS Mk4I standard gear ratio from motor to wheel, divide by 60 to go from secs to mins
         private static final double kModuleMaxAngularAcceleration = 2 * Math.PI; // radians per second squared
 
         private SparkFlex m_driveMotor;
@@ -52,9 +54,9 @@ public class SwerveModule extends SubsystemBase {
         private SparkMax m_turningMotor;
         private SparkMaxConfig m_turningMotorConfig;
         public AbsoluteEncoder m_turningEncoder;
+        public double offset;
 
         public DutyCycle turnEncoderDutyCycle;
-        private int encoderChannelNumber;
         private SparkClosedLoopController m_turnController;
 
         /**
@@ -62,6 +64,7 @@ public class SwerveModule extends SubsystemBase {
          *
          * @param driveMotorChannel CAN ID for the drive motor.
          * @param turningMotorChannel CAN ID for the turning motor.
+         * @param encoderChannel DIO channel from the roboRIO for the 
          * @param driveInverted drive the motor inverted, used for testing
          * @param turnInverted turn motor inverted, used for testing.
          */
@@ -71,42 +74,26 @@ public class SwerveModule extends SubsystemBase {
             m_turningMotor = new SparkMax(turningMotorChannel, SparkLowLevel.MotorType.kBrushless);
             m_driveMotorConfig = new SparkFlexConfig();
             m_turningMotorConfig = new SparkMaxConfig(); 
-            int encoderChannelNumber = encoderChannel;
-            //TODO update to throughbore encoders
 
-            /** from revlib coding example:
-             * The RestoreFactoryDefaults method can be used to reset the configuration parameters
-             * in the SPARK MAX to their factory default state. If no argument is passed, these
-             * parameters will not persist between power cycles
-             */
-            //m_motor.restoreFactoryDefaults(); TODO look into setting up configs for this.
-
-            //drive setup, neo 550 with SPARK MAX motor controllers, relative encoders are the ones built into the motor.
-            m_driveEncoder = m_driveMotor.getEncoder(); //neo built in encoder
             m_driveMotorConfig.inverted(driveInverted);
-            m_driveMotorConfig.closedLoopRampRate(1); //.1 seconds until max speed
-
-            //turning motor setup, using rev throughbore encoders, brushless neo 1.1s, and built in encoders.
             m_turningMotorConfig.inverted(turnInverted);
+            m_driveMotorConfig.closedLoopRampRate(1); //seconds until max speed reached
 
-            // m_turningEncoder = m_turningMotor.getAbsoluteEncoder(); readd after
-            turnEncoderDutyCycle = new DutyCycle(new DigitalInput(encoderChannel)); //if we are doing what we had last year
+            m_driveEncoder = m_driveMotor.getEncoder(); //neo built in encoder
+            turnEncoderDutyCycle = new DutyCycle(new DigitalInput(encoderChannel)); //rev throighbore encoder hooked up to the roboRIO
 
             m_turningMotorConfig.closedLoop
-                    .p(.3) //TODO eventually update these from constants 
+                    .p(.3) 
                     .i(0.0) 
                     .d(0.01)
-                    .outputRange((-Math.PI), Math.PI);
-                //TODO tune PID, this is what we used last year
+                    .outputRange(-1, 1); //TODO look into proper values for this
             //m_turningMotorConfig.closedLoop
             //        .feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
 
             m_driveMotor.configure(m_driveMotorConfig, ResetMode.kResetSafeParameters, null);
             m_turningMotor.configure(m_turningMotorConfig, ResetMode.kResetSafeParameters, null);
-            
             m_turnController = m_turningMotor.getClosedLoopController();
-            System.out.println("Encoder Channel: " + encoderChannel + ", Encoder Value: "+ (turnEncoderDutyCycle.getOutput()));
-            
+            System.out.println("Encoder Channel: " + encoderChannel + ", Initial Encoder Value: "+ (turnEncoderDutyCycle.getOutput()));
         }
 
         /**
@@ -114,46 +101,38 @@ public class SwerveModule extends SubsystemBase {
          * @param desiredState Desired state with speed and angle.
          */
         public void setDesiredState(SwerveModuleState desiredState) {
-            //double encoderValue = m_turningEncoder.getPosition();
             double encoderValue = turnEncoderDutyCycle.getOutput();
             // Optimize the reference state to avoid spinning further than 90 degrees
-            //SwerveModuleState state = SwerveModuleState.optimize(desiredState, Rotation2d.fromRotations(encoderValue)); //TODO need to get a new way to get state variable
-            SwerveModuleState state = new SwerveModuleState(desiredState.speedMetersPerSecond, Rotation2d.fromRotations(desiredState.angle.getRotations()));
-            state.optimize(Rotation2d.fromRotations(encoderValue)); 
+            SwerveModuleState state = new SwerveModuleState(desiredState.speedMetersPerSecond, Rotation2d.fromRadians(getTurnEncoderOutput(true))); //TODO look at this line if it breaks, before it was from rotations.
+            state.optimize(Rotation2d.fromRadians(getTurnEncoderOutput(true))); //TODO look at this line if it breaks, before it was from rotations.
 
             m_turnController.setReference(state.angle.getRadians(), ControlType.kPosition);//my code TODO may need to factor in gear ratio
-
             double drivePower = state.speedMetersPerSecond; 
             m_driveMotor.set(drivePower/10); 
         }
-
-        // public double getTurnEncoder () {
-        //     return m_turningEncoder.getPosition() ;
-        // }
-         
         /**
          * Returns the current state of the module.
          *
          * @return The current state of the module.
          */
         public SwerveModuleState getState() {
-            //the getVelocity() function normally returns RPM but is scaled in the SwerveModule constructor to return actual wheel speed
-            return new SwerveModuleState(m_driveEncoder.getVelocity(), new Rotation2d(getTurnEncoderRadians()) );
+            return new SwerveModuleState(m_driveEncoder.getVelocity(), new Rotation2d(getTurnEncoderOutput(true)) );//the getVelocity() function normally returns RPM but is scaled in the SwerveModule constructor to return actual wheel speed
         }
 
         public SwerveModuleState getDifferentState() { //TIMES 60 TO CONVERRT FROM MINUTES TO SECONDS
-            return new SwerveModuleState((m_driveEncoder.getPosition())*rpmToVelocityScaler*60, new Rotation2d(getTurnEncoderRadians()));
+            return new SwerveModuleState((m_driveEncoder.getPosition())*rpmToVelocityScaler*60, new Rotation2d(getTurnEncoderOutput(true)));
         }
 
         /**
-         * Applies the absolute encoder offset value and converts range
-         * from 0-1 to 0-2 pi radians
-         * @return Angle of the absolute encoder in radians
+         * gets the encoder readout of the throughbores, either in absolute position (between 0 and 1) or in radians.
+         * @param inRadians if true, converts output to radians, otherwise gives actual duty cycle output.
+         * @return the encoder position
          */
-        public double getTurnEncoderRadians() {
-            //if (turnPWMChannel == 18) { 
-                //System.out.println("Encoder Value "+ (turnEncoderDutyCycle.getOutput()));
-            //} 
-            return turnEncoderDutyCycle.getOutput() * 2 * Math.PI;
+        public double getTurnEncoderOutput(boolean inRadians) {
+            double encoderValue = turnEncoderDutyCycle.getOutput() - offset;
+            if (inRadians) {
+                encoderValue = encoderValue * 2 * Math.PI;
+            }
+            return encoderValue;
         }
 }

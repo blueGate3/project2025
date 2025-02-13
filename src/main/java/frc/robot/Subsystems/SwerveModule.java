@@ -9,30 +9,29 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import 
-edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 import com.revrobotics.spark.*;
-import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.*;
 import com.revrobotics.spark.config.*;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.spark.SparkBase.*;
+import com.revrobotics.spark.config.*;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycle;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import com.revrobotics.spark.SparkLowLevel.MotorType;
 /**
  * This is the code to run a single swerve module <br><br>
  * It is called by the Drivetrain subsysem
  */
 public class SwerveModule extends SubsystemBase {
         
-        private static final double kWheelDiameter = .1016; // 0.1016 M wheel diameter (4"), used to be 4 inches if this breaks it look here
+        private static final double kWheelDiameter = .1016; // 0.1016 M wheel diameter (4")
         private static final double kWheelCircumference = Math.PI * kWheelDiameter;
         private static final double turningWheelGearRatio = 150/7; //standard steering gear ratio on MK4i 
         private static final double drivingWheelGearRatio = 6.12; //L3 gear ratio for driving, max velocity of 19.3 ft/sec
@@ -45,11 +44,12 @@ public class SwerveModule extends SubsystemBase {
         private RelativeEncoder m_driveEncoder;
         private SparkMax m_turningMotor;
         private SparkMaxConfig m_turningMotorConfig;
-        public AbsoluteEncoder m_turningEncoder;
-        public double offset;
+        private AbsoluteEncoder m_turningEncoder;
+        private double offset;
 
-        public DutyCycle turnEncoderDutyCycle;
+        private DutyCycle turnEncoderDutyCycle;
         private SparkClosedLoopController m_turnController;
+        private SparkClosedLoopController m_driveController;
 
         /**
          * Constructs a SwerveModule with a drive motor, turning motor, drive encoder and turning encoder.
@@ -61,29 +61,30 @@ public class SwerveModule extends SubsystemBase {
          * @param turnInverted turn motor inverted, used for testing.
          */
         public SwerveModule(int driveMotorChannel, int turningMotorChannel, int encoderChannel, double offset, boolean driveInverted, boolean turnInverted) {
+
             m_driveMotor = new SparkFlex(driveMotorChannel, SparkLowLevel.MotorType.kBrushless);
-            m_turningMotor = new SparkMax(turningMotorChannel, SparkLowLevel.MotorType.kBrushless);
             m_driveMotorConfig = new SparkFlexConfig();
-            m_turningMotorConfig = new SparkMaxConfig(); 
-
             m_driveMotorConfig.inverted(driveInverted);
-            m_turningMotorConfig.inverted(turnInverted);
             m_driveMotorConfig.closedLoopRampRate(1); //seconds until max speed reached
-
             m_driveEncoder = m_driveMotor.getEncoder(); //neo built in encoder
-            turnEncoderDutyCycle = new DutyCycle(new DigitalInput(encoderChannel)); //rev throighbore encoder hooked up to the roboRIO
+            m_driveMotorConfig.closedLoop.pidf(0.0, 0.0, 0.0, (1/565)); //1/565 = what REVLIB reccomended for ff for a vortex specifically. 
+            //m_driveMotorConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+            m_driveMotor.configure(m_driveMotorConfig, ResetMode.kResetSafeParameters, null);
+            m_driveController = m_driveMotor.getClosedLoopController();
 
+            m_turningMotor = new SparkMax(turningMotorChannel, SparkLowLevel.MotorType.kBrushless);
+            m_turningMotorConfig = new SparkMaxConfig(); 
+            m_turningMotorConfig.inverted(turnInverted);
+            turnEncoderDutyCycle = new DutyCycle(new DigitalInput(encoderChannel)); //rev throighbore encoder hooked up to the roboRIO
             m_turningMotorConfig.closedLoop
                     .p(.3) 
                     .i(0.0) 
-                    .d(0.01)
-                    .outputRange(-1, 1); //TODO look into proper values for this
-            //m_turningMotorConfig.closedLoop
-            //        .feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
-
-            m_driveMotor.configure(m_driveMotorConfig, ResetMode.kResetSafeParameters, null);
+                    .d(0.01);
+                    //.outputRange(-1, 1); //TODO look into proper values for this
+            //m_turningMotorConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
             m_turningMotor.configure(m_turningMotorConfig, ResetMode.kResetSafeParameters, null);
             m_turnController = m_turningMotor.getClosedLoopController();
+
             System.out.println("Encoder Channel: " + encoderChannel + ", Initial Encoder Value: "+ (turnEncoderDutyCycle.getOutput()));
         }
 
@@ -100,7 +101,11 @@ public class SwerveModule extends SubsystemBase {
 
             desiredState.optimize(Rotation2d.fromRadians(getTurnEncoderOutput(true)));
             m_driveMotor.set(desiredState.speedMetersPerSecond/kMaxSpeed); //divided by max speed so the output cannot be greater than 1. 
-            m_turnController.setReference(desiredState.angle.getRotations(), ControlType.kPosition);//my code TODO may need to factor in gear ratio, also used to be state.angle.getRadians()
+            //TODO config
+            //m_driveController.setReference(((desiredState.speedMetersPerSecond)/kWheelCircumference)*60, ControlType.kVelocity); //desired state gives velocity, to convert: rpm = (Velocity(in m/s) * 60)/pi*diameter(aka wheel circumference)
+
+
+            m_turnController.setReference(desiredState.angle.getRotations(), ControlType.kPosition);//my code TODO may need to factor in gear ratio. Also, used to be state.angle.getRadians()
         }
 
         /**

@@ -9,6 +9,8 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathPlannerPath;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -47,7 +49,9 @@ public class RobotContainer {
         reefRotate = 0;
 
         drivetrain.drive(driverController.getRawAxis(0), -driverController.getRawAxis(1), driverController.getRawAxis(2), true, false, reefRotate); //negative y value coz its backwards
-        
+        // System.out.println("X Axis From Controller:" + driverController.getRawAxis(0));
+        // System.out.println("Y Axis From Controller:" + driverController.getRawAxis(1));
+        // System.out.println("Rot Axis From Controller:" + driverController.getRawAxis(2));
         
 
     }

@@ -65,24 +65,18 @@ public class SwerveModule extends SubsystemBase {
             m_driveMotor = new SparkFlex(driveMotorChannel, SparkLowLevel.MotorType.kBrushless);
             m_driveMotorConfig = new SparkFlexConfig();
             m_driveMotorConfig.inverted(driveInverted);
-            m_driveMotorConfig.closedLoopRampRate(1); //seconds until max speed reached
             m_driveEncoder = m_driveMotor.getEncoder(); //vortex built in encoder
             //m_driveMotorConfig.closedLoop.pidf(0.3, 0.0, 0.001, (1/565)); //1/565 = what REVLIB reccomended for ff for a vortex specifically. 
             //m_driveMotorConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
-            m_driveMotor.configure(m_driveMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
             //m_driveController = m_driveMotor.getClosedLoopController();
+            m_driveMotor.configure(m_driveMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
             m_turningMotor = new SparkMax(turningMotorChannel, SparkLowLevel.MotorType.kBrushless);
             m_turningMotorConfig = new SparkMaxConfig(); 
             m_turningMotorConfig.inverted(turnInverted);
             turnEncoderDutyCycle = new DutyCycle(new DigitalInput(encoderChannel)); //rev throighbore encoder hooked up to the roboRIO
-            m_turningMotorConfig.closedLoop
-                    .p(.25) 
-                    .i(0.0) 
-                    .d(0.01);
-                    //.outputRange(-1, 1); //TODO look into proper values for this
-            m_turningMotorConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
-            //m_turningMotorConfig.closedLoop.outputRange(-Math.PI, Math.PI);
+            m_turningMotorConfig.closedLoop.pid(.3, 0, 0.01);
+            m_turningMotorConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);// for some reason the only way this works is through this? i want the throughbore.
             m_turnController = m_turningMotor.getClosedLoopController();
             m_turningMotorConfig.closedLoop.positionWrappingEnabled(true);
             m_turningMotorConfig.closedLoop.positionWrappingInputRange(-Math.PI, Math.PI);
@@ -97,14 +91,12 @@ public class SwerveModule extends SubsystemBase {
          */
         public void setDesiredState(SwerveModuleState desiredState) {
             // Optimize the reference state to avoid spinning further than 90 degrees
-            SwerveModuleState state = new SwerveModuleState(desiredState.speedMetersPerSecond, desiredState.angle); //TODO look at this line if it breaks, before it was from rotations.
-            state.optimize(Rotation2d.fromRadians((getTurnEncoderOutput(true)))); //TODO look at this line if it breaks, before it was from rotations.
-            m_driveMotor.set(state.speedMetersPerSecond/kMaxSpeed); //divided by max speed so the output cannot be greater than 1. 
+            SwerveModuleState state = new SwerveModuleState(desiredState.speedMetersPerSecond, desiredState.angle);
+            state.optimize(Rotation2d.fromRadians((getTurnEncoderOutput(true))));
+            m_driveMotor.set(state.speedMetersPerSecond);
             //m_driveController.setReference(((state.speedMetersPerSecond)/kWheelCircumference)*60, ControlType.kVelocity); //desired state gives velocity, to convert: rpm = (Velocity(in m/s) * 60)/pi*diameter(aka wheel circumference)
-
             m_turnController.setReference(state.angle.getRadians(), ControlType.kPosition);//my code TODO may need to factor in gear ratio. Also, used to be state.angle.getRadians()
-            //System.out.println("State angle (radians)" + state.angle.getRadians());
-            //m_turningMotor.set(.25);
+            
         }
 
         /**
@@ -126,9 +118,9 @@ public class SwerveModule extends SubsystemBase {
          * @return the encoder position
          */
         public double getTurnEncoderOutput(boolean inRadians) {
-            double encoderValue = turnEncoderDutyCycle.getOutput() - offset;
+            double encoderValue = (turnEncoderDutyCycle.getOutput() - offset)*360; //get output ratio from 0-1, then convert to degrees by multiplying bu 360.
             if (inRadians) {
-                encoderValue = encoderValue * 2 * Math.PI;
+                Math.toRadians(encoderValue); 
             }
             return encoderValue;
         }

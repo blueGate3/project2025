@@ -166,7 +166,7 @@ public class SwerveModule extends SubsystemBase {
          * @return the encoder position
          */
         public double getTurnEncoderOutput(boolean inRadians) {
-            double encoderValue = m_turningEncoder.getPosition();
+            double encoderValue = m_turningEncoder.getPosition(); //TODO run through gear ratio!?!?! if so, see above formulas for how to. 
             if(inRadians) {
                 return Math.toRadians((encoderValue*360)); //multiplies by 360 to get degrees, then converts to radians using Math.toRadians (expects degree parameter)
             } else {

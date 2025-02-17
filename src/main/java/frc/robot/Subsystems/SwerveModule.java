@@ -36,7 +36,14 @@ public class SwerveModule extends SubsystemBase {
         private static final double kWheelCircumference = Math.PI * kWheelDiameter;
         private static final double turningWheelGearRatio = 150/7; //standard steering gear ratio on MK4i 
         private static final double drivingWheelGearRatio = 6.12; //L3 gear ratio for driving, max velocity of 19.3 ft/sec
-        private static final double rpmToVelocityScaler = (kWheelCircumference / drivingWheelGearRatio) / 60; //SDS Mk4I standard gear ratio from motor to wheel, divide by 60 to go from secs to mins
+        private static final double rpmToVelocityScaler = (kWheelCircumference/(drivingWheelGearRatio*60)); //SDS Mk4I standard gear ratio from motor to wheel, divide by 60 to go from secs to mins
+        private static final double rotationsToDistanceScaler = kWheelCircumference / drivingWheelGearRatio; //x is number of rotations. 
+        /*
+        * - m/s to rpm formula: RPM = ((Velocity in m/s)/(circumference)) *60 (you multiply by 60 to convert revolutions per second to revolutions per minute)
+        * - with gear ratio: rpm of output = rpm of motor * (gear ratio/output gear teeth)
+
+        */
+
         private static final double kModuleMaxAngularAcceleration = 2 * Math.PI; // radians per second squared
         public static final double kMaxSpeed = 5.88; // 5.88 meters per second or 19.3 ft/s (max speed of SDS Mk4i with Vortex motor)
 
@@ -87,8 +94,8 @@ public class SwerveModule extends SubsystemBase {
                 .smartCurrentLimit(40)
                 .idleMode(IdleMode.kBrake);
             m_driveMotorConfig.encoder
-                .positionConversionFactor(rpmToVelocityScaler) //returns the meters im pretty sure
-                .velocityConversionFactor(rpmToVelocityScaler/60); //divided by 60 to get to meters per second i think
+                .positionConversionFactor(rotationsToDistanceScaler) //what we multiply to convert rotations to distance. returns the meters traveled. 
+                .velocityConversionFactor(rpmToVelocityScaler); //divided by 60 to get to meters per second i think
             m_driveMotorConfig.closedLoop
                 .pidf(0.3, 0.0, 0.001, (1/565)) //1/565 = what REVLIB reccomended for ff for a vortex specifically. 
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
@@ -142,11 +149,15 @@ public class SwerveModule extends SubsystemBase {
          * @return The current state of the module.
          */
         public SwerveModuleState getState() {
-            return new SwerveModuleState(m_driveEncoder.getVelocity()*60, new Rotation2d(getTurnEncoderOutput(true)));//the getVelocity() function normally returns RPM but is scaled in the SwerveModule constructor to return actual wheel speed
+            return new SwerveModuleState(m_driveEncoder.getVelocity(), new Rotation2d(getTurnEncoderOutput(true)));//the getVelocity() function normally returns RPM but is scaled in the SwerveModule constructor to return m/s
         }
 
+        /**
+         * used in odometry to get the distance traveled. 
+         * @return SwerveModuleState with distance traveled and Rotation2d of turn angle. 
+         */
         public SwerveModuleState getDifferentState() { //TIMES 60 TO CONVERRT FROM MINUTES TO SECONDS
-            return new SwerveModuleState((m_driveEncoder.getPosition()), new Rotation2d(getTurnEncoderOutput(true)));
+            return new SwerveModuleState((m_driveEncoder.getPosition()), new Rotation2d(getTurnEncoderOutput(true))); //the getPosition() is scaled in the constructor to convert rotations into meters traveled. 
         }
 
         /**

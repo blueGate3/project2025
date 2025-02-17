@@ -17,21 +17,13 @@ public class Robot extends TimedRobot {
 
   public Robot() {
     m_Auto = new Auto();
-
-    //LED code for Bradley
-
-    int LEDBufferLength = 60;
-
-    AddressableLED m_led = new AddressableLED(LEDPortNumber);
-    AddressableLEDBuffer m_LEDBuffer = new AddressableLEDBuffer(LEDBufferLength);
-    m_led.setLength(m_LEDBuffer.getLength());
     m_RobotContainer = new RobotContainer();
   }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-    m_RobotContainer.configureButtonBindings();
+    m_RobotContainer.letDriverCook();
   }
 
   @Override
@@ -68,8 +60,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-    
-    m_RobotContainer.configureButtonBindings();
+    m_RobotContainer.letDriverCook();
   }
 
   @Override

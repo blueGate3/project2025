@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Subsystems.Drivetrain;
 
 public class RobotContainer {
@@ -28,7 +29,6 @@ public class RobotContainer {
 
     XboxController driverController = new XboxController(0); // 0 is the USB Port to be used as indicated on the Driver Station
     XboxController operatorController = new XboxController(1);
-    int reefRotate;
 
     public RobotContainer () {
         setDefaultCommands();
@@ -39,20 +39,6 @@ public class RobotContainer {
 
 
     public void configureButtonBindings () {
-        // if(driverController.getLeftBumperButtonPressed()){
-        //     reefRotate=2; //left is rotate counterclockwise
-        // } else if (driverController.getRightBumperButtonPressed()) {
-        //     reefRotate = 1;
-        // } else {
-        //     reefRotate = 0;
-        // }
-        reefRotate = 0;
-
-        drivetrain.drive(driverController.getRawAxis(0), -driverController.getRawAxis(1), driverController.getRawAxis(2), true, false, reefRotate); //negative y value coz its backwards
-        // System.out.println("X Axis From Controller:" + driverController.getRawAxis(0));
-        // System.out.println("Y Axis From Controller:" + driverController.getRawAxis(1));
-        // System.out.println("Rot Axis From Controller:" + driverController.getRawAxis(2));
-        
 
     }
 
@@ -60,4 +46,35 @@ public class RobotContainer {
     
     }
 
+    /**
+     * Okay. Here we go. Focus. Speed. I am speed. One winner. 42 losers. I eat losers for breakfast.
+     * Breakfast? Wait. maybe I should have had breakfast. A little brecky could be good for me. 
+     * No, non no. Stay focused. Speed! I'm faster than fast, quicker than quick! I'm LIGHTINING!!
+     */
+    public void letDriverCook() {
+        double driverXStick = driverController.getRawAxis(0);
+        double driverYStick = -driverController.getRawAxis(1);
+        double driverRotateStick = driverController.getRawAxis(2);
+        double driverRightTrigger = driverController.getRightTriggerAxis();
+        double driverLeftTrigger = driverController.getLeftTriggerAxis();
+
+        boolean reefRotate = false;
+
+        //if either triggers pressed more then .05 (that's a crude deadband), rotate with that trigger value. Right is positive, left is negative. 
+        if ((driverRightTrigger >.25)) { //if either of the triggers have been pressed sufficiently (.05 in as crude deadband)
+            reefRotate = true;
+            drivetrain.drive(0, 0, driverRightTrigger, true, true);
+        } else if (driverLeftTrigger >.25) {
+            reefRotate = true;
+            drivetrain.drive(0, 0, -driverLeftTrigger, true, true);
+        } else { //drives regularly.
+            drivetrain.drive(driverXStick, driverYStick, driverRotateStick, true, false); //negative y value coz its backwards
+        }
+
+        SmartDashboard.putNumber("Driver X Stick", driverXStick);
+        SmartDashboard.putNumber("Driver X Stick", driverXStick);
+        SmartDashboard.putNumber("Driver X Stick", driverXStick);
+        SmartDashboard.putBoolean("ReefRotate Mode", reefRotate);
+
+    }
 }

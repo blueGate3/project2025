@@ -52,12 +52,10 @@ public class Drivetrain extends SubsystemBase {
     private final Translation2d m_backRightLocation = new Translation2d( -0.37465, -0.37465);
 
     // Constructor for each swerve module
-    //Turn encoder values run through NAVX ports last year iirc, the port numbers dont match with what's printed so we have to run it through 
-    private final SwerveModule m_frontRight = new SwerveModule(1, 2, 0, 0.9370498734262468, false, false); //
-    private final SwerveModule m_frontLeft = new SwerveModule(3, 4, 1, 0.5804735895118397, false, false); //
-    private final SwerveModule m_backLeft = new SwerveModule(5, 6, 2, 0.2016005800400145, false, false); //
-    private final SwerveModule m_backRight = new SwerveModule(7, 8, 3, 0.7020164425504111, false, false); //
-    //channels run through the DIO ports on the roboRIO, 0-3.
+    private final SwerveModule m_frontRight = new SwerveModule(1, 2, 0.9370498734262468, false, false); //
+    private final SwerveModule m_frontLeft = new SwerveModule(3, 4, 0.5804735895118397, false, false); //
+    private final SwerveModule m_backLeft = new SwerveModule(5, 6, 0.2016005800400145, false, false); //
+    private final SwerveModule m_backRight = new SwerveModule(7, 8, 0.7020164425504111, false, false); //
 
     // Swerve Drive Kinematics (note the ordering [frontRight, frontLeft, backLeft, backRight] [counterclockwise from the frontRight])
     private final SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(m_frontRightLocation, m_frontLeftLocation, m_backLeftLocation, m_backRightLocation);
@@ -86,10 +84,10 @@ public class Drivetrain extends SubsystemBase {
         if (alliance.isPresent() && alliance.get() == Alliance.Red) {
             onBlueAlliance = false;
             invert = -1;
+        } else if (alliance.isPresent() && alliance.get() == Alliance.Blue) {
+            onBlueAlliance = true;
+            invert = 1;
         }
-        
-        // m_visionSubsystem = new VisionSubsystem();
-        // Configure AutoBuilder last i added all this in.
   }
 
     @Override
@@ -116,7 +114,6 @@ public class Drivetrain extends SubsystemBase {
         m_frontLeft.setDesiredState(moduleStates[1]);
         m_backLeft.setDesiredState(moduleStates[2]);
         m_backRight.setDesiredState(moduleStates[3]);
-        
     }
     
     /**
@@ -154,21 +151,19 @@ public class Drivetrain extends SubsystemBase {
      * @param ySpeed Speed of the robot in the y direction (sideways).
      * @param rot Angular rate of the robot.
      * @param fieldRelative Whether the provided x and y speeds are relative to the field.
-     * @param defenseHoldingMode Whether we invert our wheels to prevent slide during defense.
-     * @param reefRotateCorresponder int between 0 and 2, where 0 is do nothing, 1 is rotate clockwise, 2 is rotate counterclockwise
+     * @param reefRotate whether we are rotating reef
      */
      @SuppressWarnings("ParameterName")
-     public void drive(double driverXStick, double driverYStick, double driverRotateStick, boolean fieldRelative, boolean defenseHoldingMode, int reefRotateCorresponder) {
+     public void drive(double driverXStick, double driverYStick, double driverRotateStick, boolean fieldRelative, boolean reefRotate) {
         Rotation2d robotRotation = new Rotation2d(Math.toRadians(navx.getAngle())); 
         //System.out.println(navx.getAngle());
         var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(driverXStick * invert, driverYStick * invert, driverRotateStick * invert, robotRotation));
          //reefRotater setup. Basically, we get our robot pose from whatever way, then we figure out if we are doing rotator or not. If no, we set our center of rotation to the center of the robot, and if yes, we set our center of rotation to the center of the reef. 
          //then, we are able to automatically rotate around it at a fixed radius, which we can look into changing using the triggers later if we really care. 
-        // if(reefRotateCorresponder == 1) {
-        // swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, .5, robotRotation), getPoseToReefCenter(getCurrentPose2d(), onBlueAlliance));
-        // } else if (reefRotateCorresponder == 2) {
-        // swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, -.5, robotRotation), getPoseToReefCenter(getCurrentPose2d(), onBlueAlliance));
-        // }
+        if(reefRotate) {
+            swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, driverRotateStick, robotRotation), getPoseToReefCenter(getCurrentPose2d(), onBlueAlliance));
+        }
+
         //var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(.2, .2, 0, robotRotation));
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
             m_frontRight.setDesiredState(swerveModuleStates[0]);
@@ -204,5 +199,4 @@ public class Drivetrain extends SubsystemBase {
 
         return  coordinatesToCenterOfReef;
     }
-
 }

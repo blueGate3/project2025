@@ -46,7 +46,7 @@ public class SwerveModule extends SubsystemBase {
         private SparkMax m_turningMotor;
         private SparkMaxConfig m_turningMotorConfig;
         private AbsoluteEncoder m_turningEncoder;
-        private double offset;
+        public double offset;
         private AbsoluteEncoderConfig m_turnEncoderConfig;
         private EncoderConfig m_driveEncoderConfig;
 
@@ -63,18 +63,24 @@ public class SwerveModule extends SubsystemBase {
          * @param driveInverted drive the motor inverted, used for testing
          * @param turnInverted turn motor inverted, used for testing.
          */
-        public SwerveModule(int driveMotorChannel, int turningMotorChannel, int encoderChannel, double offset, boolean driveInverted, boolean turnInverted) {
+        public SwerveModule(int driveMotorChannel, int turningMotorChannel, double offset, boolean driveInverted, boolean turnInverted) {
             /*
              * CHANGES SINCE END OF MEETING SATURDAY
              * -Switched to running encoders through SparkMax's
              * -Throughbore autmatically zeroed so no need for offset
              * -Restructured code to mimic MAXSwerve template bc it's pretty like me
              * -Corrected getTurnEncoderOutput method to not need offset, return true radians, etc. 
+             * SOME HELPFUL LINKS FOR ENCODERS:
+             * https://docs.revrobotics.com/brushless/spark-max/encoders/alternate-encoder
+             * https://docs.revrobotics.com/brushless/spark-max/encoders/absolute 
+             * https://docs.revrobotics.com/rev-crossover-products/sensors/tbe/application-examples 
+             * https://docs.revrobotics.com/rev-crossover-products/sensors/tbe/specs 
              */
 
             //DRIVING
             m_driveMotor = new SparkFlex(driveMotorChannel, SparkLowLevel.MotorType.kBrushless);
             m_driveMotorConfig = new SparkFlexConfig();
+            m_driveEncoder = m_driveMotor.getEncoder(); //vortex built in encoder
 
             m_driveMotorConfig
                 .inverted(driveInverted)
@@ -82,12 +88,11 @@ public class SwerveModule extends SubsystemBase {
                 .idleMode(IdleMode.kBrake);
             m_driveMotorConfig.encoder
                 .positionConversionFactor(rpmToVelocityScaler) //returns the meters im pretty sure
-                .velocityConversionFactor(rpmToVelocityScaler/60); //divided by 60 to get to meters per second
+                .velocityConversionFactor(rpmToVelocityScaler/60); //divided by 60 to get to meters per second i think
             m_driveMotorConfig.closedLoop
                 .pidf(0.3, 0.0, 0.001, (1/565)) //1/565 = what REVLIB reccomended for ff for a vortex specifically. 
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
                 .outputRange(-1,1);
-            m_driveEncoder = m_driveMotor.getEncoder(); //vortex built in encoder
             
             m_driveController = m_driveMotor.getClosedLoopController();
             m_driveMotor.configure(m_driveMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -97,7 +102,9 @@ public class SwerveModule extends SubsystemBase {
             m_turningMotorConfig = new SparkMaxConfig(); 
 
             m_turningEncoder = m_turningMotor.getAbsoluteEncoder();
+            //TODO switch encoder switch to A
                 m_turnEncoderConfig.zeroOffset(offset); //zeros encoder with whatever offset it's at, passed in through initialization.
+                //.setSparkMaxDataPortConfig(); //might need to add something here
                 m_turningMotorConfig.apply(m_turnEncoderConfig);
             m_turningMotorConfig
                 .idleMode(IdleMode.kBrake)
@@ -112,7 +119,8 @@ public class SwerveModule extends SubsystemBase {
 
             m_turnController = m_turningMotor.getClosedLoopController();
             m_turningMotor.configure(m_turningMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-            System.out.println("Encoder Channel: " + encoderChannel + ", Initial Encoder Value: "+ (getTurnEncoderOutput(false)));
+            System.out.println("Drive Motor CAN ID: " + driveMotorChannel + ", Initial Encoder Value: "+ (getTurnEncoderOutput(false)));
+            System.out.println("");
         }
 
         /**
@@ -134,7 +142,7 @@ public class SwerveModule extends SubsystemBase {
          * @return The current state of the module.
          */
         public SwerveModuleState getState() {
-            return new SwerveModuleState(m_driveEncoder.getVelocity()*rpmToVelocityScaler*60, new Rotation2d(getTurnEncoderOutput(true)));//the getVelocity() function normally returns RPM but is scaled in the SwerveModule constructor to return actual wheel speed
+            return new SwerveModuleState(m_driveEncoder.getVelocity()*60, new Rotation2d(getTurnEncoderOutput(true)));//the getVelocity() function normally returns RPM but is scaled in the SwerveModule constructor to return actual wheel speed
         }
 
         public SwerveModuleState getDifferentState() { //TIMES 60 TO CONVERRT FROM MINUTES TO SECONDS

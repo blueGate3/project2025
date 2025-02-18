@@ -52,10 +52,10 @@ public class Drivetrain extends SubsystemBase {
     private final Translation2d m_backRightLocation = new Translation2d( -0.37465, -0.37465);
 
     // Constructor for each swerve module
-    private final SwerveModule m_frontRight = new SwerveModule(1, 2, 0.9370498734262468, false, false); //
-    private final SwerveModule m_frontLeft = new SwerveModule(3, 4, 0.5804735895118397, false, false); //
-    private final SwerveModule m_backLeft = new SwerveModule(5, 6, 0.2016005800400145, false, false); //
-    private final SwerveModule m_backRight = new SwerveModule(7, 8, 0.7020164425504111, false, false); //
+    private final SwerveModule m_frontRight = new SwerveModule(1, 2, false, false); //
+    private final SwerveModule m_frontLeft = new SwerveModule(3, 4, false, false); //
+    private final SwerveModule m_backLeft = new SwerveModule(5, 6, false, false); //
+    private final SwerveModule m_backRight = new SwerveModule(7, 8, false, false); //
 
     // Swerve Drive Kinematics (note the ordering [frontRight, frontLeft, backLeft, backRight] [counterclockwise from the frontRight])
     private final SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(m_frontRightLocation, m_frontLeftLocation, m_backLeftLocation, m_backRightLocation);
@@ -160,9 +160,9 @@ public class Drivetrain extends SubsystemBase {
         var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(driverXStick * invert, driverYStick * invert, driverRotateStick * invert, robotRotation));
          //reefRotater setup. Basically, we get our robot pose from whatever way, then we figure out if we are doing rotator or not. If no, we set our center of rotation to the center of the robot, and if yes, we set our center of rotation to the center of the reef. 
          //then, we are able to automatically rotate around it at a fixed radius, which we can look into changing using the triggers later if we really care. 
-        if(reefRotate) {
-            swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, driverRotateStick, robotRotation), getPoseToReefCenter(getCurrentPose2d(), onBlueAlliance));
-        }
+        // if(reefRotate) {
+        //     swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, driverRotateStick, robotRotation), getPoseToReefCenter(getCurrentPose2d(), onBlueAlliance));
+        // }
 
         //var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(.2, .2, 0, robotRotation));
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);

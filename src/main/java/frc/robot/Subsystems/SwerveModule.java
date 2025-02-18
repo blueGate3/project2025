@@ -46,7 +46,7 @@ public class SwerveModule extends SubsystemBase {
 
         private static final double kModuleMaxAngularAcceleration = 2 * Math.PI; // radians per second squared
         public static final double kMaxSpeed = 5.88; // 5.88 meters per second or 19.3 ft/s (max speed of SDS Mk4i with Vortex motor)
-
+        private static final double turnEncoderScalar = 2* Math.PI;
         private SparkFlex m_driveMotor;
         private SparkFlexConfig m_driveMotorConfig;
         private RelativeEncoder m_driveEncoder;
@@ -111,16 +111,18 @@ public class SwerveModule extends SubsystemBase {
             m_turningEncoder = m_turningMotor.getAbsoluteEncoder();
 
             m_turningMotorConfig.absoluteEncoder
-                .positionConversionFactor(1);
+                .inverted(true)
+                .velocityConversionFactor(turnEncoderScalar/60)
+                .positionConversionFactor(turnEncoderScalar);
             m_turningMotorConfig
                 .idleMode(IdleMode.kBrake)
                 .inverted(turnInverted)
                 .smartCurrentLimit(40);
             m_turningMotorConfig.closedLoop
-                .pid(.25, 0, 0.005)
+                .pid(1, 0.0, 0.01)
                 .feedbackSensor(FeedbackSensor.kAbsoluteEncoder) //when using old method, primaryEncoder was the only thing that worked, absoluteEncoder should work tho.
                 .positionWrappingEnabled(true) //this and line below it allow for position wrapping between 0 and 2pi radians 
-                .positionWrappingInputRange(0, (2*Math.PI))
+                .positionWrappingInputRange(0, 2*Math.PI)
                 .outputRange(-1, 1);
 
             m_turnController = m_turningMotor.getClosedLoopController();
@@ -134,7 +136,7 @@ public class SwerveModule extends SubsystemBase {
          */
         public void setDesiredState(SwerveModuleState desiredState) {
             SwerveModuleState state = new SwerveModuleState(desiredState.speedMetersPerSecond, desiredState.angle);
-            state.optimize(Rotation2d.fromRadians((getTurnEncoderOutput(true))));// Optimize the reference state to avoid spinning further than 90 degrees
+            state.optimize(Rotation2d.fromRadians((getTurnEncoderOutput(false))));// Optimize the reference state to avoid spinning further than 90 degrees
             m_driveMotor.set(state.speedMetersPerSecond/10); //will eventually switch to PID below
             //m_driveController.setReference(((state.speedMetersPerSecond)/kWheelCircumference)*60, ControlType.kVelocity); //desired state gives velocity, to convert: rpm = (Velocity(in m/s) * 60)/pi*diameter(aka wheel circumference)
             m_turnController.setReference(state.angle.getRadians(), ControlType.kPosition);//my code TODO may need to factor in gear ratio. Also, used to be state.angle.getRadians()
@@ -147,7 +149,7 @@ public class SwerveModule extends SubsystemBase {
          * @return The current state of the module.
          */
         public SwerveModuleState getState() {
-            return new SwerveModuleState(m_driveEncoder.getVelocity(), new Rotation2d(getTurnEncoderOutput(true)));//the getVelocity() function normally returns RPM but is scaled in the SwerveModule constructor to return m/s
+            return new SwerveModuleState(m_driveEncoder.getVelocity(), new Rotation2d(getTurnEncoderOutput(false)));//the getVelocity() function normally returns RPM but is scaled in the SwerveModule constructor to return m/s
         }
 
         /**
@@ -155,7 +157,7 @@ public class SwerveModule extends SubsystemBase {
          * @return SwerveModuleState with distance traveled and Rotation2d of turn angle. 
          */
         public SwerveModuleState getDifferentState() { //TIMES 60 TO CONVERRT FROM MINUTES TO SECONDS
-            return new SwerveModuleState((m_driveEncoder.getPosition()), new Rotation2d(getTurnEncoderOutput(true))); //the getPosition() is scaled in the constructor to convert rotations into meters traveled. 
+            return new SwerveModuleState((m_driveEncoder.getPosition()), new Rotation2d(getTurnEncoderOutput(false))); //the getPosition() is scaled in the constructor to convert rotations into meters traveled. 
         }
 
         /**

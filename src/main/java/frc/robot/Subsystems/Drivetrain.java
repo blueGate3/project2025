@@ -46,10 +46,10 @@ public class Drivetrain extends SubsystemBase {
     private final AHRS navx = new AHRS(NavXComType.kMXP_SPI); 
 
     // Locations of each swerve module relative to the center of the robot
-    private final Translation2d m_frontRightLocation = new Translation2d( 0.37465, -0.37465);//side length total is at 29.5 inches including modules. Divided by 2 and set to meters is .37465 meters from one side to the tip of the module
-    private final Translation2d m_frontLeftLocation = new Translation2d(0.37465,  0.37465);//the frc kinematics section has the coordinates so x is front-back, where front is positive, and y is left-right, where left is positive. it's communist to the extreme but will affect the way we initialize our module locations.
-    private final Translation2d m_backLeftLocation = new Translation2d(-0.37465,  0.37465);//continued: that's the reason for the strange abnormal abhorrent disgusting affronts-before-God translation signs. 
-    private final Translation2d m_backRightLocation = new Translation2d( -0.37465, -0.37465);
+    private final Translation2d m_frontRightLocation = new Translation2d( 0.3175, -0.3175);//side length total is at 29.5 inches including modules. Divided by 2 and set to meters is .37465 meters from one side to the tip of the module
+    private final Translation2d m_frontLeftLocation = new Translation2d(0.3175,  0.3175);//the frc kinematics section has the coordinates so x is front-back, where front is positive, and y is left-right, where left is positive. it's communist to the extreme but will affect the way we initialize our module locations.
+    private final Translation2d m_backLeftLocation = new Translation2d(-0.3175,  0.3175);//continued: that's the reason for the strange abnormal abhorrent disgusting affronts-before-God translation signs. 
+    private final Translation2d m_backRightLocation = new Translation2d( -0.3175, -0.3175);
 
     // Constructor for each swerve module
     private final SwerveModule m_frontRight = new SwerveModule(1, 2, false, false); //

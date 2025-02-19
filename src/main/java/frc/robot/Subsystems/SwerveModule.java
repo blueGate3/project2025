@@ -97,9 +97,9 @@ public class SwerveModule extends SubsystemBase {
                 .positionConversionFactor(rotationsToDistanceScaler) //what we multiply to convert rotations to distance. returns the meters traveled. 
                 .velocityConversionFactor(rpmToVelocityScaler); //divided by 60 to get to meters per second i think
             // m_driveMotorConfig.closedLoop
-            //     .pidf(0.3, 0.0, 0.001, (1/565)) //1/565 = what REVLIB reccomended for ff for a vortex specifically. 
-            //     .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-            //     .outputRange(-1,1);
+            // .pidf(0.5, 0.0, 0.001, (1/565)) //1/565 = what REVLIB reccomended for ff for a vortex specifically. 
+            // .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+            // .outputRange(-1,1);
             
             m_driveController = m_driveMotor.getClosedLoopController();
             m_driveMotor.configure(m_driveMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -119,7 +119,7 @@ public class SwerveModule extends SubsystemBase {
                 .inverted(turnInverted)
                 .smartCurrentLimit(40);
             m_turningMotorConfig.closedLoop
-                .pid(1, 0.0, 0.01)
+                .pid(.9, 0.0, 0.01)
                 .feedbackSensor(FeedbackSensor.kAbsoluteEncoder) //when using old method, primaryEncoder was the only thing that worked, absoluteEncoder should work tho.
                 .positionWrappingEnabled(true) //this and line below it allow for position wrapping between 0 and 2pi radians 
                 .positionWrappingInputRange(0, 2*Math.PI)
@@ -138,9 +138,9 @@ public class SwerveModule extends SubsystemBase {
             SwerveModuleState state = new SwerveModuleState(desiredState.speedMetersPerSecond, desiredState.angle);
             state.optimize(Rotation2d.fromRadians((getTurnEncoderOutput(false))));// Optimize the reference state to avoid spinning further than 90 degrees
             m_driveMotor.set(state.speedMetersPerSecond/10); //will eventually switch to PID below
-            //m_driveController.setReference(((state.speedMetersPerSecond)/kWheelCircumference)*60, ControlType.kVelocity); //desired state gives velocity, to convert: rpm = (Velocity(in m/s) * 60)/pi*diameter(aka wheel circumference)
+            //m_driveController.setReference(state.speedMetersPerSecond, ControlType.kVelocity); //desired state gives velocity, to convert: rpm = (Velocity(in m/s) * 60)/pi*diameter(aka wheel circumference)
             m_turnController.setReference(state.angle.getRadians(), ControlType.kPosition);//my code TODO may need to factor in gear ratio. Also, used to be state.angle.getRadians()
-            
+            SmartDashboard.putNumber("DrIvE vElOcItY", m_driveEncoder.getVelocity());
         }
 
         /**

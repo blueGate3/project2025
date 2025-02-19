@@ -76,6 +76,7 @@ public class Drivetrain extends SubsystemBase {
     public Drivetrain() {
         m_initialStates = new SwerveDriveKinematics(m_frontRightLocation, m_frontLeftLocation, m_backLeftLocation, m_backRightLocation);
         navx.reset();
+        navx.setAngleAdjustment(90);
         m_odometry = new SwerveDriveOdometry(
             m_kinematics, 
             navx.getRotation2d(), initialPositions

@@ -2,6 +2,7 @@ package frc.robot;
 
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -13,18 +14,22 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.hal.AllianceStationID;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Commands.DriveCommands.ReefRotateCommand;
 import frc.robot.Subsystems.Drivetrain;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class RobotContainer {
-    public final Drivetrain drivetrain = new Drivetrain();
+    private final Drivetrain drivetrain = new Drivetrain();
     //public final SmartDashboardUpdater smartDashboardUpdater = new SmartDashboardUpdater();
 
     XboxController driverController = new XboxController(0); // 0 is the USB Port to be used as indicated on the Driver Station
@@ -43,7 +48,23 @@ public class RobotContainer {
     }
 
     public void setDefaultCommands () {
-    
+        drivetrain.setDefaultCommand(
+            drivetrain.driveRegularlyCommand(
+                driverController.getRawAxis(0), 
+                driverController.getRawAxis(1), 
+                driverController.getRawAxis(2))
+        );
+    }
+
+    public void driverCommands() {
+    //     new Trigger(driverController.getAButton()).or
+    //     .whileTrue(drivetrain.ReefRotateCommand(driverController.getRawAxis(2)));
+        
+        //ReefRotatorCommand, goes with whichever trigger has a higher value greater than .2
+        new Trigger(drivetrain.eitherTriggerPressed(driverController.getLeftTriggerAxis(), driverController.getRightTriggerAxis(), .2))
+        .onTrue(drivetrain.ReefRotateCommand(driverController.getLeftTriggerAxis(), driverController.getRightTriggerAxis()));
+        
+        //TODO put in a drive slow method for fine tunement (like divide all speeds by 50 or smth), add in x^3 robot control, and make a field relative button. should be a fun night. 
     }
 
     /**

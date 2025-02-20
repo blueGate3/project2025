@@ -6,6 +6,9 @@ package frc.robot.Subsystems;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 import com.thethriftybot.Conversion;
+
+import java.util.function.BooleanSupplier;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.FollowPathCommand;
 //import com.pathplanner.lib.commands.FollowPathHolonomic;
@@ -15,6 +18,7 @@ import com.pathplanner.lib.path.PathPlannerPath;
 // import com.pathplanner.lib.util.ReplanningConfig;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -97,6 +101,50 @@ public class Drivetrain extends SubsystemBase {
         //SmartDashboard.putNumber("xOdometry", getCurrentPose2d().getX());
     }
 
+    public Command driveRegularlyCommand(double x, double y, double rot) {
+        return this.run(() -> drive(x, y, rot, true, false));
+    }
+
+    public Command driveRobotRelativeCommand(double x, double y, double rot) {
+        return this.run(() -> drive(x, y, rot, false, false));
+    }
+
+    public Command ReefRotateCommand(double LeftTrigger, double RightTrigger) {
+        //TODO fieldRelative is false maybe?
+        if(LeftTrigger > RightTrigger){
+            return this.run(() -> drive(0, 0, LeftTrigger, true, true));
+        } else {
+            return this.run(() -> drive(0, 0, RightTrigger, true, true));
+        }
+
+    }
+
+    /**
+     * Method to determine if either of the triggers on a remote have exceeded the threshold to activate. 
+     * @param leftTriggerValue the value between 0-1 that the left trigger returns
+     * @param rightTriggerValue the value between 0-1 that the right trigger returns
+     * @param threshold the minimum value between 0-1 to activate. 
+     * @return true if the triggers are activated, if neither one detects input then false. 
+     */
+    public BooleanSupplier eitherTriggerPressed(double leftTriggerValue, double rightTriggerValue, double threshold) {
+        //I just did what it suggested and made new boolean suppliers i hope i dont break anything. 
+        if((leftTriggerValue >= threshold) || rightTriggerValue >= threshold) {
+            return new BooleanSupplier() {
+                @Override
+                public boolean getAsBoolean() {
+                    return true;
+                }
+            };
+        } else {
+            return new BooleanSupplier() {
+                @Override
+                public boolean getAsBoolean() {
+                    return false;
+                } 
+            };
+        }
+    }
+
     /**
      * Updates the odometry pose
      * @param pose Current pose of the robot. TODO allow for correction using apriltag to set pose. 
@@ -157,15 +205,21 @@ public class Drivetrain extends SubsystemBase {
      @SuppressWarnings("ParameterName")
      public void drive(double driverXStick, double driverYStick, double driverRotateStick, boolean fieldRelative, boolean reefRotate) {
         Rotation2d robotRotation = new Rotation2d(Math.toRadians(navx.getAngle())); 
-        //System.out.println(navx.getAngle());
-        var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(driverXStick * invert, driverYStick * invert, driverRotateStick * invert, robotRotation));
+        SlewRateLimiter xSpeedSlewRateLimiter = new SlewRateLimiter(.75); //TODO test on units (should it be decimal, i think yes. this should mean it takes a bit longer than 1 second to get to full speed)
+        SlewRateLimiter ySpeedSlewRateLimiter = new SlewRateLimiter(.75); //also yes, in the wpilib docs it says to use seperate slew rate limiters. 
+        SlewRateLimiter rSpeedSlewRateLimiter = new SlewRateLimiter(.75); // r=rotation (duh)
+
+        //adds slew rate limiters for smoother and cleaner drive, the invert is in case we switch bc of alliance. 
+        double xFinal = xSpeedSlewRateLimiter.calculate(driverXStick) * invert;
+        double yFinal = ySpeedSlewRateLimiter.calculate(driverYStick) * invert;
+        double rotFinal = rSpeedSlewRateLimiter.calculate(driverRotateStick) * invert;
+
+        var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(xFinal, yFinal, rotFinal, robotRotation));
          //reefRotater setup. Basically, we get our robot pose from whatever way, then we figure out if we are doing rotator or not. If no, we set our center of rotation to the center of the robot, and if yes, we set our center of rotation to the center of the reef. 
          //then, we are able to automatically rotate around it at a fixed radius, which we can look into changing using the triggers later if we really care. 
-        // if(reefRotate) {
-        //     swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, driverRotateStick, robotRotation), getPoseToReefCenter(getCurrentPose2d(), onBlueAlliance));
-        // }
-
-        //var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(.2, .2, 0, robotRotation));
+        if(reefRotate) {
+            swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, driverRotateStick, robotRotation), getPoseToReefCenter(getCurrentPose2d(), onBlueAlliance));
+        }
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
             m_frontRight.setDesiredState(swerveModuleStates[0]);
             m_frontLeft.setDesiredState(swerveModuleStates[1]);

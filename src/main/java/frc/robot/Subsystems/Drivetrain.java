@@ -187,9 +187,9 @@ public class Drivetrain extends SubsystemBase {
      @SuppressWarnings("ParameterName")
      public void drive(double driverXStick, double driverYStick, double driverRotateStick, boolean fieldRelative, boolean reefRotate) {
         Rotation2d robotRotation = new Rotation2d(Math.toRadians(navx.getAngle())); 
-        SlewRateLimiter xSpeedSlewRateLimiter = new SlewRateLimiter(.75); //TODO test on units (should it be decimal, i think yes. this should mean it takes a bit longer than 1 second to get to full speed)
-        SlewRateLimiter ySpeedSlewRateLimiter = new SlewRateLimiter(.75); //also yes, in the wpilib docs it says to use seperate slew rate limiters. 
-        SlewRateLimiter rSpeedSlewRateLimiter = new SlewRateLimiter(.75); // r=rotation (duh)
+        SlewRateLimiter xSpeedSlewRateLimiter = new SlewRateLimiter(75); //TODO test on units (should it be decimal, i think yes. this should mean it takes a bit longer than 1 second to get to full speed)
+        SlewRateLimiter ySpeedSlewRateLimiter = new SlewRateLimiter(75); //also yes, in the wpilib docs it says to use seperate slew rate limiters. 
+        SlewRateLimiter rSpeedSlewRateLimiter = new SlewRateLimiter(75); // r=rotation (duh)
 
         //adds slew rate limiters for smoother and cleaner drive, the invert is in case we switch bc of alliance. 
         double xFinal = xSpeedSlewRateLimiter.calculate(driverXStick) * invert;

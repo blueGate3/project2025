@@ -18,13 +18,15 @@ public class Robot extends TimedRobot {
   public Robot() {
     m_Auto = new Auto();
     m_RobotContainer = new RobotContainer();
+    m_RobotContainer.configureDriverCommands();
+    m_RobotContainer.setDefaultCommands();
 
   }
 
   @Override
   public void robotPeriodic() {
-    CommandScheduler.getInstance().run();
-    m_RobotContainer.driverShuffleBoardUpdater();
+    //CommandScheduler.getInstance().run();
+    m_RobotContainer.letDriverCook();
   }
 
   @Override

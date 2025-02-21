@@ -60,19 +60,20 @@ public class RobotContainer {
     public void setDefaultCommands () {
         drivetrain.setDefaultCommand(
                 drivetrain.driveRegularCommand(
-                Math.pow(driverController.getRawAxis(0), 3),
-                Math.pow(driverController.getRawAxis(1), 3),
-                Math.pow(driverController.getRawAxis(2), 3)
-                ));
+                // Math.pow(driverController.getRawAxis(0), 3),
+                // Math.pow(driverController.getRawAxis(1), 3),
+                // Math.pow(driverController.getRawAxis(2), 3)
+                1, 0, 0
+        ));
     }
 
-    public void driverShuffleBoardUpdater() {
-        SmartDashboard.putBoolean("ReefRotate Command Running", reefRotateTrigger.getAsBoolean());
-        SmartDashboard.putBoolean("RobotRelative Command Running", robotRelativeTrigger.getAsBoolean());
-        SmartDashboard.putBoolean("FineTuneDrive Command Running", driveSlowTrigger.getAsBoolean());
-        SmartDashboard.putBoolean("DriveRaw Command Running", driveRawTrigger.getAsBoolean());
-        SmartDashboard.putBoolean("DriveRegular (Linear) Command Running", driveRegularLinear.getAsBoolean());
-    }
+    // public void driverShuffleBoardUpdater() {
+    //     SmartDashboard.putBoolean("ReefRotate Command Running", reefRotateTrigger.getAsBoolean());
+    //     SmartDashboard.putBoolean("RobotRelative Command Running", robotRelativeTrigger.getAsBoolean());
+    //     SmartDashboard.putBoolean("FineTuneDrive Command Running", driveSlowTrigger.getAsBoolean());
+    //     SmartDashboard.putBoolean("DriveRaw Command Running", driveRawTrigger.getAsBoolean());
+    //     SmartDashboard.putBoolean("DriveRegular (Linear) Command Running", driveRegularLinear.getAsBoolean());
+    // }
 
     public void configureDriverCommands() {
         //ReefRotatorCommand, goes with whichever trigger has a higher value greater than .2
@@ -93,7 +94,7 @@ public class RobotContainer {
 
         //drive slow, linear, robot relative for camera fine tune alignment
         driveSlowTrigger = new Trigger(driverController.b())
-        .toggleOnTrue( drivetrain.driveSlowCommand(
+        .toggleOnTrue(drivetrain.driveSlowCommand(
             driverController.getRawAxis(0), 
             driverController.getRawAxis(1), 
             driverController.getRawAxis(2),

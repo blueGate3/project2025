@@ -6,6 +6,8 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
+import java.security.cert.TrustAnchor;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -18,9 +20,11 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -31,14 +35,20 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class RobotContainer {
     private final Drivetrain drivetrain = new Drivetrain();
     //public final SmartDashboardUpdater smartDashboardUpdater = new SmartDashboardUpdater();
+    public Trigger reefRotateTrigger;
+    public Trigger robotRelativeTrigger;
+    public Trigger driveSlowTrigger;
+    public Trigger driveRawTrigger;
+    public Trigger driveRegularLinear;
 
-    XboxController driverController = new XboxController(0); // 0 is the USB Port to be used as indicated on the Driver Station
-    XboxController operatorController = new XboxController(1);
+    CommandXboxController driverController = new CommandXboxController(0); // 0 is the USB Port to be used as indicated on the Driver Station
+    CommandXboxController operatorController = new CommandXboxController(1);
 
     public RobotContainer () {
         setDefaultCommands();
         configureButtonBindings();
-
+        setDefaultCommands();
+        
     }
     
 
@@ -49,22 +59,71 @@ public class RobotContainer {
 
     public void setDefaultCommands () {
         drivetrain.setDefaultCommand(
-            drivetrain.driveRegularlyCommand(
-                driverController.getRawAxis(0), 
-                driverController.getRawAxis(1), 
-                driverController.getRawAxis(2))
-        );
+                drivetrain.driveRegularCommand(
+                Math.pow(driverController.getRawAxis(0), 3),
+                Math.pow(driverController.getRawAxis(1), 3),
+                Math.pow(driverController.getRawAxis(2), 3)
+                ));
     }
 
-    public void driverCommands() {
-    //     new Trigger(driverController.getAButton()).or
-    //     .whileTrue(drivetrain.ReefRotateCommand(driverController.getRawAxis(2)));
-        
+    public void driverShuffleBoardUpdater() {
+        SmartDashboard.putBoolean("ReefRotate Command Running", reefRotateTrigger.getAsBoolean());
+        SmartDashboard.putBoolean("RobotRelative Command Running", robotRelativeTrigger.getAsBoolean());
+        SmartDashboard.putBoolean("FineTuneDrive Command Running", driveSlowTrigger.getAsBoolean());
+        SmartDashboard.putBoolean("DriveRaw Command Running", driveRawTrigger.getAsBoolean());
+        SmartDashboard.putBoolean("DriveRegular (Linear) Command Running", driveRegularLinear.getAsBoolean());
+    }
+
+    public void configureDriverCommands() {
         //ReefRotatorCommand, goes with whichever trigger has a higher value greater than .2
-        new Trigger(drivetrain.eitherTriggerPressed(driverController.getLeftTriggerAxis(), driverController.getRightTriggerAxis(), .2))
-        .onTrue(drivetrain.ReefRotateCommand(driverController.getLeftTriggerAxis(), driverController.getRightTriggerAxis()));
+        reefRotateTrigger = new Trigger(driverController.rightTrigger(.2))
+        .or(driverController.leftTrigger(.2))
+        .onTrue(drivetrain.ReefRotateCommand(
+            driverController.getLeftTriggerAxis(), 
+            driverController.getRightTriggerAxis()
+            ));
+
+        //drive linear, robot relative for camera fine tune alignment
+        robotRelativeTrigger =new Trigger(driverController.leftStick())
+        .toggleOnTrue(drivetrain.driveRobotRelativeCommand(
+            driverController.getRawAxis(0), 
+            driverController.getRawAxis(1), 
+            driverController.getRawAxis(2)
+            ));
+
+        //drive slow, linear, robot relative for camera fine tune alignment
+        driveSlowTrigger = new Trigger(driverController.b())
+        .toggleOnTrue( drivetrain.driveSlowCommand(
+            driverController.getRawAxis(0), 
+            driverController.getRawAxis(1), 
+            driverController.getRawAxis(2),
+            50
+            ));
+
+        //no cosine compensation, slew rates, etc. just raw driving
+        driveRawTrigger = new Trigger(driverController.a())
+        .toggleOnTrue(drivetrain.driveRawCommand(
+            driverController.getRawAxis(0), 
+            driverController.getRawAxis(1), 
+            driverController.getRawAxis(2)
+            ));
+
+        //drives without x^3, linear input
+        driveRegularLinear = new Trigger(driverController.x())
+        .toggleOnTrue(drivetrain.driveRegularCommand(
+            driverController.getRawAxis(0), 
+            driverController.getRawAxis(1), 
+            driverController.getRawAxis(2)
+            ));
         
-        //TODO put in a drive slow method for fine tunement (like divide all speeds by 50 or smth), add in x^3 robot control, and make a field relative button. should be a fun night. 
+        
+        //
+
+        // driverController.getAButton().onTrue(drivetrain.driveRobotRelativeCommand(
+        //     driverController.getRawAxis(0), 
+        //     driverController.getRawAxis(1), 
+        //     driverController.getRawAxis(2)));
+        
     }
 
     /**
@@ -81,7 +140,7 @@ public class RobotContainer {
 
         boolean reefRotate = false;
 
-        //if either triggers pressed more then .05 (that's a crude deadband), rotate with that trigger value. Right is positive, left is negative. 
+        //if either triggers pressed more then .25 (that's a crude deadband), rotate with that trigger value. Right is positive, left is negative. 
         if ((driverRightTrigger >.25)) { //if either of the triggers have been pressed sufficiently (.05 in as crude deadband)
             reefRotate = true;
             drivetrain.drive(0, 0, driverRightTrigger, true, true);

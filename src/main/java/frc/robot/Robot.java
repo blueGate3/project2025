@@ -18,11 +18,13 @@ public class Robot extends TimedRobot {
   public Robot() {
     m_Auto = new Auto();
     m_RobotContainer = new RobotContainer();
+
   }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
+    m_RobotContainer.driverShuffleBoardUpdater();
   }
 
   @Override
@@ -59,6 +61,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
+    
   }
 
   @Override

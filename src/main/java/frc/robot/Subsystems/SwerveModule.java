@@ -178,4 +178,14 @@ public class SwerveModule extends SubsystemBase {
             }
         }
 
+        /**
+         * Sets the desired state for the module, only with absolute bare minimun, no safeguards, nothing. Used with driveRaw command. Do not use. 
+         * @param desiredState Desired state with speed and angle.
+         */
+        public void setDesiredStateRAW(SwerveModuleState desiredState) {
+            SwerveModuleState state = new SwerveModuleState(desiredState.speedMetersPerSecond, desiredState.angle);
+            state.optimize(Rotation2d.fromRadians((getTurnEncoderOutput(false))));// Optimize the reference state to avoid spinning further than 90 degrees
+            m_driveMotor.set(state.speedMetersPerSecond);
+            m_turnController.setReference(state.angle.getRadians(), ControlType.kPosition);//my code TODO may need to factor in gear ratio
+        }
 }

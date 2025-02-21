@@ -101,12 +101,20 @@ public class Drivetrain extends SubsystemBase {
         //SmartDashboard.putNumber("xOdometry", getCurrentPose2d().getX());
     }
 
-    public Command driveRegularlyCommand(double x, double y, double rot) {
+    public Command driveRegularCommand(double x, double y, double rot) {
         return this.run(() -> drive(x, y, rot, true, false));
     }
 
     public Command driveRobotRelativeCommand(double x, double y, double rot) {
         return this.run(() -> drive(x, y, rot, false, false));
+    }
+
+    public Command driveSlowCommand(double x, double y, double rot, double divideBy) {
+        return this.run(() -> drive(x/divideBy, y/divideBy, rot/divideBy, false, false));
+    }
+
+    public Command driveRawCommand(double x, double y, double rot) {
+        return this.run(() -> driveRaw(x, y, rot));
     }
 
     public Command ReefRotateCommand(double LeftTrigger, double RightTrigger) {
@@ -117,32 +125,6 @@ public class Drivetrain extends SubsystemBase {
             return this.run(() -> drive(0, 0, RightTrigger, true, true));
         }
 
-    }
-
-    /**
-     * Method to determine if either of the triggers on a remote have exceeded the threshold to activate. 
-     * @param leftTriggerValue the value between 0-1 that the left trigger returns
-     * @param rightTriggerValue the value between 0-1 that the right trigger returns
-     * @param threshold the minimum value between 0-1 to activate. 
-     * @return true if the triggers are activated, if neither one detects input then false. 
-     */
-    public BooleanSupplier eitherTriggerPressed(double leftTriggerValue, double rightTriggerValue, double threshold) {
-        //I just did what it suggested and made new boolean suppliers i hope i dont break anything. 
-        if((leftTriggerValue >= threshold) || rightTriggerValue >= threshold) {
-            return new BooleanSupplier() {
-                @Override
-                public boolean getAsBoolean() {
-                    return true;
-                }
-            };
-        } else {
-            return new BooleanSupplier() {
-                @Override
-                public boolean getAsBoolean() {
-                    return false;
-                } 
-            };
-        }
     }
 
     /**
@@ -220,6 +202,22 @@ public class Drivetrain extends SubsystemBase {
         if(reefRotate) {
             swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, driverRotateStick, robotRotation), getPoseToReefCenter(getCurrentPose2d(), onBlueAlliance));
         }
+        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
+            m_frontRight.setDesiredState(swerveModuleStates[0]);
+            m_frontLeft.setDesiredState(swerveModuleStates[1]);
+            m_backLeft.setDesiredState(swerveModuleStates[2]);
+            m_backRight.setDesiredState(swerveModuleStates[3]);
+     }
+
+     /**
+      * Drives without any deadbands, slew rate limiters, cosine compensation, speed control, ANYTHING. I don't reccomend ever using, but it's here in case it's needed. Automatically drives field relative. 
+      * @param driverXStick
+      * @param driverYStick
+      * @param driverRotateStick
+      */
+     public void driveRaw(double driverXStick, double driverYStick, double driverRotateStick) {
+        Rotation2d robotRotation = new Rotation2d(Math.toRadians(navx.getAngle())); 
+        var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(driverXStick, driverYStick, driverRotateStick, robotRotation));
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
             m_frontRight.setDesiredState(swerveModuleStates[0]);
             m_frontLeft.setDesiredState(swerveModuleStates[1]);

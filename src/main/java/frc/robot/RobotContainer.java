@@ -48,7 +48,7 @@ public class RobotContainer {
     CommandXboxController operatorController = new CommandXboxController(1);
 
     public RobotContainer () {
-        setDriverDefaultCommands();
+        // setDriverDefaultCommands();
         configureDriverCommands();
         
     }
@@ -59,24 +59,28 @@ public class RobotContainer {
 
     }
 
-    public void setDriverDefaultCommands () {
-        drivetrain.setDefaultCommand(
-            Commands.run(() -> drivetrain.driveRegularCommand(
-            Math.pow(driverController.getRawAxis(0), 3),
-            Math.pow(driverController.getRawAxis(1), 3),
-            Math.pow(driverController.getRawAxis(2), 3)), 
-            drivetrain));
-    }
+    // public void setDriverDefaultCommands () {
+    //     drivetrain.setDefaultCommand(
+    //         Commands.run(() -> //drivetrain.driveRegularCommand(
+    //         // Math.pow(driverController.getRawAxis(0), 3),
+    //         // Math.pow(driverController.getRawAxis(1), 3),
+    //         // Math.pow(driverController.getRawAxis(2), 3)), 
+    //         // drivetrain));
+    //         drivetrain.drive(
+    //         driverController.getRawAxis(0), 
+    //         driverController.getRawAxis(1),
+    //         driverController.getRawAxis(2), 
+    //         true, false)));
+    // }
 
     public void configureDriverCommands() {
         robotRelativeTrigger = new Trigger(
-            driverController.y().onTrue(Commands.run(
-                () -> drivetrain.driveRobotRelativeCommand(
+            driverController.y().onTrue(
+                    drivetrain.driveRobotRelativeCommand(
                     driverController.getRawAxis(0), 
                     driverController.getRawAxis(1), 
                     driverController.getRawAxis(2)
-                    ), drivetrain))
-        );
+                    )));
 
         driveSlowTrigger = new Trigger(
             driverController.b().onTrue(Commands.run(
@@ -130,8 +134,9 @@ public class RobotContainer {
         //     reefRotate = true;
         //     drivetrain.drive(0, 0, -driverLeftTrigger, true, true);
         // } else { //drives regularly.
-            drivetrain.drive(driverXStick, driverYStick, driverRotateStick, true, false); //negative y value coz its backwards
-        //}
+        drivetrain.drive(driverXStick, driverYStick, driverRotateStick, false, false); //negative y value coz its backwards
+        //drivetrain.driveRegularCommand(driverXStick, driverYStick, driverRotateStick);
+            //}
 
         // SmartDashboard.putNumber("Driver X Stick", driverXStick);
         // SmartDashboard.putNumber("Driver X Stick", driverXStick);

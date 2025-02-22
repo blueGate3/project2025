@@ -59,7 +59,7 @@ public class Drivetrain extends SubsystemBase {
     private final SwerveModule m_frontRight = new SwerveModule(1, 2, false, false); //
     private final SwerveModule m_frontLeft = new SwerveModule(3, 4, false, false); //
     private final SwerveModule m_backLeft = new SwerveModule(5, 6, false, false); //
-    private final SwerveModule m_backRight = new SwerveModule(7, 8, true, false); //
+    private final SwerveModule m_backRight = new SwerveModule(7, 8, false, false); //
 
     // Swerve Drive Kinematics (note the ordering [frontRight, frontLeft, backLeft, backRight] [counterclockwise from the frontRight])
     private final SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(m_frontRightLocation, m_frontLeftLocation, m_backLeftLocation, m_backRightLocation);

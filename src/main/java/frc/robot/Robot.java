@@ -23,8 +23,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
-    CommandScheduler.getInstance().run();
-    //m_RobotContainer.letDriverCook();
+    //CommandScheduler.getInstance().run();
+    m_RobotContainer.letDriverCook();
   }
 
   @Override
@@ -56,7 +56,7 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-    
+    //m_RobotContainer.setDriverDefaultCommands();
   }
 
   @Override

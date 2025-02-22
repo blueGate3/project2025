@@ -93,6 +93,7 @@ public class SwerveModule extends SubsystemBase {
                 .inverted(driveInverted)
                 .smartCurrentLimit(40)
                 .idleMode(IdleMode.kBrake);
+
             m_driveMotorConfig.encoder
                 .positionConversionFactor(rotationsToDistanceScaler) //what we multiply to convert rotations to distance. returns the meters traveled. 
                 .velocityConversionFactor(rpmToVelocityScaler); //divided by 60 to get to meters per second i think
@@ -141,7 +142,9 @@ public class SwerveModule extends SubsystemBase {
             //double drivePower = state.speedMetersPerSecond * state.angle.minus(new Rotation2d(getTurnEncoderOutput(false))).getCos(); //multiplies drive power by how close we are to our desired angle so we dont tear up the tires.
             //look at cosine compensation with wpilib 
 
-            m_driveMotor.set(state.speedMetersPerSecond/3); //will eventually switch to PID below, x/10 is for safety coz vortex scary
+            double drivePower = desiredState.speedMetersPerSecond;
+
+            m_driveMotor.set(drivePower/3); //will eventually switch to PID below, x/10 is for safety coz vortex scary
             //m_driveController.setReference(state.speedMetersPerSecond, ControlType.kVelocity); //desired state gives velocity, to convert: rpm = (Velocity(in m/s) * 60)/pi*diameter(aka wheel circumference)
             m_turnController.setReference(state.angle.getRadians(), ControlType.kPosition);//my code TODO may need to factor in gear ratio
             SmartDashboard.putNumber("DrIvE vElOcItY", m_driveEncoder.getVelocity());

@@ -45,9 +45,9 @@ public class RobotContainer {
     CommandXboxController operatorController = new CommandXboxController(1);
 
     public RobotContainer () {
-        setDefaultCommands();
+        //setDefaultCommands();
         configureButtonBindings();
-        setDefaultCommands();
+        //setDefaultCommands();
         
     }
     
@@ -133,7 +133,7 @@ public class RobotContainer {
      * No, non no. Stay focused. Speed! I'm faster than fast, quicker than quick! I'm LIGHTINING!!
      */
     public void letDriverCook() {
-        double driverXStick = driverController.getRawAxis(0);
+        double driverXStick = -driverController.getRawAxis(0);
         double driverYStick = -driverController.getRawAxis(1);
         double driverRotateStick = driverController.getRawAxis(2);
         double driverRightTrigger = driverController.getRightTriggerAxis();
@@ -142,20 +142,20 @@ public class RobotContainer {
         boolean reefRotate = false;
 
         //if either triggers pressed more then .25 (that's a crude deadband), rotate with that trigger value. Right is positive, left is negative. 
-        if ((driverRightTrigger >.25)) { //if either of the triggers have been pressed sufficiently (.05 in as crude deadband)
-            reefRotate = true;
-            drivetrain.drive(0, 0, driverRightTrigger, true, true);
-        } else if (driverLeftTrigger >.25) {
-            reefRotate = true;
-            drivetrain.drive(0, 0, -driverLeftTrigger, true, true);
-        } else { //drives regularly.
+        // if ((driverRightTrigger >.25)) { //if either of the triggers have been pressed sufficiently (.05 in as crude deadband)
+        //     reefRotate = true;
+        //     drivetrain.drive(0, 0, driverRightTrigger, true, true);
+        // } else if (driverLeftTrigger >.25) {
+        //     reefRotate = true;
+        //     drivetrain.drive(0, 0, -driverLeftTrigger, true, true);
+        // } else { //drives regularly.
             drivetrain.drive(driverXStick, driverYStick, driverRotateStick, true, false); //negative y value coz its backwards
-        }
+        //}
 
-        SmartDashboard.putNumber("Driver X Stick", driverXStick);
-        SmartDashboard.putNumber("Driver X Stick", driverXStick);
-        SmartDashboard.putNumber("Driver X Stick", driverXStick);
-        SmartDashboard.putBoolean("ReefRotate Mode", reefRotate);
+        // SmartDashboard.putNumber("Driver X Stick", driverXStick);
+        // SmartDashboard.putNumber("Driver X Stick", driverXStick);
+        // SmartDashboard.putNumber("Driver X Stick", driverXStick);
+        // SmartDashboard.putBoolean("ReefRotate Mode", reefRotate);
 
     }
 }

@@ -50,16 +50,16 @@ public class Drivetrain extends SubsystemBase {
     private final AHRS navx = new AHRS(NavXComType.kMXP_SPI); 
 
     // Locations of each swerve module relative to the center of the robot
-    private final Translation2d m_frontRightLocation = new Translation2d( 0.3175, -0.3175);//side length total is at 29.5 inches including modules. Divided by 2 and set to meters is .37465 meters from one side to the tip of the module
+    private final Translation2d m_frontRightLocation = new Translation2d( -0.3175, 0.3175);//side length total is at 29.5 inches including modules. Divided by 2 and set to meters is .37465 meters from one side to the tip of the module
     private final Translation2d m_frontLeftLocation = new Translation2d(0.3175,  0.3175);//the frc kinematics section has the coordinates so x is front-back, where front is positive, and y is left-right, where left is positive. it's communist to the extreme but will affect the way we initialize our module locations.
-    private final Translation2d m_backLeftLocation = new Translation2d(-0.3175,  0.3175);//continued: that's the reason for the strange abnormal abhorrent disgusting affronts-before-God translation signs. 
+    private final Translation2d m_backLeftLocation = new Translation2d(0.3175,  -0.3175);//continued: that's the reason for the strange abnormal abhorrent disgusting affronts-before-God translation signs. 
     private final Translation2d m_backRightLocation = new Translation2d( -0.3175, -0.3175);
 
     // Constructor for each swerve module
     private final SwerveModule m_frontRight = new SwerveModule(1, 2, false, false); //
     private final SwerveModule m_frontLeft = new SwerveModule(3, 4, false, false); //
     private final SwerveModule m_backLeft = new SwerveModule(5, 6, false, false); //
-    private final SwerveModule m_backRight = new SwerveModule(7, 8, false, false); //
+    private final SwerveModule m_backRight = new SwerveModule(7, 8, true, false); //
 
     // Swerve Drive Kinematics (note the ordering [frontRight, frontLeft, backLeft, backRight] [counterclockwise from the frontRight])
     private final SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(m_frontRightLocation, m_frontLeftLocation, m_backLeftLocation, m_backRightLocation);
@@ -80,7 +80,7 @@ public class Drivetrain extends SubsystemBase {
     public Drivetrain() {
         m_initialStates = new SwerveDriveKinematics(m_frontRightLocation, m_frontLeftLocation, m_backLeftLocation, m_backRightLocation);
         navx.reset();
-        navx.setAngleAdjustment(90);
+        //navx.setAngleAdjustment(90);
         m_odometry = new SwerveDriveOdometry(
             m_kinematics, 
             navx.getRotation2d(), initialPositions
@@ -192,9 +192,14 @@ public class Drivetrain extends SubsystemBase {
         SlewRateLimiter rSpeedSlewRateLimiter = new SlewRateLimiter(75); // r=rotation (duh)
 
         //adds slew rate limiters for smoother and cleaner drive, the invert is in case we switch bc of alliance. 
-        double xFinal = xSpeedSlewRateLimiter.calculate(driverXStick) * invert;
-        double yFinal = ySpeedSlewRateLimiter.calculate(driverYStick) * invert;
-        double rotFinal = rSpeedSlewRateLimiter.calculate(driverRotateStick) * invert;
+        // double xFinal = xSpeedSlewRateLimiter.calculate(driverXStick) * invert;
+        // double yFinal = ySpeedSlewRateLimiter.calculate(driverYStick) * invert;
+        // double rotFinal = rSpeedSlewRateLimiter.calculate(driverRotateStick) * invert;
+
+        double xFinal = driverXStick;
+        double yFinal = driverYStick;
+        double rotFinal = driverRotateStick;
+
 
         var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(xFinal, yFinal, rotFinal, robotRotation));
          //reefRotater setup. Basically, we get our robot pose from whatever way, then we figure out if we are doing rotator or not. If no, we set our center of rotation to the center of the robot, and if yes, we set our center of rotation to the center of the reef. 

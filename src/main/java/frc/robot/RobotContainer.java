@@ -2,6 +2,7 @@ package frc.robot;
 
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -45,9 +46,8 @@ public class RobotContainer {
     CommandXboxController operatorController = new CommandXboxController(1);
 
     public RobotContainer () {
-        //setDefaultCommands();
-        configureButtonBindings();
-        //setDefaultCommands();
+        setDriverDefaultCommands();
+        configureDriverCommands();
         
     }
     
@@ -57,75 +57,54 @@ public class RobotContainer {
 
     }
 
-    public void setDefaultCommands () {
+    public void setDriverDefaultCommands () {
         drivetrain.setDefaultCommand(
-                drivetrain.driveRegularCommand(
-                // Math.pow(driverController.getRawAxis(0), 3),
-                // Math.pow(driverController.getRawAxis(1), 3),
-                // Math.pow(driverController.getRawAxis(2), 3)
-                1, 0, 0
-        ));
+            Commands.run(() -> drivetrain.driveRegularCommand(
+            Math.pow(driverController.getRawAxis(0), 3),
+            Math.pow(driverController.getRawAxis(1), 3),
+            Math.pow(driverController.getRawAxis(2), 3)), 
+            drivetrain));
     }
-
-    // public void driverShuffleBoardUpdater() {
-    //     SmartDashboard.putBoolean("ReefRotate Command Running", reefRotateTrigger.getAsBoolean());
-    //     SmartDashboard.putBoolean("RobotRelative Command Running", robotRelativeTrigger.getAsBoolean());
-    //     SmartDashboard.putBoolean("FineTuneDrive Command Running", driveSlowTrigger.getAsBoolean());
-    //     SmartDashboard.putBoolean("DriveRaw Command Running", driveRawTrigger.getAsBoolean());
-    //     SmartDashboard.putBoolean("DriveRegular (Linear) Command Running", driveRegularLinear.getAsBoolean());
-    // }
 
     public void configureDriverCommands() {
-        //ReefRotatorCommand, goes with whichever trigger has a higher value greater than .2
+        robotRelativeTrigger = new Trigger(
+            driverController.y().onTrue(Commands.run(
+                () -> drivetrain.driveRobotRelativeCommand(
+                    driverController.getRawAxis(0), 
+                    driverController.getRawAxis(1), 
+                    driverController.getRawAxis(2)
+                    ), drivetrain))
+        );
+
+        driveSlowTrigger = new Trigger(
+            driverController.b().onTrue(Commands.run(
+                () -> drivetrain.driveSlowCommand(
+                    driverController.getRawAxis(0), 
+                    driverController.getRawAxis(1), 
+                    driverController.getRawAxis(2),
+                    20
+                    ), drivetrain))
+        );
+
+        driveRegularLinear = new Trigger(
+            driverController.x().onTrue(Commands.run(
+                () -> drivetrain.driveRegularCommand(
+                    driverController.getRawAxis(0), 
+                    driverController.getRawAxis(1), 
+                    driverController.getRawAxis(2)
+                    ), drivetrain))
+        );
+
         reefRotateTrigger = new Trigger(driverController.rightTrigger(.2))
         .or(driverController.leftTrigger(.2))
-        .onTrue(drivetrain.ReefRotateCommand(
-            driverController.getLeftTriggerAxis(), 
-            driverController.getRightTriggerAxis()
-            ));
+        .onTrue(Commands.run(
+            () -> drivetrain.ReefRotateCommand(
+                driverController.getLeftTriggerAxis(), 
+                driverController.getRightTriggerAxis()
+                ), drivetrain));
 
-        //drive linear, robot relative for camera fine tune alignment
-        robotRelativeTrigger =new Trigger(driverController.leftStick())
-        .toggleOnTrue(drivetrain.driveRobotRelativeCommand(
-            driverController.getRawAxis(0), 
-            driverController.getRawAxis(1), 
-            driverController.getRawAxis(2)
-            ));
-
-        //drive slow, linear, robot relative for camera fine tune alignment
-        driveSlowTrigger = new Trigger(driverController.b())
-        .toggleOnTrue(drivetrain.driveSlowCommand(
-            driverController.getRawAxis(0), 
-            driverController.getRawAxis(1), 
-            driverController.getRawAxis(2),
-            50
-            ));
-
-        //no cosine compensation, slew rates, etc. just raw driving
-        driveRawTrigger = new Trigger(driverController.a())
-        .toggleOnTrue(drivetrain.driveRawCommand(
-            driverController.getRawAxis(0), 
-            driverController.getRawAxis(1), 
-            driverController.getRawAxis(2)
-            ));
-
-        //drives without x^3, linear input
-        driveRegularLinear = new Trigger(driverController.x())
-        .toggleOnTrue(drivetrain.driveRegularCommand(
-            driverController.getRawAxis(0), 
-            driverController.getRawAxis(1), 
-            driverController.getRawAxis(2)
-            ));
-        
-        
-        //
-
-        // driverController.getAButton().onTrue(drivetrain.driveRobotRelativeCommand(
-        //     driverController.getRawAxis(0), 
-        //     driverController.getRawAxis(1), 
-        //     driverController.getRawAxis(2)));
-        
     }
+
 
     /**
      * Okay. Here we go. Focus. Speed. I am speed. One winner. 42 losers. I eat losers for breakfast.

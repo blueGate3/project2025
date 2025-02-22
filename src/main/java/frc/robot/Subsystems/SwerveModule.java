@@ -88,6 +88,7 @@ public class SwerveModule extends SubsystemBase {
             m_driveMotor = new SparkFlex(driveMotorChannel, SparkLowLevel.MotorType.kBrushless);
             m_driveMotorConfig = new SparkFlexConfig();
             m_driveEncoder = m_driveMotor.getEncoder(); //vortex built in encoder
+            m_driveEncoder.setPosition(0);
 
             m_driveMotorConfig
                 .inverted(driveInverted)
@@ -144,7 +145,7 @@ public class SwerveModule extends SubsystemBase {
 
             double drivePower = desiredState.speedMetersPerSecond;
 
-            m_driveMotor.set(drivePower/3); //will eventually switch to PID below, x/10 is for safety coz vortex scary
+            m_driveMotor.set(drivePower/5); //will eventually switch to PID below, x/10 is for safety coz vortex scary
             //m_driveController.setReference(state.speedMetersPerSecond, ControlType.kVelocity); //desired state gives velocity, to convert: rpm = (Velocity(in m/s) * 60)/pi*diameter(aka wheel circumference)
             m_turnController.setReference(state.angle.getRadians(), ControlType.kPosition);//my code TODO may need to factor in gear ratio
             SmartDashboard.putNumber("DrIvE vElOcItY", m_driveEncoder.getVelocity());

@@ -49,7 +49,7 @@ public class RobotContainer {
 
     public RobotContainer () {
         // setDriverDefaultCommands();
-        configureDriverCommands();
+        //configureDriverCommands();
         
     }
     
@@ -118,8 +118,8 @@ public class RobotContainer {
      * No, non no. Stay focused. Speed! I'm faster than fast, quicker than quick! I'm LIGHTINING!!
      */
     public void letDriverCook() {
-        double driverXStick = -driverController.getRawAxis(0);
-        double driverYStick = -driverController.getRawAxis(1);
+        double driverXStick = driverController.getRawAxis(0);
+        double driverYStick = driverController.getRawAxis(1);
         double driverRotateStick = driverController.getRawAxis(2);
         double driverRightTrigger = driverController.getRightTriggerAxis();
         double driverLeftTrigger = driverController.getLeftTriggerAxis();
@@ -134,7 +134,7 @@ public class RobotContainer {
         //     reefRotate = true;
         //     drivetrain.drive(0, 0, -driverLeftTrigger, true, true);
         // } else { //drives regularly.
-        drivetrain.drive(driverXStick, driverYStick, driverRotateStick, false, false); //negative y value coz its backwards
+        drivetrain.drive(driverXStick, driverYStick, driverRotateStick, true, false); //negative y value coz its backwards
         //drivetrain.driveRegularCommand(driverXStick, driverYStick, driverRotateStick);
             //}
 

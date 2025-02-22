@@ -41,7 +41,7 @@ public class Drivetrain extends SubsystemBase {
     // SOLID SPEEDS 3.25 M/S /AND PI/2.25 ROT/S
     public static final double kMaxSpeed = 5.88; // 5.88 meters per second or 19.3 ft/s (max speed of SDS Mk4i with Vortex motor)
     public static final double kMaxAngularSpeed = Math.PI; // 1/2 rotation per second
-    boolean onBlueAlliance;
+    //boolean onBlueAlliance;
 
     int invert = 1; //this will change depending on the alliance we are put on, it will be multiplied by -1 if we are red alliance and then multiplied by all of the drive inputs so we still drive the correct way and can remain blue alliance oriented for apriltags. 
     //more information can be found at https://docs.wpilib.org/en/stable/docs/software/basic-programming/coordinate-system.html 
@@ -80,19 +80,19 @@ public class Drivetrain extends SubsystemBase {
     public Drivetrain() {
         m_initialStates = new SwerveDriveKinematics(m_frontRightLocation, m_frontLeftLocation, m_backLeftLocation, m_backRightLocation);
         navx.reset();
-        //navx.setAngleAdjustment(90);
+        navx.setAngleAdjustment(90);
         m_odometry = new SwerveDriveOdometry(
             m_kinematics, 
             navx.getRotation2d(), initialPositions
         );
         var alliance = DriverStation.getAlliance(); //see information where we set up the invert integer. 
-        if (alliance.isPresent() && alliance.get() == Alliance.Red) {
-            onBlueAlliance = false;
-            invert = -1;
-        } else if (alliance.isPresent() && alliance.get() == Alliance.Blue) {
-            onBlueAlliance = true;
-            invert = 1;
-        }
+        // if (alliance.isPresent() && alliance.get() == Alliance.Red) {
+        //     onBlueAlliance = false;
+        //     invert = -1;
+        // } else if (alliance.isPresent() && alliance.get() == Alliance.Blue) {
+        //     onBlueAlliance = true;
+        //     invert = 1;
+        // }
   }
 
     @Override
@@ -205,7 +205,7 @@ public class Drivetrain extends SubsystemBase {
          //reefRotater setup. Basically, we get our robot pose from whatever way, then we figure out if we are doing rotator or not. If no, we set our center of rotation to the center of the robot, and if yes, we set our center of rotation to the center of the reef. 
          //then, we are able to automatically rotate around it at a fixed radius, which we can look into changing using the triggers later if we really care. 
         if(reefRotate) {
-            swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, driverRotateStick, robotRotation), getPoseToReefCenter(getCurrentPose2d(), onBlueAlliance));
+            swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, driverRotateStick, robotRotation), getPoseToReefCenter(getCurrentPose2d(), true));
         }
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
             m_frontRight.setDesiredState(swerveModuleStates[0]);

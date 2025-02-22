@@ -42,6 +42,8 @@ public class RobotContainer {
     public Trigger driveRawTrigger;
     public Trigger driveRegularLinear;
 
+    //konami code: up up down down left right left right B A 
+
     CommandXboxController driverController = new CommandXboxController(0); // 0 is the USB Port to be used as indicated on the Driver Station
     CommandXboxController operatorController = new CommandXboxController(1);
 

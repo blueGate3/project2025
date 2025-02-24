@@ -3,28 +3,24 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot;
-import edu.wpi.first.wpilibj.AddressableLED;
-import edu.wpi.first.wpilibj.AddressableLEDBuffer;
+import com.pathplanner.lib.commands.FollowPathCommand;
+
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 public class Robot extends TimedRobot {
-  private Command m_autonomousCommand;
-  private final Auto m_Auto;
-  public int LEDPortNumber;
-  public RobotContainer m_RobotContainer;
 
+  RobotContainer m_RobotContainer = new RobotContainer();
+  private Command m_autonomousCommand;
 
   public Robot() {
-    m_Auto = new Auto();
-    m_RobotContainer = new RobotContainer();
 
   }
 
   @Override
   public void robotPeriodic() {
-    //CommandScheduler.getInstance().run();
-    m_RobotContainer.letDriverCook();
+
   }
 
   @Override
@@ -38,7 +34,10 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
-    m_autonomousCommand = m_Auto.getAutonomousCommand();
+    m_RobotContainer.setupDataSpew();
+    FollowPathCommand.warmupCommand().schedule();
+
+    m_autonomousCommand = m_RobotContainer.getAutonomousCommand();
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
@@ -53,10 +52,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.cancel();
-    }
-    //m_RobotContainer.setDriverDefaultCommands();
+    
   }
 
   @Override
@@ -69,7 +65,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testInit() {
-    CommandScheduler.getInstance().cancelAll();
+
   }
 
   @Override

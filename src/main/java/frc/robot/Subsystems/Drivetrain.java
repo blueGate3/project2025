@@ -7,10 +7,16 @@ import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 import com.thethriftybot.Conversion;
 
+import java.io.IOException;
 import java.util.function.BooleanSupplier;
+
+import org.json.simple.parser.ParseException;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.FollowPathCommand;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 //import com.pathplanner.lib.commands.FollowPathHolonomic;
 import com.pathplanner.lib.path.PathPlannerPath;
 // import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
@@ -33,6 +39,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 
 /** Represents a swerve drive style drivetrain. */
 
@@ -50,7 +57,11 @@ public class Drivetrain extends SubsystemBase {
     private final AHRS navx = new AHRS(NavXComType.kMXP_SPI); 
 
     // Locations of each swerve module relative to the center of the robot
+<<<<<<< Updated upstream
     private final Translation2d m_frontRightLocation = new Translation2d(0.3175, -0.3175);//side length total is at 29.5 inches including modules. Divided by 2 and set to meters is .37465 meters from one side to the tip of the module
+=======
+    private final Translation2d m_frontRightLocation = new Translation2d( 0.3175, -0.3175);//side length total is at 29.5 inches including modules. Divided by 2 and set to meters is .37465 meters from one side to the tip of the module
+>>>>>>> Stashed changes
     private final Translation2d m_frontLeftLocation = new Translation2d(0.3175,  0.3175);//the frc kinematics section has the coordinates so x is front-back, where front is positive, and y is left-right, where left is positive. it's communist to the extreme but will affect the way we initialize our module locations.
     private final Translation2d m_backLeftLocation = new Translation2d(-0.3175,  0.3175);//continued: that's the reason for the strange abnormal abhorrent disgusting affronts-before-God translation signs. 
     private final Translation2d m_backRightLocation = new Translation2d( -0.3175, -0.3175);
@@ -75,7 +86,8 @@ public class Drivetrain extends SubsystemBase {
     
     public final SwerveDriveOdometry m_odometry;
     public final SwerveModule Swerves[] = {m_frontRight, m_frontLeft, m_backLeft, m_backRight};
-    
+    public RobotConfig config;
+
     // Constructor
     public Drivetrain() {
         m_initialStates = new SwerveDriveKinematics(m_frontRightLocation, m_frontLeftLocation, m_backLeftLocation, m_backRightLocation);
@@ -85,48 +97,41 @@ public class Drivetrain extends SubsystemBase {
             m_kinematics, 
             navx.getRotation2d(), initialPositions
         );
-        var alliance = DriverStation.getAlliance(); //see information where we set up the invert integer. 
-        // if (alliance.isPresent() && alliance.get() == Alliance.Red) {
-        //     onBlueAlliance = false;
-        //     invert = -1;
-        // } else if (alliance.isPresent() && alliance.get() == Alliance.Blue) {
-        //     onBlueAlliance = true;
-        //     invert = 1;
-        // }
-  }
-
-    @Override
-    public void periodic () {
-        updateOdometry();
-        //SmartDashboard.putNumber("xOdometry", getCurrentPose2d().getX());
-    }
-
-    public Command driveRegularCommand(double x, double y, double rot) {
-        return this.run(() -> drive(x, y, rot, true, false));
-    }
-
-    public Command driveRobotRelativeCommand(double x, double y, double rot) {
-        return this.run(() -> drive(x, y, rot, false, false));
-    }
-
-    public Command driveSlowCommand(double x, double y, double rot, double divideBy) {
-        return this.run(() -> drive(x/divideBy, y/divideBy, rot/divideBy, false, false));
-    }
-
-    public Command driveRawCommand(double x, double y, double rot) {
-        return this.run(() -> driveRaw(x, y, rot));
-    }
-
-    public Command ReefRotateCommand(double LeftTrigger, double RightTrigger) {
-        //TODO fieldRelative is false maybe?
-        if(LeftTrigger > RightTrigger){
-            return this.run(() -> drive(0, 0, LeftTrigger, true, true));
-        } else {
-            return this.run(() -> drive(0, 0, RightTrigger, true, true));
+        
+        try {
+            config = RobotConfig.fromGUISettings();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (ParseException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
 
-    }
+        AutoBuilder.configure(
+            this::getCurrentPose2d, // Robot pose supplier
+            this::setPose, // Method to reset odometry (will be called if your auto has a starting pose)
+            this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+            (speeds, feedforwards) -> driveAutonomous(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
+            new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
+                    new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+                    new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+            ),
+            config, // The robot configuration
+            () -> {
+              // Boolean supplier that controls when the path will be mirrored for the red alliance
+              // This will flip the path being followed to the red side of the field.
+              // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
 
+              var alliance = DriverStation.getAlliance();
+              if (alliance.isPresent()) {
+                return alliance.get() == DriverStation.Alliance.Red;
+              }
+              return false;
+            },
+            this // Reference to this subsystem to set requirements
+    );
+  }
     /**
      * Updates the odometry pose
      * @param pose Current pose of the robot. TODO allow for correction using apriltag to set pose. 
@@ -145,6 +150,7 @@ public class Drivetrain extends SubsystemBase {
         m_frontLeft.setDesiredState(moduleStates[1]);
         m_backLeft.setDesiredState(moduleStates[2]);
         m_backRight.setDesiredState(moduleStates[3]);
+
     }
     
     /**
@@ -185,17 +191,8 @@ public class Drivetrain extends SubsystemBase {
      * @param reefRotate whether we are rotating reef
      */
      @SuppressWarnings("ParameterName")
-     public void drive(double driverXStick, double driverYStick, double driverRotateStick, boolean fieldRelative, boolean reefRotate) {
-        Rotation2d robotRotation = new Rotation2d(Math.toRadians(navx.getAngle())); 
-        SlewRateLimiter xSpeedSlewRateLimiter = new SlewRateLimiter(75); //TODO test on units (should it be decimal, i think yes. this should mean it takes a bit longer than 1 second to get to full speed)
-        SlewRateLimiter ySpeedSlewRateLimiter = new SlewRateLimiter(75); //also yes, in the wpilib docs it says to use seperate slew rate limiters. 
-        SlewRateLimiter rSpeedSlewRateLimiter = new SlewRateLimiter(75); // r=rotation (duh)
-
-        //adds slew rate limiters for smoother and cleaner drive, the invert is in case we switch bc of alliance. 
-        // double xFinal = xSpeedSlewRateLimiter.calculate(driverXStick) * invert;
-        // double yFinal = ySpeedSlewRateLimiter.calculate(driverYStick) * invert;
-        // double rotFinal = rSpeedSlewRateLimiter.calculate(driverRotateStick) * invert;
-
+     public void drive(double driverXStick, double driverYStick, double driverRotateStick, boolean fieldRelative, boolean reefRotate, boolean defenseHoldingMode) {
+        Rotation2d robotRotation = new Rotation2d(Math.toRadians(navx.getAngle()));
         double xFinal = driverXStick;
         double yFinal = driverYStick;
         double rotFinal = driverRotateStick;
@@ -207,27 +204,20 @@ public class Drivetrain extends SubsystemBase {
         if(reefRotate) {
             swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, driverRotateStick, robotRotation), getPoseToReefCenter(getCurrentPose2d(), true));
         }
-        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
-            m_frontRight.setDesiredState(swerveModuleStates[0]);
-            m_frontLeft.setDesiredState(swerveModuleStates[1]);
-            m_backLeft.setDesiredState(swerveModuleStates[2]);
-            m_backRight.setDesiredState(swerveModuleStates[3]);
-     }
 
-     /**
-      * Drives without any deadbands, slew rate limiters, cosine compensation, speed control, ANYTHING. I don't reccomend ever using, but it's here in case it's needed. Automatically drives field relative. 
-      * @param driverXStick
-      * @param driverYStick
-      * @param driverRotateStick
-      */
-     public void driveRaw(double driverXStick, double driverYStick, double driverRotateStick) {
-        Rotation2d robotRotation = new Rotation2d(Math.toRadians(navx.getAngle())); 
-        var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(driverXStick, driverYStick, driverRotateStick, robotRotation));
+        if(!defenseHoldingMode) {
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
             m_frontRight.setDesiredState(swerveModuleStates[0]);
             m_frontLeft.setDesiredState(swerveModuleStates[1]);
             m_backLeft.setDesiredState(swerveModuleStates[2]);
             m_backRight.setDesiredState(swerveModuleStates[3]);
+        } else {
+            //creates X pattern with wheels so we cant be pushed around. 
+            m_frontLeft.setDesiredState(new SwerveModuleState(0, new Rotation2d(3 * (Math.PI / 4))));
+            m_frontRight.setDesiredState(new SwerveModuleState(0, new Rotation2d((Math.PI / 4))));
+            m_backLeft.setDesiredState(new SwerveModuleState(0, new Rotation2d((Math.PI / 4))));
+            m_backRight.setDesiredState(new SwerveModuleState(0, new Rotation2d(3* (Math.PI / 4))));
+        }
      }
 
      /**
@@ -257,4 +247,10 @@ public class Drivetrain extends SubsystemBase {
 
         return  coordinatesToCenterOfReef;
     }
+
+    // if(LeftTrigger > RightTrigger){
+    //     return this.run(() -> drive(0, 0, LeftTrigger, true, true));
+    // } else {
+    //     return this.run(() -> drive(0, 0, RightTrigger, true, true));
+    // }
 }

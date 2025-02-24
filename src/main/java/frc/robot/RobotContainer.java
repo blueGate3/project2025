@@ -17,10 +17,13 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.hal.AllianceStationID;
+import edu.wpi.first.hal.simulation.DriverStationDataJNI;
+import edu.wpi.first.hal.simulation.RoboRioDataJNI;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.Joystick;
@@ -35,113 +38,126 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class RobotContainer {
     private final Drivetrain drivetrain = new Drivetrain();
-    //public final SmartDashboardUpdater smartDashboardUpdater = new SmartDashboardUpdater();
-    public Trigger reefRotateTrigger;
-    public Trigger robotRelativeTrigger;
-    public Trigger driveSlowTrigger;
-    public Trigger driveRawTrigger;
-    public Trigger driveRegularLinear;
+    private final SendableChooser<Command> autoChooser;
+    /*
+     * Collection of driver status buttons and joysticks, initially set to do nothing. 
+     */
+    private double driverXStick = 0;
+    private double driverYStick = 0;
+    private double driverRotStick = 0;
+    private boolean driverXButton = false;
+    private boolean driverYButton = false;
+    private boolean driverAButton = false;
+    private boolean driverBButton = false;
+    private boolean reefRotate = false;
+    private double driverLeftTrigger = 0;
+    private double driverRightTrigger = 0;
+    
+    private SlewRateLimiter xDriveLimiter = new SlewRateLimiter(1);
+    private SlewRateLimiter yDriveLimiter = new SlewRateLimiter(1);
+    private SlewRateLimiter rotDriveLimiter = new SlewRateLimiter(1);
+    
+    
 
     //konami code: up up down down left right left right B A 
 
-    CommandXboxController driverController = new CommandXboxController(0); // 0 is the USB Port to be used as indicated on the Driver Station
-    CommandXboxController operatorController = new CommandXboxController(1);
+    CommandXboxController driverCommandController = new CommandXboxController(0); // 0 is the USB Port to be used as indicated on the Driver Station
+    CommandXboxController operatorCommandController = new CommandXboxController(1);
+
+    XboxController driverController = new XboxController(0);
+    XboxController operatorController = new XboxController(1);
 
     public RobotContainer () {
-        // setDriverDefaultCommands();
-        //configureDriverCommands();
-        
-    }
-    
-
-
-    public void configureButtonBindings () {
-
+        autoChooser = AutoBuilder.buildAutoChooser();
+        SmartDashboard.putData("Auto Chooser", autoChooser);
     }
 
-    // public void setDriverDefaultCommands () {
-    //     drivetrain.setDefaultCommand(
-    //         Commands.run(() -> //drivetrain.driveRegularCommand(
-    //         // Math.pow(driverController.getRawAxis(0), 3),
-    //         // Math.pow(driverController.getRawAxis(1), 3),
-    //         // Math.pow(driverController.getRawAxis(2), 3)), 
-    //         // drivetrain));
-    //         drivetrain.drive(
-    //         driverController.getRawAxis(0), 
-    //         driverController.getRawAxis(1),
-    //         driverController.getRawAxis(2), 
-    //         true, false)));
-    // }
+    public Command getAutonomousCommand() {
+    try{
+        // Load the path you want to follow using its name in the GUI
+        PathPlannerPath path = PathPlannerPath.fromPathFile("Example Path");
 
-    public void configureDriverCommands() {
-        robotRelativeTrigger = new Trigger(
-            driverController.y().onTrue(
-                    drivetrain.driveRobotRelativeCommand(
-                    driverController.getRawAxis(0), 
-                    driverController.getRawAxis(1), 
-                    driverController.getRawAxis(2)
-                    )));
+        // Create a path following command using AutoBuilder. This will also trigger event markers.
+        return AutoBuilder.followPath(path);
+    } catch (Exception e) {
+        DriverStation.reportError("Big oops (autonomous): " + e.getMessage(), e.getStackTrace());
+        return Commands.none();
+    }
+  }
 
-        driveSlowTrigger = new Trigger(
-            driverController.b().onTrue(Commands.run(
-                () -> drivetrain.driveSlowCommand(
-                    driverController.getRawAxis(0), 
-                    driverController.getRawAxis(1), 
-                    driverController.getRawAxis(2),
-                    20
-                    ), drivetrain))
-        );
-
-        driveRegularLinear = new Trigger(
-            driverController.x().onTrue(Commands.run(
-                () -> drivetrain.driveRegularCommand(
-                    driverController.getRawAxis(0), 
-                    driverController.getRawAxis(1), 
-                    driverController.getRawAxis(2)
-                    ), drivetrain))
-        );
-
-        reefRotateTrigger = new Trigger(driverController.rightTrigger(.2))
-        .or(driverController.leftTrigger(.2))
-        .onTrue(Commands.run(
-            () -> drivetrain.ReefRotateCommand(
-                driverController.getLeftTriggerAxis(), 
-                driverController.getRightTriggerAxis()
-                ), drivetrain));
-
+    //for fun and to look really cool when first connected to FMS
+    public void setupDataSpew() {
+        if (DriverStation.isFMSAttached()) {
+            System.out.println("Connected to the Field Management System.");
+            System.out.println("Current match number: " + DriverStation.getMatchNumber());
+            System.out.println("Current Alliance: " + DriverStation.getAlliance());
+            System.out.println("Current DriverStation Location: " + DriverStation.getLocation());
+            System.out.println("Current Event: " + DriverStation.getEventName());
+            System.out.println("Game specific message: " + DriverStation.getGameSpecificMessage());
+            System.out.println("Good luck!!!");
+        }
     }
 
+    public void readDriverController() {
+        //Driver stick getters
+        driverXStick = xDriveLimiter.calculate(driverController.getRawAxis(0));
+        driverYStick = yDriveLimiter.calculate(driverController.getRawAxis(1));
+        driverRotStick = rotDriveLimiter.calculate(driverController.getRawAxis(2));
+        driverLeftTrigger = driverController.getLeftTriggerAxis();
+        driverRightTrigger = driverController.getRightTriggerAxis();
+        driverXButton = driverController.getXButton(); //x is hold
+        driverYButton = driverController.getYButton(); //y is hold
+        driverAButton = driverController.getAButton(); //a is hold
+        driverBButton = driverController.getBButton(); //b is hold
 
+
+        if(driverController.getLeftTriggerAxis() > .25 || driverController.getRightTriggerAxis() > .25) {
+            reefRotate = true; //will run reefRotate with desired trigger values. 
+        } else {
+            reefRotate = false; //just resets to false.
+        }
+
+        //TODO figure out hold down buttons
+
+        //rumbles controller so driver knows the match has started and when endgame has started.
+        if( DriverStation.getMatchTime() == 15 || DriverStation.isTeleop()) {
+
+            driverController.setRumble(RumbleType.kBothRumble, .5);
+        }
+
+        /*
+         * Example ways to get different types of input:
+         * driverXButton = driverController.getXButton(); //This checks every 20ms if it's pressed, you would need to hold the button
+         * driverXButton = driverController.getXButtonPressed(); //whether button was pressed since last check, this might be good for toggling on commands.
+         * driverXButton = driverController.getRawButtonReleased(0); //true if button went from held down to not pressed since last check.
+         */
+    }
     /**
-     * Okay. Here we go. Focus. Speed. I am speed. One winner. 42 losers. I eat losers for breakfast.
-     * Breakfast? Wait. maybe I should have had breakfast. A little brecky could be good for me. 
-     * No, non no. Stay focused. Speed! I'm faster than fast, quicker than quick! I'm LIGHTINING!!
+     * Gordon Ramsey himself couldn't do better. 
      */
-    public void letDriverCook() {
-        double driverXStick = driverController.getRawAxis(0);
-        double driverYStick = driverController.getRawAxis(1);
-        double driverRotateStick = driverController.getRawAxis(2);
-        double driverRightTrigger = driverController.getRightTriggerAxis();
-        double driverLeftTrigger = driverController.getLeftTriggerAxis();
-
-        boolean reefRotate = false;
-
-        //if either triggers pressed more then .25 (that's a crude deadband), rotate with that trigger value. Right is positive, left is negative. 
-        // if ((driverRightTrigger >.25)) { //if either of the triggers have been pressed sufficiently (.05 in as crude deadband)
-        //     reefRotate = true;
-        //     drivetrain.drive(0, 0, driverRightTrigger, true, true);
-        // } else if (driverLeftTrigger >.25) {
-        //     reefRotate = true;
-        //     drivetrain.drive(0, 0, -driverLeftTrigger, true, true);
-        // } else { //drives regularly.
-        drivetrain.drive(driverXStick, driverYStick, driverRotateStick, true, false); //negative y value coz its backwards
-        //drivetrain.driveRegularCommand(driverXStick, driverYStick, driverRotateStick);
-            //}
-
-        // SmartDashboard.putNumber("Driver X Stick", driverXStick);
-        // SmartDashboard.putNumber("Driver X Stick", driverXStick);
-        // SmartDashboard.putNumber("Driver X Stick", driverXStick);
-        // SmartDashboard.putBoolean("ReefRotate Mode", reefRotate);
-
+    public void letDriverCook () {
+        if(driverXButton) {
+            //drive slowly
+            drivetrain.drive(driverXStick/20, driverYStick/20, (driverRotStick + .0001)/20, true, false, false);
+        } else if (driverYButton) {
+            //driveRobotRelative
+            drivetrain.drive(driverXStick, driverYStick, driverRotStick + .0001, false, false, false);
+        } else if (driverAButton) {
+            //drive slowly and robot relative
+            drivetrain.drive(driverXStick/20, driverYStick/20, (driverRotStick + .0001)/20, false, false, false);
+        } else if(driverBButton) {
+            //creates X with wheels so we can't be pushed around.
+            drivetrain.drive(0, 0, 0, false, false, true);
+        } else if (reefRotate) {
+            if(driverLeftTrigger > driverRightTrigger) {
+                drivetrain.drive(0, 0, driverLeftTrigger, true, true, false);
+            } else {
+                drivetrain.drive(0, 0, driverRightTrigger, true, true, false);
+            }
+        } else {
+            drivetrain.drive(driverXStick, driverYStick, driverRotStick + .0001, true, false, false); //the rotation being .01% is so we have a holding position in the rotate position, so the wheels are all good, but there's not enough power to actually drive it. 
+        }
     }
+
+    
 }

@@ -91,9 +91,8 @@ public class SwerveModule extends SubsystemBase {
             m_driveEncoder.setPosition(0);
 
             m_driveMotorConfig
-                .closedLoopRampRate(2)
                 .inverted(driveInverted)
-                .smartCurrentLimit(60)
+                .smartCurrentLimit(40)
                 .idleMode(IdleMode.kBrake);
 
             m_driveMotorConfig.encoder
@@ -122,7 +121,7 @@ public class SwerveModule extends SubsystemBase {
                 .inverted(turnInverted)
                 .smartCurrentLimit(40);
             m_turningMotorConfig.closedLoop
-                .pid(.95, 0.0, 0.05)
+                .pid(.8, 0.0, 0.01)
                 .feedbackSensor(FeedbackSensor.kAbsoluteEncoder) //when using old method, primaryEncoder was the only thing that worked, absoluteEncoder should work tho.
                 .positionWrappingEnabled(true) //this and line below it allow for position wrapping between 0 and 2pi radians 
                 .positionWrappingInputRange(0, 2*Math.PI)
@@ -146,7 +145,7 @@ public class SwerveModule extends SubsystemBase {
 
             m_driveMotor.set(drivePower/5); //will eventually switch to PID below, x/5 is for safety coz vortex scary
             //m_driveController.setReference(state.speedMetersPerSecond, ControlType.kVelocity); //desired state gives velocity, to convert: rpm = (Velocity(in m/s) * 60)/pi*diameter(aka wheel circumference)
-            m_turnController.setReference(state.angle.getRadians(), ControlType.kPosition);
+            m_turnController.setReference(state.angle.getRadians(), ControlType.kPosition);//my code TODO may need to factor in gear ratio
             SmartDashboard.putNumber("DrIvE vElOcItY", m_driveEncoder.getVelocity());
         }
 
@@ -179,13 +178,5 @@ public class SwerveModule extends SubsystemBase {
             } else {
                 return encoderValue;
             }
-        }
-
-        public void checkDriveMotorTemps() {
-            double driveMotorTemperature = m_driveMotor.getMotorTemperature();
-            if(driveMotorTemperature > 1) {
-                System.out.println("Motor too hot! Motor ID: " + m_driveMotor.getDeviceId());
-            }
-            m_driveMotor.getWarnings();
         }
 }

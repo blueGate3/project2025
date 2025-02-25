@@ -189,18 +189,16 @@ public class Drivetrain extends SubsystemBase {
      @SuppressWarnings("ParameterName")
      public void drive(double driverXStick, double driverYStick, double driverRotateStick, boolean fieldRelative, boolean reefRotate, boolean defenseHoldingMode) {
         Rotation2d robotRotation = new Rotation2d(Math.toRadians(navx.getAngle()));
-        double xFinal = driverXStick * kMaxSpeed;
-        double yFinal = driverYStick * kMaxSpeed;
-        double rotFinal = driverRotateStick * kMaxAngularSpeed;
+        double xFinal = driverXStick;
+        double yFinal = driverYStick;
+        double rotFinal = driverRotateStick;
+
 
         var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(xFinal, yFinal, rotFinal, robotRotation));
          //reefRotater setup. Basically, we get our robot pose from whatever way, then we figure out if we are doing rotator or not. If no, we set our center of rotation to the center of the robot, and if yes, we set our center of rotation to the center of the reef. 
          //then, we are able to automatically rotate around it at a fixed radius, which we can look into changing using the triggers later if we really care. 
         if(reefRotate) {
             swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, driverRotateStick, robotRotation), getPoseToReefCenter(getCurrentPose2d(), true));
-        }
-        if(fieldRelative) {
-            swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(xFinal, yFinal, rotFinal, robotRotation));
         }
 
         if(!defenseHoldingMode) {

@@ -69,14 +69,13 @@ public class RobotContainer {
 
     public RobotContainer () {
         autoChooser = AutoBuilder.buildAutoChooser();
-
         SmartDashboard.putData("Auto Chooser", autoChooser);
     }
 
     public Command getAutonomousCommand() {
     try{
         // Load the path you want to follow using its name in the GUI
-        PathPlannerPath path = PathPlannerPath.fromPathFile("TestPath-Straight");
+        PathPlannerPath path = PathPlannerPath.fromPathFile("Example Path");
 
         // Create a path following command using AutoBuilder. This will also trigger event markers.
         return AutoBuilder.followPath(path);
@@ -85,10 +84,6 @@ public class RobotContainer {
         return Commands.none();
     }
   }
-
-//   public Command getAutonomousCommand() {
-//     return autoChooser.getSelected();
-//   }
 
     //for fun and to look really cool when first connected to FMS
     public void setupDataSpew() {
@@ -138,10 +133,9 @@ public class RobotContainer {
          */
     }
     /**
-     * Gordon Ramsay himself couldn't do better. 
+     * Gordon Ramsey himself couldn't do better. 
      */
     public void letDriverCook () {
-        //the +.0001 for rotation is to create holding pattern of rotation so wheels constantly face ideal holding position, can easily rotate but not be pushed. Not enough power to actually drive them however.
         if(driverXButton) {
             //drive slowly
             drivetrain.drive(driverXStick/20, driverYStick/20, (driverRotStick + .0001)/20, true, false, false);
@@ -161,7 +155,7 @@ public class RobotContainer {
                 drivetrain.drive(0, 0, driverRightTrigger, true, true, false);
             }
         } else {
-            drivetrain.drive(driverXStick, driverYStick, driverRotStick + .0001, true, false, false);
+            drivetrain.drive(driverXStick, driverYStick, driverRotStick + .0001, true, false, false); //the rotation being .01% is so we have a holding position in the rotate position, so the wheels are all good, but there's not enough power to actually drive it. 
         }
     }
 

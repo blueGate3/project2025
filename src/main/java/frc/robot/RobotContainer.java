@@ -32,7 +32,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Commands.DriveCommands.ReefRotateCommand;
 import frc.robot.Subsystems.Drivetrain;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -73,17 +72,8 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-    try{
-        // Load the path you want to follow using its name in the GUI
-        PathPlannerPath path = PathPlannerPath.fromPathFile("New Auto");
-
-        // Create a path following command using AutoBuilder. This will also trigger event markers.
-        return AutoBuilder.followPath(path);
-    } catch (Exception e) {
-        DriverStation.reportError("Big oops (autonomous): " + e.getMessage(), e.getStackTrace());
-        return Commands.none();
-    }
-  }
+        return autoChooser.getSelected();
+      }
 
     //for fun and to look really cool when first connected to FMS
     public void setupDataSpew() {
@@ -148,12 +138,6 @@ public class RobotContainer {
         } else if(driverBButton) {
             //creates X with wheels so we can't be pushed around.
             drivetrain.drive(0, 0, 0, false, false, true);
-        } else if (reefRotate) {
-            if(driverLeftTrigger > driverRightTrigger) {
-                drivetrain.drive(0, 0, driverLeftTrigger, true, true, false);
-            } else {
-                drivetrain.drive(0, 0, driverRightTrigger, true, true, false);
-            }
         } else {
             drivetrain.drive(driverXStick, driverYStick, driverRotStick + .0001, true, false, false); //the rotation being .01% is so we have a holding position in the rotate position, so the wheels are all good, but there's not enough power to actually drive it. 
         }

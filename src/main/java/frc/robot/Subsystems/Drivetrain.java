@@ -62,7 +62,7 @@ public class Drivetrain extends SubsystemBase {
     // private final Translation2d m_backLeftLocation = new Translation2d(-0.3175,  0.3175);//continued: that's the reason for the strange abnormal abhorrent disgusting affronts-before-God translation signs. 
     // private final Translation2d m_backRightLocation = new Translation2d( -0.3175, -0.3175);
 
-    private final Translation2d m_frontRightLocation = new Translation2d( -0.3175, 0.3175);//side length total is at 29.5 inches including modules. Divided by 2 and set to meters is .37465 meters from one side to the tip of the module
+    private final Translation2d m_frontRightLocation = new Translation2d( -0.3175, 0.3175);//side length total is at 29.5 inches including modules. Divided by 2 and set to meters is .37465 meters from one side to the tip of the module, minus a bit bc module is only like 1/2 distance. 
     private final Translation2d m_frontLeftLocation = new Translation2d(0.3175,  0.3175);//the frc kinematics section has the coordinates so x is front-back, where front is positive, and y is left-right, where left is positive. it's communist to the extreme but will affect the way we initialize our module locations.
     private final Translation2d m_backLeftLocation = new Translation2d(0.3175,  -0.3175);//continued: that's the reason for the strange abnormal abhorrent disgusting affronts-before-God translation signs. 
     private final Translation2d m_backRightLocation = new Translation2d( -0.3175, -0.3175);
@@ -116,8 +116,8 @@ public class Drivetrain extends SubsystemBase {
             this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
             (speeds, feedforwards) -> driveAutonomous(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
             new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
-                    new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-                    new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+                    new PIDConstants(5.0, 0.0, 0.1), // Translation PID constants
+                    new PIDConstants(5.0, 0.0, 0.1) // Rotation PID constants
             ),
             config, // The robot configuration
             () -> {
@@ -141,7 +141,7 @@ public class Drivetrain extends SubsystemBase {
     public void setPose (Pose2d pose) {
         m_odometry.resetPosition(new Rotation2d(pose.getRotation().getRadians()), initialPositions, pose);
         }
-    
+
     /**
      * Drives with swerve during the autonomous period
      * @param chassisSpeeds
@@ -195,65 +195,24 @@ public class Drivetrain extends SubsystemBase {
      @SuppressWarnings("ParameterName")
      public void drive(double driverXStick, double driverYStick, double driverRotateStick, boolean fieldRelative, boolean reefRotate, boolean defenseHoldingMode) {
         Rotation2d robotRotation = new Rotation2d(Math.toRadians(navx.getAngle()));
-        double xFinal = driverXStick;
-        double yFinal = driverYStick;
-        double rotFinal = driverRotateStick;
+        var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(driverXStick, driverYStick, driverRotateStick, robotRotation));
 
+        if(fieldRelative) { //drives robot relative (obviously)
+            swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromRobotRelativeSpeeds(driverXStick, driverYStick, driverRotateStick, robotRotation));
+        }
 
-        var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(xFinal, yFinal, rotFinal, robotRotation));
-         //reefRotater setup. Basically, we get our robot pose from whatever way, then we figure out if we are doing rotator or not. If no, we set our center of rotation to the center of the robot, and if yes, we set our center of rotation to the center of the reef. 
-         //then, we are able to automatically rotate around it at a fixed radius, which we can look into changing using the triggers later if we really care. 
-        // if(reefRotate) {
-        //     swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, driverRotateStick, robotRotation), getPoseToReefCenter(getCurrentPose2d(), true));
-        // }
-
-        // if(!defenseHoldingMode) {
-        if(true) {
+        if(!defenseHoldingMode) {
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
             m_frontRight.setDesiredState(swerveModuleStates[0]);
             m_frontLeft.setDesiredState(swerveModuleStates[1]);
             m_backLeft.setDesiredState(swerveModuleStates[2]);
             m_backRight.setDesiredState(swerveModuleStates[3]);
-        } // else {
-        //     //creates X pattern with wheels so we cant be pushed around. 
-        //     m_frontLeft.setDesiredState(new SwerveModuleState(0.0, new Rotation2d(3 * (Math.PI / 4))));
-        //     m_frontRight.setDesiredState(new SwerveModuleState(0.0, new Rotation2d((Math.PI / 4))));
-        //     m_backLeft.setDesiredState(new SwerveModuleState(0.0, new Rotation2d((Math.PI / 4))));
-        //     m_backRight.setDesiredState(new SwerveModuleState(0.0, new Rotation2d(3* (Math.PI / 4))));
-        // }
+        } else {
+            //creates X pattern with wheels so we cant be pushed around. 
+            m_frontLeft.setDesiredState(new SwerveModuleState(0.0, new Rotation2d(3 * (Math.PI / 4))));
+            m_frontRight.setDesiredState(new SwerveModuleState(0.0, new Rotation2d((Math.PI / 4))));
+            m_backLeft.setDesiredState(new SwerveModuleState(0.0, new Rotation2d((Math.PI / 4))));
+            m_backRight.setDesiredState(new SwerveModuleState(0.0, new Rotation2d(3* (Math.PI / 4))));
+        }
      }
-
-     /**
-     * Takes in the current position of the robot, then figures out the distance to the center of the reef, and returns the center of rotation as the center of the reef
-     * @param currentPose the current position of the robot.
-     * @param allianceColor boolean for determining alliance color, as of now blue is false and red is true (to invert).
-     */
-    public Translation2d getPoseToReefCenter(Pose2d currentPose, boolean allianceColor) {
-        /**
-         * Notes about coordinate system: First off, the pose from the odometry should be reset at the end of the autonomous period to whatever our final pose is.
-         * Second, the WPILib coordinate system uses North, West Up system as their positives. See initialization of inverter for why I hate it so much.
-         * Third, 0 degrees/0 radians on the unit circle is at the front of the robot and 90 degrees is at the west position. However, East is -90 degrees rather than 270.
-         * Fourth, the origin is always at the blue side of the field, all the way to the right when standing behind the driver stations. 
-         * Fifth, the center of the reef:
-         * 176.75 from driverstation wall to center along x. 144 inches from driverstation to edge of reef, reef if 65.5 inches wide excluding tape, divide by 2 and add 144 to get 176.75. must be converted to meters.
-         * it's 109.13 inches along the y axis from the edge of the driverstation, but this is not taking into account the coral loading area thing.
-         * 158.5 is the y axis, i used the apriltag map and matched y coords of tags 18 and 21. confirmed x value at 176.745
-         */
-        //from blue alliance origin, may need to convert for red alliance. 
-        final double reefCenterXBlue = 4.48945; //in meters, 176.75 inches
-        final double reefCenterYBlue = 4.0259; //in meters, 158.5 inches.
-
-        double xDistanceToCenter = reefCenterXBlue - currentPose.getX(); //where we need to be vs where we are
-        double yDistanceToCenter = reefCenterYBlue - currentPose.getY();
-
-        Translation2d coordinatesToCenterOfReef = new Translation2d(xDistanceToCenter, yDistanceToCenter);
-
-        return  coordinatesToCenterOfReef;
-    }
-
-    // if(LeftTrigger > RightTrigger){
-    //     return this.run(() -> drive(0, 0, LeftTrigger, true, true));
-    // } else {
-    //     return this.run(() -> drive(0, 0, RightTrigger, true, true));
-    // }
 }

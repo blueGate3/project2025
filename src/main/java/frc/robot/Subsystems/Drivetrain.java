@@ -57,10 +57,16 @@ public class Drivetrain extends SubsystemBase {
     private final AHRS navx = new AHRS(NavXComType.kMXP_SPI); 
 
     // Locations of each swerve module relative to the center of the robot
-    private final Translation2d m_frontRightLocation = new Translation2d( 0.3175, -0.3175);//side length total is at 29.5 inches including modules. Divided by 2 and set to meters is .37465 meters from one side to the tip of the module
+    // private final Translation2d m_frontRightLocation = new Translation2d( 0.3175, -0.3175);//side length total is at 29.5 inches including modules. Divided by 2 and set to meters is .37465 meters from one side to the tip of the module
+    // private final Translation2d m_frontLeftLocation = new Translation2d(0.3175,  0.3175);//the frc kinematics section has the coordinates so x is front-back, where front is positive, and y is left-right, where left is positive. it's communist to the extreme but will affect the way we initialize our module locations.
+    // private final Translation2d m_backLeftLocation = new Translation2d(-0.3175,  0.3175);//continued: that's the reason for the strange abnormal abhorrent disgusting affronts-before-God translation signs. 
+    // private final Translation2d m_backRightLocation = new Translation2d( -0.3175, -0.3175);
+
+    private final Translation2d m_frontRightLocation = new Translation2d( -0.3175, 0.3175);//side length total is at 29.5 inches including modules. Divided by 2 and set to meters is .37465 meters from one side to the tip of the module
     private final Translation2d m_frontLeftLocation = new Translation2d(0.3175,  0.3175);//the frc kinematics section has the coordinates so x is front-back, where front is positive, and y is left-right, where left is positive. it's communist to the extreme but will affect the way we initialize our module locations.
-    private final Translation2d m_backLeftLocation = new Translation2d(-0.3175,  0.3175);//continued: that's the reason for the strange abnormal abhorrent disgusting affronts-before-God translation signs. 
+    private final Translation2d m_backLeftLocation = new Translation2d(0.3175,  -0.3175);//continued: that's the reason for the strange abnormal abhorrent disgusting affronts-before-God translation signs. 
     private final Translation2d m_backRightLocation = new Translation2d( -0.3175, -0.3175);
+
 
     // Constructor for each swerve module
     private final SwerveModule m_frontRight = new SwerveModule(1, 2, false, false); //
@@ -88,7 +94,7 @@ public class Drivetrain extends SubsystemBase {
     public Drivetrain() {
         m_initialStates = new SwerveDriveKinematics(m_frontRightLocation, m_frontLeftLocation, m_backLeftLocation, m_backRightLocation);
         navx.reset();
-        navx.setAngleAdjustment(90);
+        navx.setAngleAdjustment(-180);
         m_odometry = new SwerveDriveOdometry(
             m_kinematics, 
             navx.getRotation2d(), initialPositions
@@ -197,23 +203,24 @@ public class Drivetrain extends SubsystemBase {
         var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(xFinal, yFinal, rotFinal, robotRotation));
          //reefRotater setup. Basically, we get our robot pose from whatever way, then we figure out if we are doing rotator or not. If no, we set our center of rotation to the center of the robot, and if yes, we set our center of rotation to the center of the reef. 
          //then, we are able to automatically rotate around it at a fixed radius, which we can look into changing using the triggers later if we really care. 
-        if(reefRotate) {
-            swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, driverRotateStick, robotRotation), getPoseToReefCenter(getCurrentPose2d(), true));
-        }
+        // if(reefRotate) {
+        //     swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, driverRotateStick, robotRotation), getPoseToReefCenter(getCurrentPose2d(), true));
+        // }
 
-        if(!defenseHoldingMode) {
+        // if(!defenseHoldingMode) {
+        if(true) {
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
             m_frontRight.setDesiredState(swerveModuleStates[0]);
             m_frontLeft.setDesiredState(swerveModuleStates[1]);
             m_backLeft.setDesiredState(swerveModuleStates[2]);
             m_backRight.setDesiredState(swerveModuleStates[3]);
-        } else {
-            //creates X pattern with wheels so we cant be pushed around. 
-            m_frontLeft.setDesiredState(new SwerveModuleState(0, new Rotation2d(3 * (Math.PI / 4))));
-            m_frontRight.setDesiredState(new SwerveModuleState(0, new Rotation2d((Math.PI / 4))));
-            m_backLeft.setDesiredState(new SwerveModuleState(0, new Rotation2d((Math.PI / 4))));
-            m_backRight.setDesiredState(new SwerveModuleState(0, new Rotation2d(3* (Math.PI / 4))));
-        }
+        } // else {
+        //     //creates X pattern with wheels so we cant be pushed around. 
+        //     m_frontLeft.setDesiredState(new SwerveModuleState(0.0, new Rotation2d(3 * (Math.PI / 4))));
+        //     m_frontRight.setDesiredState(new SwerveModuleState(0.0, new Rotation2d((Math.PI / 4))));
+        //     m_backLeft.setDesiredState(new SwerveModuleState(0.0, new Rotation2d((Math.PI / 4))));
+        //     m_backRight.setDesiredState(new SwerveModuleState(0.0, new Rotation2d(3* (Math.PI / 4))));
+        // }
      }
 
      /**

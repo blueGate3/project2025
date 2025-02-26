@@ -53,9 +53,9 @@ public class RobotContainer {
     private double driverLeftTrigger = 0;
     private double driverRightTrigger = 0;
     
-    private SlewRateLimiter xDriveLimiter = new SlewRateLimiter(1);
-    private SlewRateLimiter yDriveLimiter = new SlewRateLimiter(1);
-    private SlewRateLimiter rotDriveLimiter = new SlewRateLimiter(1);
+    private SlewRateLimiter xDriveLimiter = new SlewRateLimiter(5);
+    private SlewRateLimiter yDriveLimiter = new SlewRateLimiter(5);
+    private SlewRateLimiter rotDriveLimiter = new SlewRateLimiter(5);
     
     
 
@@ -75,7 +75,7 @@ public class RobotContainer {
     public Command getAutonomousCommand() {
     try{
         // Load the path you want to follow using its name in the GUI
-        PathPlannerPath path = PathPlannerPath.fromPathFile("Example Path");
+        PathPlannerPath path = PathPlannerPath.fromPathFile("New Auto");
 
         // Create a path following command using AutoBuilder. This will also trigger event markers.
         return AutoBuilder.followPath(path);
@@ -159,5 +159,9 @@ public class RobotContainer {
         }
     }
 
+    public void driveAutoManual(double xSpeed, double ySpeed, double rot, long time) throws InterruptedException {
+        drivetrain.drive(xSpeed, ySpeed, rot, true, false, false);
+    }
+    
     
 }

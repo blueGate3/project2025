@@ -15,7 +15,7 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   public Robot() {
-
+    m_RobotContainer.setupDataSpew();
   }
 
   @Override
@@ -42,6 +42,8 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }
+    
+
   }
 
   @Override
@@ -57,7 +59,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-    
+    m_RobotContainer.readDriverController();
+    m_RobotContainer.letDriverCook();
   }
 
   @Override

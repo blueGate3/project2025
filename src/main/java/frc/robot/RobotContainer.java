@@ -100,15 +100,6 @@ public class RobotContainer {
         driverAButton = driverController.getAButton(); //a is hold
         driverBButton = driverController.getBButton(); //b is hold
 
-
-        if(driverController.getLeftTriggerAxis() > .25 || driverController.getRightTriggerAxis() > .25) {
-            reefRotate = true; //will run reefRotate with desired trigger values. 
-        } else {
-            reefRotate = false; //just resets to false.
-        }
-
-        //TODO figure out hold down buttons
-
         //rumbles controller so driver knows the match has started and when endgame has started.
         if( DriverStation.getMatchTime() == 15 || DriverStation.isTeleop()) {
 
@@ -128,18 +119,18 @@ public class RobotContainer {
     public void letDriverCook () {
         if(driverXButton) {
             //drive slowly
-            drivetrain.drive(driverXStick/20, driverYStick/20, (driverRotStick + .0001)/20, true, false, false);
+            drivetrain.drive(driverXStick/20, driverYStick/20, (driverRotStick + .01)/20, true, false, false);
         } else if (driverYButton) {
             //driveRobotRelative
-            drivetrain.drive(driverXStick, driverYStick, driverRotStick + .0001, false, false, false);
+            drivetrain.drive(driverXStick, driverYStick, driverRotStick + .01, false, false, false);
         } else if (driverAButton) {
             //drive slowly and robot relative
-            drivetrain.drive(driverXStick/20, driverYStick/20, (driverRotStick + .0001)/20, false, false, false);
+            drivetrain.drive(driverXStick/20, driverYStick/20, (driverRotStick + .01)/20, false, false, false);
         } else if(driverBButton) {
             //creates X with wheels so we can't be pushed around.
             drivetrain.drive(0, 0, 0, false, false, true);
         } else {
-            drivetrain.drive(driverXStick, driverYStick, driverRotStick + .0001, true, false, false); //the rotation being .01% is so we have a holding position in the rotate position, so the wheels are all good, but there's not enough power to actually drive it. 
+            drivetrain.drive(driverXStick, driverYStick, driverRotStick + .01, true, false, false); //the rotation being .01% is so we have a holding position in the rotate position, so the wheels are all good, but there's not enough power to actually drive it. 
         }
     }
 

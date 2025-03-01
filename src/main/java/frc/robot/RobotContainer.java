@@ -68,11 +68,21 @@ public class RobotContainer {
 
     public RobotContainer () {
         autoChooser = AutoBuilder.buildAutoChooser();
+        //autoChooser.addOption("TestPath-Rotate", x);
         SmartDashboard.putData("Auto Chooser", autoChooser);
     }
 
     public Command getAutonomousCommand() {
-        return autoChooser.getSelected();
+        try{
+            // Load the path you want to follow using its name in the GUI
+            PathPlannerPath path = PathPlannerPath.fromPathFile("TestPath-Straight");
+    
+            // Create a path following command using AutoBuilder. This will also trigger event markers.
+            return AutoBuilder.followPath(path);
+        } catch (Exception e) {
+            DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
+            return Commands.none();
+        }
       }
 
     //for fun and to look really cool when first connected to FMS
@@ -90,6 +100,8 @@ public class RobotContainer {
 
     public void readDriverController() {
         //Driver stick getters
+        
+
         driverXStick = xDriveLimiter.calculate(driverController.getRawAxis(0));
         driverYStick = yDriveLimiter.calculate(driverController.getRawAxis(1));
         driverRotStick = rotDriveLimiter.calculate(driverController.getRawAxis(2));
@@ -101,10 +113,10 @@ public class RobotContainer {
         driverBButton = driverController.getBButton(); //b is hold
 
         //rumbles controller so driver knows the match has started and when endgame has started.
-        if( DriverStation.getMatchTime() == 15 || DriverStation.isTeleop()) {
+        //if( DriverStation.getMatchTime() == 15 || DriverStation.isTeleop()) {
 
             driverController.setRumble(RumbleType.kBothRumble, .5);
-        }
+        //}
 
         /*
          * Example ways to get different types of input:
@@ -119,22 +131,26 @@ public class RobotContainer {
     public void letDriverCook () {
         if(driverXButton) {
             //drive slowly
-            drivetrain.drive(driverXStick/20, driverYStick/20, (driverRotStick + .01)/20, true, false, false);
+            System.out.println("X Button");
+            drivetrain.drive(driverXStick/10, driverYStick/10, (driverRotStick + .01)/10, true, false, false);
         } else if (driverYButton) {
             //driveRobotRelative
+            System.out.println("Y Button");
             drivetrain.drive(driverXStick, driverYStick, driverRotStick + .01, false, false, false);
         } else if (driverAButton) {
             //drive slowly and robot relative
-            drivetrain.drive(driverXStick/20, driverYStick/20, (driverRotStick + .01)/20, false, false, false);
+            System.out.println("A Button");
+            drivetrain.drive(driverXStick/10, driverYStick/10, (driverRotStick + .01)/10, false, false, false);
         } else if(driverBButton) {
             //creates X with wheels so we can't be pushed around.
-            drivetrain.drive(0, 0, 0, false, false, true);
+            System.out.println("B Button");
+            drivetrain.drive(0, 0, 0, true, false, true);
         } else {
             drivetrain.drive(driverXStick, driverYStick, driverRotStick + .01, true, false, false); //the rotation being .01% is so we have a holding position in the rotate position, so the wheels are all good, but there's not enough power to actually drive it. 
         }
     }
 
-    public void driveAutoManual(double xSpeed, double ySpeed, double rot, long time) throws InterruptedException {
+    public void driveAutoManual(double xSpeed, double ySpeed, double rot, long time) {
         drivetrain.drive(xSpeed, ySpeed, rot, true, false, false);
     }
     

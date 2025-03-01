@@ -93,7 +93,7 @@ public class SwerveModule extends SubsystemBase {
             m_driveMotorConfig
                 .inverted(driveInverted)
                 .smartCurrentLimit(40)
-                //.openLoopRampRate(.75)
+                .inverted(false)
                 .idleMode(IdleMode.kBrake);
 
             m_driveMotorConfig.encoder
@@ -141,7 +141,7 @@ public class SwerveModule extends SubsystemBase {
             SwerveModuleState state = new SwerveModuleState(desiredState.speedMetersPerSecond, desiredState.angle);
             state.optimize(Rotation2d.fromRadians((getTurnEncoderOutput(false))));// Optimize the reference state to avoid spinning further than 90 degrees
            
-            double drivePower = (state.speedMetersPerSecond); //* state.angle.minus(new Rotation2d(getTurnEncoderOutput(false))).getCos(); //multiplies drive power by how close we are to our desired angle so we dont tear up the tires.
+            double drivePower = (state.speedMetersPerSecond) * state.angle.minus(new Rotation2d(getTurnEncoderOutput(false))).getCos(); //multiplies drive power by how close we are to our desired angle so we dont tear up the tires.
             //look at cosine compensation with wpilib
 
             m_driveMotor.set(drivePower/2); //will eventually switch to PID below, x/5 is for safety coz vortex scary

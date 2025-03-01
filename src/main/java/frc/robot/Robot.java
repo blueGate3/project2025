@@ -47,7 +47,9 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    m_autonomousCommand.schedule();
+  }
 
   @Override
   public void autonomousExit() {}

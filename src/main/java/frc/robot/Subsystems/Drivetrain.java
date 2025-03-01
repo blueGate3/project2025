@@ -69,10 +69,10 @@ public class Drivetrain extends SubsystemBase {
 
 
     // Constructor for each swerve module
-    private final SwerveModule m_frontRight = new SwerveModule(1, 2, false, false); //
-    private final SwerveModule m_frontLeft = new SwerveModule(3, 4, false, false); //
-    private final SwerveModule m_backLeft = new SwerveModule(5, 6, false, false); //
-    private final SwerveModule m_backRight = new SwerveModule(7, 8, false, false); //
+    private final SwerveModule m_frontRight = new SwerveModule(3, 4, false, false); //
+    private final SwerveModule m_frontLeft = new SwerveModule(1, 2, false, false); //
+    private final SwerveModule m_backLeft = new SwerveModule(7, 8, false, false); //
+    private final SwerveModule m_backRight = new SwerveModule(5, 6, false, false); //
 
     // Swerve Drive Kinematics (note the ordering [frontRight, frontLeft, backLeft, backRight] [counterclockwise from the frontRight])
     private final SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(m_frontRightLocation, m_frontLeftLocation, m_backLeftLocation, m_backRightLocation);
@@ -175,6 +175,10 @@ public class Drivetrain extends SubsystemBase {
         return m_pose;
     }
 
+    public void resetOdometry() {
+        m_odometry.resetPose(m_pose);
+    }
+
     /**
      * Converts raw module states into chassis speeds 
      * @return chassis speeds object
@@ -182,6 +186,7 @@ public class Drivetrain extends SubsystemBase {
     public ChassisSpeeds getChassisSpeeds() {
         return m_kinematics.toChassisSpeeds(m_frontRight.getState(), m_frontLeft.getState(), m_backLeft.getState(), m_backRight.getState());
     }
+    
 
     /**
      * Method to drive the robot using joystick info.
@@ -197,7 +202,7 @@ public class Drivetrain extends SubsystemBase {
         Rotation2d robotRotation = new Rotation2d(Math.toRadians(navx.getAngle()));
         var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(driverXStick, driverYStick, driverRotateStick, robotRotation));
 
-        if(fieldRelative) { //drives robot relative (obviously)
+        if(!fieldRelative) { //drives robot relative (obviously)
             swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromRobotRelativeSpeeds(driverXStick, driverYStick, driverRotateStick, robotRotation));
         }
 
@@ -207,12 +212,12 @@ public class Drivetrain extends SubsystemBase {
             m_frontLeft.setDesiredState(swerveModuleStates[1]);
             m_backLeft.setDesiredState(swerveModuleStates[2]);
             m_backRight.setDesiredState(swerveModuleStates[3]);
-        } else {
+        } else if (defenseHoldingMode){
             //creates X pattern with wheels so we cant be pushed around. 
-            m_frontLeft.setDesiredState(new SwerveModuleState(0.0, new Rotation2d(3 * (Math.PI / 4))));
-            m_frontRight.setDesiredState(new SwerveModuleState(0.0, new Rotation2d((Math.PI / 4))));
-            m_backLeft.setDesiredState(new SwerveModuleState(0.0, new Rotation2d((Math.PI / 4))));
-            m_backRight.setDesiredState(new SwerveModuleState(0.0, new Rotation2d(3* (Math.PI / 4))));
+            m_frontLeft.setDesiredState(new SwerveModuleState(0.0, new Rotation2d((Math.PI / 4))));
+            m_frontRight.setDesiredState(new SwerveModuleState(0.0, new Rotation2d(3 * (Math.PI / 4))));
+            m_backLeft.setDesiredState(new SwerveModuleState(0.0, new Rotation2d((3 * Math.PI / 4))));
+            m_backRight.setDesiredState(new SwerveModuleState(0.0, new Rotation2d((Math.PI / 4))));
         }
      }
 }

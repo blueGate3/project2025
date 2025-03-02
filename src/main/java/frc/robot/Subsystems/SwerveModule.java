@@ -93,7 +93,8 @@ public class SwerveModule extends SubsystemBase {
             m_driveMotorConfig
                 .inverted(driveInverted)
                 .smartCurrentLimit(40)
-                .inverted(false)
+                .openLoopRampRate(.5)
+                .inverted(turnInverted)
                 .idleMode(IdleMode.kBrake);
 
             m_driveMotorConfig.encoder
@@ -122,7 +123,7 @@ public class SwerveModule extends SubsystemBase {
                 .inverted(turnInverted)
                 .smartCurrentLimit(40);
             m_turningMotorConfig.closedLoop
-                .pid(.5, 0.0, 0.01)
+                .pid(.7, 0.0, 0.05)
                 .feedbackSensor(FeedbackSensor.kAbsoluteEncoder) //when using old method, primaryEncoder was the only thing that worked, absoluteEncoder should work tho.
                 .positionWrappingEnabled(true) //this and line below it allow for position wrapping between 0 and 2pi radians 
                 .positionWrappingInputRange(0, 2*Math.PI)
@@ -138,15 +139,15 @@ public class SwerveModule extends SubsystemBase {
          * @param desiredState Desired state with speed and angle.
          */
         public void setDesiredState(SwerveModuleState desiredState) {
-            SwerveModuleState state = new SwerveModuleState(desiredState.speedMetersPerSecond, desiredState.angle);
-            state.optimize(Rotation2d.fromRadians((getTurnEncoderOutput(false))));// Optimize the reference state to avoid spinning further than 90 degrees
+            //SwerveModuleState state = new SwerveModuleState(desiredState.speedMetersPerSecond, desiredState.angle);
+            desiredState.optimize(Rotation2d.fromRadians((getTurnEncoderOutput(false))));// Optimize the reference state to avoid spinning further than 90 degrees
            
-            double drivePower = (state.speedMetersPerSecond) * state.angle.minus(new Rotation2d(getTurnEncoderOutput(false))).getCos(); //multiplies drive power by how close we are to our desired angle so we dont tear up the tires.
+            double drivePower = (desiredState.speedMetersPerSecond) * desiredState.angle.minus(new Rotation2d(getTurnEncoderOutput(false))).getCos(); //multiplies drive power by how close we are to our desired angle so we dont tear up the tires.
             //look at cosine compensation with wpilib
 
             m_driveMotor.set(drivePower/2); //will eventually switch to PID below, x/5 is for safety coz vortex scary
             //m_driveController.setReference(state.speedMetersPerSecond, ControlType.kVelocity); //desired state gives velocity, to convert: rpm = (Velocity(in m/s) * 60)/pi*diameter(aka wheel circumference)
-            m_turnController.setReference(state.angle.getRadians(), ControlType.kPosition);//my code TODO may need to factor in gear ratio
+            m_turnController.setReference(desiredState.angle.getRadians(), ControlType.kPosition);//my code TODO may need to factor in gear ratio
             SmartDashboard.putNumber("DrIvE vElOcItY", m_driveEncoder.getVelocity());
         }
 
@@ -172,9 +173,9 @@ public class SwerveModule extends SubsystemBase {
          * @param inRadians if true, converts output to radians, otherwise gives actual duty cycle output.
          * @return the encoder position
          */
-        public double getTurnEncoderOutput(boolean inRadians) {
+        public double getTurnEncoderOutput(boolean inDegrees) {
             double encoderValue = m_turningEncoder.getPosition(); //TODO run through gear ratio!?!?! if so, see above formulas for how to. 
-            if(inRadians) {
+            if(inDegrees) {
                 return Math.toRadians((encoderValue*360)); //multiplies by 360 to get degrees, then converts to radians using Math.toRadians (expects degree parameter)
             } else {
                 return encoderValue;

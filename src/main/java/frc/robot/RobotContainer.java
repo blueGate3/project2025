@@ -52,9 +52,9 @@ public class RobotContainer {
     private double driverLeftTrigger = 0;
     private double driverRightTrigger = 0;
     
-    private SlewRateLimiter xDriveLimiter = new SlewRateLimiter(5);
-    private SlewRateLimiter yDriveLimiter = new SlewRateLimiter(5);
-    private SlewRateLimiter rotDriveLimiter = new SlewRateLimiter(5);
+    // private SlewRateLimiter xDriveLimiter = new SlewRateLimiter(5);
+    // private SlewRateLimiter yDriveLimiter = new SlewRateLimiter(5);
+    // private SlewRateLimiter rotDriveLimiter = new SlewRateLimiter(5);
     
     
 
@@ -75,7 +75,7 @@ public class RobotContainer {
     public Command getAutonomousCommand() {
         try{
             // Load the path you want to follow using its name in the GUI
-            PathPlannerPath path = PathPlannerPath.fromPathFile("TestPath-Straight");
+            PathPlannerPath path = PathPlannerPath.fromPathFile("RedPathOne");
     
             // Create a path following command using AutoBuilder. This will also trigger event markers.
             return AutoBuilder.followPath(path);
@@ -102,9 +102,14 @@ public class RobotContainer {
         //Driver stick getters
         
 
-        driverXStick = xDriveLimiter.calculate(driverController.getRawAxis(0));
-        driverYStick = yDriveLimiter.calculate(driverController.getRawAxis(1));
-        driverRotStick = rotDriveLimiter.calculate(driverController.getRawAxis(2));
+        // driverXStick = xDriveLimiter.calculate(driverController.getRawAxis(0));
+        // driverYStick = yDriveLimiter.calculate(driverController.getRawAxis(1));
+        // driverRotStick = -rotDriveLimiter.calculate(driverController.getRawAxis(2));
+
+        driverXStick = driverController.getRawAxis(0);
+        driverYStick = driverController.getRawAxis(1);
+        driverRotStick = driverController.getRawAxis(2);
+
         driverLeftTrigger = driverController.getLeftTriggerAxis();
         driverRightTrigger = driverController.getRightTriggerAxis();
         driverXButton = driverController.getXButton(); //x is hold
@@ -131,19 +136,15 @@ public class RobotContainer {
     public void letDriverCook () {
         if(driverXButton) {
             //drive slowly
-            System.out.println("X Button");
             drivetrain.drive(driverXStick/10, driverYStick/10, (driverRotStick + .01)/10, true, false, false);
         } else if (driverYButton) {
             //driveRobotRelative
-            System.out.println("Y Button");
             drivetrain.drive(driverXStick, driverYStick, driverRotStick + .01, false, false, false);
         } else if (driverAButton) {
             //drive slowly and robot relative
-            System.out.println("A Button");
             drivetrain.drive(driverXStick/10, driverYStick/10, (driverRotStick + .01)/10, false, false, false);
         } else if(driverBButton) {
             //creates X with wheels so we can't be pushed around.
-            System.out.println("B Button");
             drivetrain.drive(0, 0, 0, true, false, true);
         } else {
             drivetrain.drive(driverXStick, driverYStick, driverRotStick + .01, true, false, false); //the rotation being .01% is so we have a holding position in the rotate position, so the wheels are all good, but there's not enough power to actually drive it. 

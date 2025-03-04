@@ -9,6 +9,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import java.security.cert.TrustAnchor;
 
+import javax.naming.OperationNotSupportedException;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -33,10 +35,12 @@ import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Subsystems.Drivetrain;
+import frc.robot.Subsystems.Elevator;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class RobotContainer {
     private final Drivetrain drivetrain = new Drivetrain();
+    private final Elevator m_Elevator = new Elevator();
     private final SendableChooser<Command> autoChooser;
     /*
      * Collection of driver status buttons and joysticks, initially set to do nothing. 
@@ -55,8 +59,19 @@ public class RobotContainer {
     // private SlewRateLimiter xDriveLimiter = new SlewRateLimiter(5);
     // private SlewRateLimiter yDriveLimiter = new SlewRateLimiter(5);
     // private SlewRateLimiter rotDriveLimiter = new SlewRateLimiter(5);
+
+    private double positionRotations;
     
-    
+    private boolean operatorXButton = false;
+    private boolean operatorYButton = false;
+    private boolean operatorAButton = false;
+    private boolean operatorBButton = false;
+    private double operatorLeftTrigger = 0;
+    private double operatorRightTrigger = 0;
+    private boolean operatorLB = false;
+    private boolean operatorRB = false;
+
+    private boolean manualOperateElevator = false;
 
     //konami code: up up down down left right left right B A 
 
@@ -117,10 +132,10 @@ public class RobotContainer {
         driverAButton = driverController.getAButton(); //a is hold
         driverBButton = driverController.getBButton(); //b is hold
 
+
         //rumbles controller so driver knows the match has started and when endgame has started.
         //if( DriverStation.getMatchTime() == 15 || DriverStation.isTeleop()) {
 
-            driverController.setRumble(RumbleType.kBothRumble, .5);
         //}
 
         /*
@@ -130,6 +145,19 @@ public class RobotContainer {
          * driverXButton = driverController.getRawButtonReleased(0); //true if button went from held down to not pressed since last check.
          */
     }
+
+    public void readOperatorController() {
+        operatorAButton = operatorController.getAButton();
+        operatorBButton = operatorController.getBButton();
+        operatorXButton = operatorController.getXButton();
+        operatorYButton = operatorController.getYButton();
+
+        operatorLeftTrigger = operatorController.getLeftTriggerAxis();
+        operatorRightTrigger = operatorController.getRightTriggerAxis();
+        operatorLB = operatorController.getLeftBumperButton();
+        operatorRB = operatorController.getRightBumperButton();
+    }
+
     /**
      * Gordon Ramsey himself couldn't do better. 
      */
@@ -151,9 +179,45 @@ public class RobotContainer {
         }
     }
 
+    public void letOperatorCook() {
+        //determines/switches mode
+        if(operatorAButton) {
+            manualOperateElevator = false;
+        }
+        if(operatorLB) {
+            manualOperateElevator = true;
+        }
+        //Main logic
+        if(manualOperateElevator) {
+
+            if(driverLeftTrigger > driverRightTrigger && driverLeftTrigger > .05) {
+                m_Elevator.driveMotorNoPID(driverLeftTrigger, false);
+            } else if (driverLeftTrigger < driverRightTrigger && driverRightTrigger > .05) {
+                m_Elevator.driveMotorNoPID(driverRightTrigger, false);
+            }
+
+        } else {
+            if(operatorYButton) {
+                positionRotations = 10;
+            } else if (operatorBButton) {
+                positionRotations = 20;
+            } else if (operatorXButton) {
+                positionRotations = 30;
+            } else if (operatorRB) {
+                positionRotations = 40;
+            }
+
+            m_Elevator.driveMotor(positionRotations);
+
+        }
+
+    }
+
     public void driveAutoManual(double xSpeed, double ySpeed, double rot, long time) {
         drivetrain.drive(xSpeed, ySpeed, rot, true, false, false);
     }
+
+
     
     
 }

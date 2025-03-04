@@ -1,0 +1,75 @@
+package frc.robot.Subsystems;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
+
+import com.revrobotics.spark.*;
+import com.revrobotics.*;
+import com.revrobotics.spark.config.*;
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.SparkBase.*;
+import com.revrobotics.spark.config.*;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+
+
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DutyCycle;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+public class Elevator {
+    private SparkFlex m_elevatorMotor;
+    private SparkFlexConfig m_elevatorMotorConfig;
+    private SparkClosedLoopController m_elevatorController;
+    private AbsoluteEncoder m_elevatorEncoder;
+    private final double elevatorEncoderScalar = 15;
+
+    public Elevator() {
+        m_elevatorMotor = new SparkFlex(9, SparkLowLevel.MotorType.kBrushless);
+        m_elevatorMotorConfig = new SparkFlexConfig();
+        m_elevatorEncoder = m_elevatorMotor.getAbsoluteEncoder();
+    
+        //m_elevatorMotorConfig.encoder
+        //.positionConversionFactor(elevatorEncoderScalar); //note Prngles Hot Ones collab is very good apparently
+        m_elevatorMotorConfig
+        .idleMode(IdleMode.kBrake)
+        .inverted(true)
+        .smartCurrentLimit(40);
+        m_elevatorMotorConfig.closedLoop
+        .pid(1.2, 0, .4)
+        .feedbackSensor(FeedbackSensor.kPrimaryEncoder) //when using old method, primaryEncoder was the only thing that worked, absoluteEncoder should work tho.
+        .positionWrappingEnabled(true) //this and line below it allow for position wrapping between 0 and 2pi radians 
+        //.positionWrappingInputRange(0, 2*Math.PI)
+        .outputRange(-1, 1);
+    
+        m_elevatorController = m_elevatorMotor.getClosedLoopController();
+        m_elevatorMotor.configure(m_elevatorMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    
+    }
+
+    
+
+  /**
+   * 
+   * @param positionRotations
+   */
+  public void driveMotor(double positionRotations) {
+    m_elevatorController.setReference(positionRotations, ControlType.kPosition);
+  }
+
+  public void driveMotorNoPID(double power, boolean reversed) {
+    if(reversed) {
+      m_elevatorMotor.set(-power);
+    } else {
+      m_elevatorMotor.set(power);
+    }
+  }
+}

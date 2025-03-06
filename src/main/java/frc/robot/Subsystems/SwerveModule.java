@@ -94,18 +94,25 @@ public class SwerveModule extends SubsystemBase {
                 .inverted(driveInverted)
                 .smartCurrentLimit(40)
                 .openLoopRampRate(.5)
-                .inverted(turnInverted)
+                .inverted(driveInverted)
                 .idleMode(IdleMode.kBrake);
 
-            m_driveMotorConfig.encoder
-                .positionConversionFactor(rotationsToDistanceScaler) //what we multiply to convert rotations to distance. returns the meters traveled. 
-                .velocityConversionFactor(rpmToVelocityScaler); //divided by 60 to get to meters per second i think
+            m_driveMotorConfig.closedLoop
+                .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+                .outputRange(-1, 1)
+                .pid(.3, 0, 0.4);
+
+            // m_driveMotorConfig.encoder
+            //     .positionConversionFactor(drivingWheelGearRatio) //what we multiply to convert rotations to distance. returns the meters traveled. 
+            //     .velocityConversionFactor(rpmToVelocityScaler); //divided by 60 to get to meters per second i think
+
+                
+            m_driveController = m_driveMotor.getClosedLoopController();
             // m_driveMotorConfig.closedLoop
             // .pidf(0.5, 0.0, 0.001, (1/565)) //1/565 = what REVLIB reccomended for ff for a vortex specifically. 
             // .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
             // .outputRange(-1,1);
             
-            m_driveController = m_driveMotor.getClosedLoopController();
             m_driveMotor.configure(m_driveMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
             //TURNING
@@ -151,6 +158,17 @@ public class SwerveModule extends SubsystemBase {
             SmartDashboard.putNumber("DrIvE vElOcItY", m_driveEncoder.getVelocity());
         }
 
+        public void driveAutoOnRots(double driverRots, double turnRots) {
+            driverRots *= drivingWheelGearRatio;
+            turnRots *= turningWheelGearRatio;
+            m_driveController.setReference(driverRots, ControlType.kPosition);
+            m_turnController.setReference(turnRots, ControlType.kPosition);
+        }
+
+        public void resetDriveEncoder() {
+            m_driveMotor.getEncoder().setPosition(0);
+        }
+
         /**
          * Returns the current state of the module.
          *
@@ -181,4 +199,5 @@ public class SwerveModule extends SubsystemBase {
                 return encoderValue;
             }
         }
+
 }

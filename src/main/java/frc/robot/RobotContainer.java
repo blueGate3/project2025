@@ -2,6 +2,7 @@ package frc.robot;
 
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -24,6 +25,7 @@ import edu.wpi.first.hal.simulation.RoboRioDataJNI;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.event.BooleanEvent;
@@ -36,12 +38,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Subsystems.Elevator;
+import frc.robot.Subsystems.Cradle;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class RobotContainer {
     private final Drivetrain drivetrain = new Drivetrain();
     private final Elevator m_Elevator = new Elevator();
     private final SendableChooser<Command> autoChooser;
+    private Timer mTimer = new Timer();
     /*
      * Collection of driver status buttons and joysticks, initially set to do nothing. 
      */
@@ -71,12 +75,13 @@ public class RobotContainer {
     private boolean operatorLB = false;
     private boolean operatorRB = false;
 
+    private boolean phaseOne = false;
+    private boolean phaseTwo = false;
+    private boolean phaseThree = false;
+
     private boolean manualOperateElevator = false;
 
     //konami code: up up down down left right left right B A 
-
-    CommandXboxController driverCommandController = new CommandXboxController(0); // 0 is the USB Port to be used as indicated on the Driver Station
-    CommandXboxController operatorCommandController = new CommandXboxController(1);
 
     XboxController driverController = new XboxController(0);
     XboxController operatorController = new XboxController(1);
@@ -123,7 +128,7 @@ public class RobotContainer {
 
         driverXStick = driverController.getRawAxis(0);
         driverYStick = driverController.getRawAxis(1);
-        driverRotStick = driverController.getRawAxis(2);
+        driverRotStick = driverController.getRawAxis(4);
 
         driverLeftTrigger = driverController.getLeftTriggerAxis();
         driverRightTrigger = driverController.getRightTriggerAxis();
@@ -162,13 +167,15 @@ public class RobotContainer {
      * Gordon Ramsey himself couldn't do better. 
      */
     public void letDriverCook () {
+
+
+
         if(driverXButton) {
             //drive slowly
             drivetrain.drive(driverXStick/10, driverYStick/10, (driverRotStick + .01)/10, true, false, false);
-        } else if (driverYButton) {
-            //driveRobotRelative
-            drivetrain.drive(driverXStick, driverYStick, driverRotStick + .01, false, false, false);
         } else if (driverAButton) {
+            //driveRobotRelative
+        } else if (driverYButton) {
             //drive slowly and robot relative
             drivetrain.drive(driverXStick/10, driverYStick/10, (driverRotStick + .01)/10, false, false, false);
         } else if(driverBButton) {
@@ -181,43 +188,61 @@ public class RobotContainer {
 
     public void letOperatorCook() {
         //determines/switches mode
-        if(operatorAButton) {
+        if(operatorController.getRawButton(2)) {
             manualOperateElevator = false;
         }
-        if(operatorLB) {
+        if(operatorController.getRawButton(5)) { //left bumper
             manualOperateElevator = true;
         }
         //Main logic
         if(manualOperateElevator) {
 
-            if(driverLeftTrigger > driverRightTrigger && driverLeftTrigger > .05) {
-                m_Elevator.driveMotorNoPID(driverLeftTrigger, false);
-            } else if (driverLeftTrigger < driverRightTrigger && driverRightTrigger > .05) {
-                m_Elevator.driveMotorNoPID(driverRightTrigger, false);
-            }
+            m_Elevator.driveMotorNoPID(Math.pow((operatorController.getRawAxis(1)),3), true);
 
         } else {
             if(operatorYButton) {
-                positionRotations = 10;
+                positionRotations = 32;
+                System.out.println("Y");
             } else if (operatorBButton) {
-                positionRotations = 20;
+                System.out.println("B");
+                positionRotations = 48;
             } else if (operatorXButton) {
-                positionRotations = 30;
-            } else if (operatorRB) {
-                positionRotations = 40;
-            }
+                System.out.println("X");
+                positionRotations = 70;
+            } //else if (operatorRB) {
+            //     positionRotations = 40;
+            // }
 
             m_Elevator.driveMotor(positionRotations);
 
         }
-
+        //m_Elevator.driveMotorNoPID(operatorController.getRawAxis(1), true);
     }
 
-    public void driveAutoManual(double xSpeed, double ySpeed, double rot, long time) {
-        drivetrain.drive(xSpeed, ySpeed, rot, true, false, false);
+    public void manualAuto(double driveRots, double turnRots) {
+        drivetrain.driveManualAuto(driveRots, turnRots);
     }
 
+    public void resetDriveEncoder() {
+        drivetrain.resetDriveEncoders();
+    }
 
-    
-    
+    public void autopath() {
+        manualAuto(10, 0);
+        if(mTimer.get() > 2) {
+            manualAuto(30, 1);
+        }   if(mTimer.get() > 5) {
+            manualAuto(20, .5);
+            mTimer.stop();
+            resetTimer();
+        }
+    }
+
+    public void startTimer() {
+        mTimer.start();
+    }
+    public void resetTimer() {
+        mTimer.reset();
+    }
+
 }

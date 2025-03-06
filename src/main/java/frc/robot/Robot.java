@@ -34,16 +34,22 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     
-    FollowPathCommand.warmupCommand().schedule();
-    m_autonomousCommand = m_RobotContainer.getAutonomousCommand();
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.schedule();
-    }
+    // FollowPathCommand.warmupCommand().schedule();
+    // m_autonomousCommand = m_RobotContainer.getAutonomousCommand();
+    // if (m_autonomousCommand != null) {
+    //   m_autonomousCommand.schedule();
+    // }
+
+    
+    m_RobotContainer.resetDriveEncoder();
+    m_RobotContainer.resetTimer();
+    m_RobotContainer.startTimer();
   }
 
   @Override
   public void autonomousPeriodic() {
-    m_autonomousCommand.schedule();
+    //m_autonomousCommand.schedule();
+    m_RobotContainer.autopath();
   }
 
   @Override
@@ -51,7 +57,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    
+
   }
 
   @Override

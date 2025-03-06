@@ -30,15 +30,15 @@ public class Elevator {
     private SparkFlexConfig m_elevatorMotorConfig;
     private SparkClosedLoopController m_elevatorController;
     private AbsoluteEncoder m_elevatorEncoder;
-    private final double elevatorEncoderScalar = 15;
+    private final double elevatorEncoderScalar = (Math.PI * 1.94) / 10; //
 
     public Elevator() {
         m_elevatorMotor = new SparkFlex(9, SparkLowLevel.MotorType.kBrushless);
         m_elevatorMotorConfig = new SparkFlexConfig();
         m_elevatorEncoder = m_elevatorMotor.getAbsoluteEncoder();
     
-        //m_elevatorMotorConfig.encoder
-        //.positionConversionFactor(elevatorEncoderScalar); //note Prngles Hot Ones collab is very good apparently
+        m_elevatorMotorConfig.encoder
+        .positionConversionFactor(1); //note Prngles Hot Ones collab is very good apparently
         m_elevatorMotorConfig
         .idleMode(IdleMode.kBrake)
         .inverted(true)
@@ -61,8 +61,18 @@ public class Elevator {
    * 
    * @param positionRotations
    */
-  public void driveMotor(double positionRotations) {
-    m_elevatorController.setReference(positionRotations, ControlType.kPosition);
+  public void driveMotor(double heightInInches) {
+    /*
+     * 32 inches = L1 and L2
+     * 48 inches = L3
+     * 72 inches = L4
+     * Diameter of spinny thing = 1.94 inches, so circumference = 2*PI*1.94 per rotation. Gear ratio is 10, so scalar = 6.28*1.94 / 10 
+     * currently offset is 8.5
+     */
+    heightInInches *= elevatorEncoderScalar;
+
+
+    m_elevatorController.setReference(heightInInches, ControlType.kPosition);
   }
 
   public void driveMotorNoPID(double power, boolean reversed) {

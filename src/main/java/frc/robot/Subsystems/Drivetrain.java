@@ -219,4 +219,17 @@ public class Drivetrain extends SubsystemBase {
             m_backRight.setDesiredState(new SwerveModuleState(0.0, new Rotation2d((Math.PI / 4))));
         }
      }
+
+     public void driveManualAuto(double driveRots, double turnRots) {
+        m_backRight.driveAutoOnRots(driveRots, turnRots);
+        m_backLeft.driveAutoOnRots(driveRots, turnRots);
+        m_frontLeft.driveAutoOnRots(driveRots, turnRots);
+        m_frontRight.driveAutoOnRots(driveRots, turnRots);
+     }
+     public void resetDriveEncoders() {
+        m_backRight.resetDriveEncoder();
+        m_backLeft.resetDriveEncoder();
+        m_frontLeft.resetDriveEncoder();
+        m_frontRight.resetDriveEncoder();
+     }
 }

@@ -30,7 +30,7 @@ public class Elevator {
     private SparkFlexConfig m_elevatorMotorConfig;
     private SparkClosedLoopController m_elevatorController;
     private AbsoluteEncoder m_elevatorEncoder;
-    private final double elevatorEncoderScalar = (Math.PI * 1.94) / 10; //
+    private final double elevatorEncoderScalar = (Math.PI * 1.94); //
 
     public Elevator() {
         m_elevatorMotor = new SparkFlex(9, SparkLowLevel.MotorType.kBrushless);
@@ -43,6 +43,8 @@ public class Elevator {
         .idleMode(IdleMode.kBrake)
         .inverted(true)
         .smartCurrentLimit(40);
+        m_elevatorMotor.getEncoder().setPosition(0);
+
         m_elevatorMotorConfig.closedLoop
         .pid(1.2, 0, .4)
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder) //when using old method, primaryEncoder was the only thing that worked, absoluteEncoder should work tho.
@@ -61,7 +63,7 @@ public class Elevator {
    * 
    * @param positionRotations
    */
-  public void driveMotor(double heightInInches) {
+  public void driveMotor(double heightInches) {
     /*
      * 32 inches = L1 and L2
      * 48 inches = L3
@@ -69,10 +71,8 @@ public class Elevator {
      * Diameter of spinny thing = 1.94 inches, so circumference = 2*PI*1.94 per rotation. Gear ratio is 10, so scalar = 6.28*1.94 / 10 
      * currently offset is 8.5
      */
-    heightInInches *= elevatorEncoderScalar;
-
-
-    m_elevatorController.setReference(heightInInches, ControlType.kPosition);
+    heightInches *= Math.PI * 1; //times one bc that's the diameter of the spool, just wanted to have it in there to show I did it..
+    m_elevatorController.setReference(heightInches, ControlType.kPosition);
   }
 
   public void driveMotorNoPID(double power, boolean reversed) {

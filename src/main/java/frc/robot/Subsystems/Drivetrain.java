@@ -199,11 +199,12 @@ public class Drivetrain extends SubsystemBase {
      @SuppressWarnings("ParameterName")
      public void drive(double driverXStick, double driverYStick, double driverRotateStick, boolean fieldRelative, boolean reefRotate, boolean defenseHoldingMode) {
         Rotation2d robotRotation = new Rotation2d(Math.toRadians(navx.getAngle()));
+        System.out.println("NavX Angle (Degrees)" + navx.getAngle());
         var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(driverXStick, driverYStick, driverRotateStick, robotRotation));
 
-        if(!fieldRelative) { //drives robot relative (obviously)
-            swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromRobotRelativeSpeeds(driverXStick, driverYStick, driverRotateStick, robotRotation));
-        }
+        // if(!fieldRelative) { //drives robot relative (obviously)
+        //     swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromRobotRelativeSpeeds(driverXStick, driverYStick, driverRotateStick, robotRotation));
+        // }
 
         if(!defenseHoldingMode) {
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);

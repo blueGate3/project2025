@@ -128,7 +128,7 @@ public class RobotContainer {
 
         driverXStick = driverController.getRawAxis(0);
         driverYStick = driverController.getRawAxis(1);
-        driverRotStick = driverController.getRawAxis(4);
+        driverRotStick = -driverController.getRawAxis(4);
 
         driverLeftTrigger = driverController.getLeftTriggerAxis();
         driverRightTrigger = driverController.getRightTriggerAxis();
@@ -200,24 +200,26 @@ public class RobotContainer {
             m_Elevator.driveMotorNoPID(Math.pow((operatorController.getRawAxis(1)),3), true);
 
         } else {
-            if(operatorYButton) {
+            if(operatorController.getRawButton(4)) {
                 positionRotations = 32;
                 System.out.println("Y");
-            } else if (operatorBButton) {
+            } else if (operatorController.getRawButton(3)) {
                 System.out.println("B");
                 positionRotations = 48;
-            } else if (operatorXButton) {
+            } else if (operatorController.getRawButton(1)) {
                 System.out.println("X");
                 positionRotations = 70;
-            } //else if (operatorRB) {
-            //     positionRotations = 40;
-            // }
+            } else if (operatorRB) {
+                positionRotations = 40;
+            }
 
             m_Elevator.driveMotor(positionRotations);
 
         }
         //m_Elevator.driveMotorNoPID(operatorController.getRawAxis(1), true);
     }
+
+    
 
     public void manualAuto(double driveRots, double turnRots) {
         drivetrain.driveManualAuto(driveRots, turnRots);
@@ -228,14 +230,25 @@ public class RobotContainer {
     }
 
     public void autopath() {
-        manualAuto(10, 0);
-        if(mTimer.get() > 2) {
-            manualAuto(30, 1);
-        }   if(mTimer.get() > 5) {
-            manualAuto(20, .5);
-            mTimer.stop();
-            resetTimer();
-        }
+        //3 inch is the width of the entire bumper. 30 inches offset bc our back wheels will start on the line, 27 from center of wheel to other edge of chassis, and 3 inches with bumper
+        //88 inches - 30 inches = 58 inches
+
+        // manualAuto(1, 0);
+        // if(mTimer.get() > 2) {
+        //     manualAuto(0, 0);
+        // }   if(mTimer.get() > 5) {
+        //     manualAuto(20, .5);
+        //     mTimer.stop();
+        //     resetTimer();
+        // }
+
+        manualAuto(8, -(.5*Math.PI));
+        // if(mTimer.get() > 2) {
+        //     manualAuto(58, .5);
+        // } if(mTimer.get() > 2.25) {
+        //     manualAuto(0, .5);
+        // }
+
     }
 
     public void startTimer() {

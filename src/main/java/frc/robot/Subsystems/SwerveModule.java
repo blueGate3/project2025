@@ -160,8 +160,9 @@ public class SwerveModule extends SubsystemBase {
 
         public void driveAutoOnRots(double driverRots, double turnRots) {
             driverRots *= drivingWheelGearRatio;
-            turnRots *= turningWheelGearRatio;
-            m_driveController.setReference(driverRots, ControlType.kPosition);
+            //turnRots *= turningWheelGearRatio;
+            m_driveController.setReference((driverRots), ControlType.kPosition); //2 inch radius wheels, now we have inches conversion
+            //m_driveController.setReference((driverRots*2*Math.PI*2), ControlType.kPosition); //2 inch radius wheels, now we have inches conversion
             m_turnController.setReference(turnRots, ControlType.kPosition);
         }
 

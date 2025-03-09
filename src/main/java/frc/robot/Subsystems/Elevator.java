@@ -50,7 +50,7 @@ public class Elevator {
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder) //when using old method, primaryEncoder was the only thing that worked, absoluteEncoder should work tho.
         .positionWrappingEnabled(true) //this and line below it allow for position wrapping between 0 and 2pi radians 
         //.positionWrappingInputRange(0, 2*Math.PI)
-        .outputRange(-1, 1);
+        .outputRange(-.4, .4);
     
         m_elevatorController = m_elevatorMotor.getClosedLoopController();
         m_elevatorMotor.configure(m_elevatorMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -81,5 +81,9 @@ public class Elevator {
     } else {
       m_elevatorMotor.set(power);
     }
+  }
+
+  public void getElevatorRotations() {
+    System.out.println("Elevator Height:" + (m_elevatorMotor.getEncoder().getPosition()*Math.PI));
   }
 }

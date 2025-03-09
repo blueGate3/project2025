@@ -19,16 +19,16 @@ public class Cradle {
     private SparkMaxConfig m_rightCradleMotorConfig;
 
     public Cradle() {
-        m_leftCradleMotor = new SparkMax(10, SparkLowLevel.MotorType.kBrushless);
+        m_leftCradleMotor = new SparkMax(18, SparkLowLevel.MotorType.kBrushless);
         m_leftCradleMotorConfig = new SparkMaxConfig();
         m_leftCradleMotorConfig
         .idleMode(IdleMode.kBrake)
-        .inverted(true)
+        .inverted(false)
         .smartCurrentLimit(40);
         m_leftCradleMotor.configure(m_leftCradleMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         
-        m_rightCradleMotor = new SparkMax(13, SparkLowLevel.MotorType.kBrushless); //hear me out: "13 Reasons Why: The Musical"
+        m_rightCradleMotor = new SparkMax(15, SparkLowLevel.MotorType.kBrushless); //hear me out: "13 Reasons Why: The Musical"
         m_rightCradleMotorConfig = new SparkMaxConfig();
         m_rightCradleMotorConfig
         .idleMode(IdleMode.kBrake)
@@ -39,6 +39,9 @@ public class Cradle {
     }
 
     public void driveMotorNoPID(double power, boolean reversed) {
+      //power -= .6; //corrects for the fact that triggers start at .5 readout, .6 is just to be safe. 
+      power *= .3; //sets max speed at .1
+      if(power >= 0) { //only runs if triggers pressed
         if(reversed) {
           m_leftCradleMotor.set(-power);
           m_rightCradleMotor.set(power);
@@ -47,6 +50,6 @@ public class Cradle {
           m_rightCradleMotor.set(-power);
         }
       }
-
+    }
 
 }

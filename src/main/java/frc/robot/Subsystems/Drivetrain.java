@@ -233,4 +233,8 @@ public class Drivetrain extends SubsystemBase {
         m_frontLeft.resetDriveEncoder();
         m_frontRight.resetDriveEncoder();
      }
+
+     public void resetNavX() {
+        navx.reset();
+     }
 }

@@ -99,7 +99,7 @@ public class SwerveModule extends SubsystemBase {
 
             m_driveMotorConfig.closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-                .outputRange(-1, 1)
+                .outputRange(-.1, .1) //sets max speed to 1/10 of full power
                 .pid(.3, 0, 0.4);
 
             // m_driveMotorConfig.encoder
@@ -127,6 +127,7 @@ public class SwerveModule extends SubsystemBase {
                 .positionConversionFactor(turnEncoderScalar);
             m_turningMotorConfig
                 .idleMode(IdleMode.kBrake)
+                .openLoopRampRate(1)
                 .inverted(turnInverted)
                 .smartCurrentLimit(40);
             m_turningMotorConfig.closedLoop
@@ -152,14 +153,14 @@ public class SwerveModule extends SubsystemBase {
             double drivePower = (desiredState.speedMetersPerSecond) * desiredState.angle.minus(new Rotation2d(getTurnEncoderOutput(false))).getCos(); //multiplies drive power by how close we are to our desired angle so we dont tear up the tires.
             //look at cosine compensation with wpilib
 
-            m_driveMotor.set(drivePower/2); //will eventually switch to PID below, x/5 is for safety coz vortex scary
+            m_driveMotor.set(drivePower); //will eventually switch to PID below, x/5 is for safety coz vortex scary
             //m_driveController.setReference(state.speedMetersPerSecond, ControlType.kVelocity); //desired state gives velocity, to convert: rpm = (Velocity(in m/s) * 60)/pi*diameter(aka wheel circumference)
             m_turnController.setReference(desiredState.angle.getRadians(), ControlType.kPosition);//my code TODO may need to factor in gear ratio
             SmartDashboard.putNumber("DrIvE vElOcItY", m_driveEncoder.getVelocity());
         }
 
         public void driveAutoOnRots(double driverRots, double turnRots) {
-            driverRots *= drivingWheelGearRatio;
+            driverRots = driverRots * (2*Math.PI / drivingWheelGearRatio);
             //turnRots *= turningWheelGearRatio;
             m_driveController.setReference((driverRots), ControlType.kPosition); //2 inch radius wheels, now we have inches conversion
             //m_driveController.setReference((driverRots*2*Math.PI*2), ControlType.kPosition); //2 inch radius wheels, now we have inches conversion

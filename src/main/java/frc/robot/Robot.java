@@ -53,17 +53,17 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void autonomousExit() {}
+  public void autonomousExit() {
+    m_RobotContainer.stopTimer();
+  }
 
   @Override
   public void teleopInit() {
-
   }
 
   @Override
   public void teleopPeriodic() {
     m_RobotContainer.readDriverController();
-    m_RobotContainer.readOperatorController();
     m_RobotContainer.letDriverCook();
     m_RobotContainer.letOperatorCook();
   }

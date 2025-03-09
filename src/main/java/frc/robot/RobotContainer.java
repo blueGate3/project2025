@@ -12,6 +12,8 @@ import java.security.cert.TrustAnchor;
 
 import javax.naming.OperationNotSupportedException;
 
+import org.ejml.dense.block.MatrixOps_DDRB;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -20,6 +22,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.hal.AllianceStationID;
+import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.simulation.DriverStationDataJNI;
 import edu.wpi.first.hal.simulation.RoboRioDataJNI;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -44,6 +47,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class RobotContainer {
     private final Drivetrain drivetrain = new Drivetrain();
     private final Elevator m_Elevator = new Elevator();
+    private final Cradle m_Cradle = new Cradle();
     private final SendableChooser<Command> autoChooser;
     private Timer mTimer = new Timer();
     /*
@@ -64,7 +68,7 @@ public class RobotContainer {
     // private SlewRateLimiter yDriveLimiter = new SlewRateLimiter(5);
     // private SlewRateLimiter rotDriveLimiter = new SlewRateLimiter(5);
 
-    private double positionRotations;
+    private double positionRotations = 0;
     
     private boolean operatorXButton = false;
     private boolean operatorYButton = false;
@@ -126,16 +130,13 @@ public class RobotContainer {
         // driverYStick = yDriveLimiter.calculate(driverController.getRawAxis(1));
         // driverRotStick = -rotDriveLimiter.calculate(driverController.getRawAxis(2));
 
-        driverXStick = driverController.getRawAxis(0);
-        driverYStick = driverController.getRawAxis(1);
-        driverRotStick = -driverController.getRawAxis(4);
+        // driverXStick = driverController.getRawAxis(0);
+        // driverYStick = driverController.getRawAxis(1);
+        // driverRotStick = -driverController.getRawAxis(4);
 
-        driverLeftTrigger = driverController.getLeftTriggerAxis();
-        driverRightTrigger = driverController.getRightTriggerAxis();
-        driverXButton = driverController.getXButton(); //x is hold
-        driverYButton = driverController.getYButton(); //y is hold
-        driverAButton = driverController.getAButton(); //a is hold
-        driverBButton = driverController.getBButton(); //b is hold
+        driverXStick = -Math.pow(driverController.getRawAxis(0), 3);
+        driverYStick = -Math.pow(driverController.getRawAxis(1), 3);
+        driverRotStick = -Math.pow(driverController.getRawAxis(2), 3);
 
 
         //rumbles controller so driver knows the match has started and when endgame has started.
@@ -151,36 +152,27 @@ public class RobotContainer {
          */
     }
 
-    public void readOperatorController() {
-        operatorAButton = operatorController.getAButton();
-        operatorBButton = operatorController.getBButton();
-        operatorXButton = operatorController.getXButton();
-        operatorYButton = operatorController.getYButton();
+    // public void readOperatorController() {
+    //     operatorAButton = operatorController.getAButton();
+    //     operatorBButton = operatorController.getBButton();
+    //     operatorXButton = operatorController.getXButton();
+    //     operatorYButton = operatorController.getYButton();
 
-        operatorLeftTrigger = operatorController.getLeftTriggerAxis();
-        operatorRightTrigger = operatorController.getRightTriggerAxis();
-        operatorLB = operatorController.getLeftBumperButton();
-        operatorRB = operatorController.getRightBumperButton();
-    }
+    //     operatorLeftTrigger = operatorController.getLeftTriggerAxis();
+    //     operatorRightTrigger = operatorController.getRightTriggerAxis();
+    //     operatorLB = operatorController.getLeftBumperButton();
+    //     operatorRB = operatorController.getRightBumperButton();
+    // }
 
     /**
      * Gordon Ramsey himself couldn't do better. 
      */
     public void letDriverCook () {
-
-
-
-        if(driverXButton) {
-            //drive slowly
-            drivetrain.drive(driverXStick/10, driverYStick/10, (driverRotStick + .01)/10, true, false, false);
-        } else if (driverAButton) {
-            //driveRobotRelative
-        } else if (driverYButton) {
-            //drive slowly and robot relative
-            drivetrain.drive(driverXStick/10, driverYStick/10, (driverRotStick + .01)/10, false, false, false);
-        } else if(driverBButton) {
+        if(driverController.getRawButton(3)) {
             //creates X with wheels so we can't be pushed around.
             drivetrain.drive(0, 0, 0, true, false, true);
+        } else if (driverController.getAButton()){
+            drivetrain.resetNavX();
         } else {
             drivetrain.drive(driverXStick, driverYStick, driverRotStick + .01, true, false, false); //the rotation being .01% is so we have a holding position in the rotate position, so the wheels are all good, but there's not enough power to actually drive it. 
         }
@@ -188,7 +180,7 @@ public class RobotContainer {
 
     public void letOperatorCook() {
         //determines/switches mode
-        if(operatorController.getRawButton(2)) {
+        if(operatorController.getRawButton(6)) {
             manualOperateElevator = false;
         }
         if(operatorController.getRawButton(5)) { //left bumper
@@ -196,24 +188,49 @@ public class RobotContainer {
         }
         //Main logic
         if(manualOperateElevator) {
-
             m_Elevator.driveMotorNoPID(Math.pow((operatorController.getRawAxis(1)),3), true);
-
         } else {
+            //offset from robot bottom to the bottom of the cradle is 10.5 inches, will have to factor this in. ... or will we?
             if(operatorController.getRawButton(4)) {
-                positionRotations = 32;
+                positionRotations = 41 -10.5;
                 System.out.println("Y");
-            } else if (operatorController.getRawButton(3)) {
+            } else if (operatorController.getRawButton(2)) {
                 System.out.println("B");
-                positionRotations = 48;
-            } else if (operatorController.getRawButton(1)) {
+                positionRotations = 48 -10.5;
+            } else if (operatorController.getRawButton(3)) {
                 System.out.println("X");
-                positionRotations = 70;
-            } else if (operatorRB) {
-                positionRotations = 40;
+                positionRotations = 16.75 - 10.5 + 48;
+            } else if (operatorController.getRawButton(1)) {
+                System.out.println("A");
+                positionRotations = 0;
             }
-
+            //positionRotations -= 10.5;
             m_Elevator.driveMotor(positionRotations);
+
+        }
+        //axis 2 is left, axis 3 is right
+        System.out.println("Left trigger: " + operatorController.getRawAxis(2));
+        System.out.println("Right trigger: " + operatorController.getRawAxis(3));
+        m_Elevator.getElevatorRotations();
+
+        if(operatorController.getRawButton(10)) {
+            m_Cradle.driveMotorNoPID(0, true);
+        } else {
+            // if(operatorController.getRawAxis(3) > .2 && operatorController.getRawAxis(3) > operatorController.getRawAxis(2)) {
+            // m_Cradle.driveMotorNoPID(.5, false);
+            // } else if(operatorController.getRawAxis(2) > .2 && operatorController.getRawAxis(2) > operatorController.getRawAxis(3)) {
+            // m_Cradle.driveMotorNoPID(.5, true);
+            // } else {
+            //     m_Cradle.driveMotorNoPID(0, true);
+            // }
+
+            if(operatorController.getRightTriggerAxis() > .1) {
+                m_Cradle.driveMotorNoPID(operatorController.getRightTriggerAxis(), true);
+            } else if (operatorController.getLeftTriggerAxis() > .1) {
+                m_Cradle.driveMotorNoPID(operatorController.getLeftTriggerAxis(), false);
+            } else {
+                m_Cradle.driveMotorNoPID(0, false);
+            }
 
         }
         //m_Elevator.driveMotorNoPID(operatorController.getRawAxis(1), true);
@@ -221,8 +238,12 @@ public class RobotContainer {
 
     
 
-    public void manualAuto(double driveRots, double turnRots) {
+    public void manualAuto(double driveRots, double turnRots, boolean onBlueAlliance) {
+        if(onBlueAlliance) {
         drivetrain.driveManualAuto(driveRots, turnRots);
+        } else {
+            drivetrain.driveManualAuto(-driveRots, turnRots);
+        }
     }
 
     public void resetDriveEncoder() {
@@ -242,12 +263,20 @@ public class RobotContainer {
         //     resetTimer();
         // }
 
-        manualAuto(8, -(.5*Math.PI));
-        // if(mTimer.get() > 2) {
-        //     manualAuto(58, .5);
-        // } if(mTimer.get() > 2.25) {
-        //     manualAuto(0, .5);
+        // manualAuto(56, -(.5*Math.PI)); //drives forward
+        // // if(mTimer.get() > 2) {
+        // //     manualAuto(58, .5);
+        // if(mTimer.get() > 8) {
+        //     m_Elevator.driveMotor(32);
+        // } if (mTimer.get() > 13) {
+        //     m_Cradle.driveMotorNoPID(.5, false);
         // }
+        manualAuto(56, (.5*Math.PI), false);
+        if (mTimer.get() > 8) {
+            m_Elevator.driveMotor(23-10.5);
+        } if (mTimer.get() > 12) {
+            m_Cradle.driveMotorNoPID(.5, false);
+        }
 
     }
 
@@ -256,6 +285,9 @@ public class RobotContainer {
     }
     public void resetTimer() {
         mTimer.reset();
+    }
+    public void stopTimer() {
+        mTimer.stop();
     }
 
 }

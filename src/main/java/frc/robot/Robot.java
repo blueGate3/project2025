@@ -19,7 +19,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
-
+    //m_RobotContainer.temp();
   }
 
   @Override
@@ -65,7 +65,7 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     m_RobotContainer.readDriverController();
     m_RobotContainer.letDriverCook();
-    m_RobotContainer.letOperatorCook();
+    //m_RobotContainer.letOperatorCook();
   }
 
   @Override

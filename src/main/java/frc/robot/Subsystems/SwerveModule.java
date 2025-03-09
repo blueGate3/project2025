@@ -93,7 +93,7 @@ public class SwerveModule extends SubsystemBase {
             m_driveMotorConfig
                 .inverted(driveInverted)
                 .smartCurrentLimit(40)
-                .openLoopRampRate(.5)
+                .openLoopRampRate(.25)
                 .inverted(driveInverted)
                 .idleMode(IdleMode.kBrake);
 

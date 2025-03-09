@@ -171,7 +171,7 @@ public class RobotContainer {
         if(driverController.getRawButton(3)) {
             //creates X with wheels so we can't be pushed around.
             drivetrain.drive(0, 0, 0, true, false, true);
-        } else if (driverController.getAButton()){
+        } else if (driverController.getRawButton(2)){
             drivetrain.resetNavX();
         } else {
             drivetrain.drive(driverXStick, driverYStick, driverRotStick + .01, true, false, false); //the rotation being .01% is so we have a holding position in the rotate position, so the wheels are all good, but there's not enough power to actually drive it. 
@@ -196,10 +196,10 @@ public class RobotContainer {
                 System.out.println("Y");
             } else if (operatorController.getRawButton(2)) {
                 System.out.println("B");
-                positionRotations = 48 -10.5;
+                positionRotations = 41 -10.5 + 16.5;
             } else if (operatorController.getRawButton(3)) {
                 System.out.println("X");
-                positionRotations = 16.75 - 10.5 + 48;
+                positionRotations = 60;
             } else if (operatorController.getRawButton(1)) {
                 System.out.println("A");
                 positionRotations = 0;
@@ -209,9 +209,9 @@ public class RobotContainer {
 
         }
         //axis 2 is left, axis 3 is right
-        System.out.println("Left trigger: " + operatorController.getRawAxis(2));
-        System.out.println("Right trigger: " + operatorController.getRawAxis(3));
-        m_Elevator.getElevatorRotations();
+        //System.out.println("Left trigger: " + operatorController.getRawAxis(2));
+        //System.out.println("Right trigger: " + operatorController.getRawAxis(3));
+        //m_Elevator.getElevatorRotations();
 
         if(operatorController.getRawButton(10)) {
             m_Cradle.driveMotorNoPID(0, true);
@@ -224,8 +224,8 @@ public class RobotContainer {
             //     m_Cradle.driveMotorNoPID(0, true);
             // }
 
-            if(operatorController.getRightTriggerAxis() > .1) {
-                m_Cradle.driveMotorNoPID(operatorController.getRightTriggerAxis(), true);
+            if(operatorController.getRawButton(8)) {
+                m_Cradle.driveMotorNoPID(.3, true);
             } else if (operatorController.getLeftTriggerAxis() > .1) {
                 m_Cradle.driveMotorNoPID(operatorController.getLeftTriggerAxis(), false);
             } else {
@@ -271,12 +271,14 @@ public class RobotContainer {
         // } if (mTimer.get() > 13) {
         //     m_Cradle.driveMotorNoPID(.5, false);
         // }
-        manualAuto(56, (.5*Math.PI), false);
-        if (mTimer.get() > 8) {
-            m_Elevator.driveMotor(23-10.5);
-        } if (mTimer.get() > 12) {
-            m_Cradle.driveMotorNoPID(.5, false);
-        }
+        manualAuto(56, (.5*Math.PI), false); //never switch to true
+        // if (mTimer.get() > 6) {
+        //     m_Elevator.driveMotor(19);
+        // } if (mTimer.get() > 9) {
+        //     m_Cradle.driveMotorNoPID(1, false);
+        // } if (mTimer.get() >10) {
+        //     m_Cradle.driveMotorNoPID(0, false);
+        // }
 
     }
 
@@ -288,6 +290,10 @@ public class RobotContainer {
     }
     public void stopTimer() {
         mTimer.stop();
+    }
+
+    public void temp() {
+        m_Elevator.getElevatorRotations();
     }
 
 }

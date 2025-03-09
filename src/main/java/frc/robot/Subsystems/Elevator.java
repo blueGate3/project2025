@@ -84,6 +84,6 @@ public class Elevator {
   }
 
   public void getElevatorRotations() {
-    System.out.println("Elevator Height:" + (m_elevatorMotor.getEncoder().getPosition()*Math.PI));
+    System.out.println("Elevator Height:" + (m_elevatorMotor.getEncoder().getPosition()*(Math.PI)/10));
   }
 }

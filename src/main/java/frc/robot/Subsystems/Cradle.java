@@ -40,7 +40,7 @@ public class Cradle {
 
     public void driveMotorNoPID(double power, boolean reversed) {
       //power -= .6; //corrects for the fact that triggers start at .5 readout, .6 is just to be safe. 
-      power *= .3; //sets max speed at .1
+      power *= .5; //sets max speed at .1
       if(power >= 0) { //only runs if triggers pressed
         if(reversed) {
           m_leftCradleMotor.set(-power);

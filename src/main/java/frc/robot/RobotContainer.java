@@ -56,37 +56,12 @@ public class RobotContainer {
     private double driverXStick = 0;
     private double driverYStick = 0;
     private double driverRotStick = 0;
-    private boolean driverXButton = false;
-    private boolean driverYButton = false;
-    private boolean driverAButton = false;
-    private boolean driverBButton = false;
-    private boolean reefRotate = false;
-    private double driverLeftTrigger = 0;
-    private double driverRightTrigger = 0;
-    
-    // private SlewRateLimiter xDriveLimiter = new SlewRateLimiter(5);
-    // private SlewRateLimiter yDriveLimiter = new SlewRateLimiter(5);
-    // private SlewRateLimiter rotDriveLimiter = new SlewRateLimiter(5);
 
     private double positionRotations = 0;
-    
-    private boolean operatorXButton = false;
-    private boolean operatorYButton = false;
-    private boolean operatorAButton = false;
-    private boolean operatorBButton = false;
-    private double operatorLeftTrigger = 0;
-    private double operatorRightTrigger = 0;
-    private boolean operatorLB = false;
-    private boolean operatorRB = false;
-
-    private boolean phaseOne = false;
-    private boolean phaseTwo = false;
-    private boolean phaseThree = false;
 
     private boolean manualOperateElevator = false;
 
     //konami code: up up down down left right left right B A 
-
     XboxController driverController = new XboxController(0);
     XboxController operatorController = new XboxController(1);
 
@@ -124,45 +99,10 @@ public class RobotContainer {
 
     public void readDriverController() {
         //Driver stick getters
-        
-
-        // driverXStick = xDriveLimiter.calculate(driverController.getRawAxis(0));
-        // driverYStick = yDriveLimiter.calculate(driverController.getRawAxis(1));
-        // driverRotStick = -rotDriveLimiter.calculate(driverController.getRawAxis(2));
-
-        // driverXStick = driverController.getRawAxis(0);
-        // driverYStick = driverController.getRawAxis(1);
-        // driverRotStick = -driverController.getRawAxis(4);
-
         driverXStick = -Math.pow(driverController.getRawAxis(0), 3);
         driverYStick = -Math.pow(driverController.getRawAxis(1), 3);
         driverRotStick = -Math.pow(driverController.getRawAxis(2), 3);
-
-
-        //rumbles controller so driver knows the match has started and when endgame has started.
-        //if( DriverStation.getMatchTime() == 15 || DriverStation.isTeleop()) {
-
-        //}
-
-        /*
-         * Example ways to get different types of input:
-         * driverXButton = driverController.getXButton(); //This checks every 20ms if it's pressed, you would need to hold the button
-         * driverXButton = driverController.getXButtonPressed(); //whether button was pressed since last check, this might be good for toggling on commands.
-         * driverXButton = driverController.getRawButtonReleased(0); //true if button went from held down to not pressed since last check.
-         */
     }
-
-    // public void readOperatorController() {
-    //     operatorAButton = operatorController.getAButton();
-    //     operatorBButton = operatorController.getBButton();
-    //     operatorXButton = operatorController.getXButton();
-    //     operatorYButton = operatorController.getYButton();
-
-    //     operatorLeftTrigger = operatorController.getLeftTriggerAxis();
-    //     operatorRightTrigger = operatorController.getRightTriggerAxis();
-    //     operatorLB = operatorController.getLeftBumperButton();
-    //     operatorRB = operatorController.getRightBumperButton();
-    // }
 
     /**
      * Gordon Ramsey himself couldn't do better. 
@@ -177,6 +117,18 @@ public class RobotContainer {
             drivetrain.drive(driverXStick, driverYStick, driverRotStick + .01, true, false, false); //the rotation being .01% is so we have a holding position in the rotate position, so the wheels are all good, but there's not enough power to actually drive it. 
         }
     }
+
+    // public void readOperatorController() {
+    //     operatorAButton = operatorController.getAButton();
+    //     operatorBButton = operatorController.getBButton();
+    //     operatorXButton = operatorController.getXButton();
+    //     operatorYButton = operatorController.getYButton();
+
+    //     operatorLeftTrigger = operatorController.getLeftTriggerAxis();
+    //     operatorRightTrigger = operatorController.getRightTriggerAxis();
+    //     operatorLB = operatorController.getLeftBumperButton();
+    //     operatorRB = operatorController.getRightBumperButton();
+    // }
 
     public void letOperatorCook() {
         //determines/switches mode
@@ -204,7 +156,6 @@ public class RobotContainer {
                 System.out.println("A");
                 positionRotations = 0;
             }
-            //positionRotations -= 10.5;
             m_Elevator.driveMotor(positionRotations);
 
         }
@@ -216,14 +167,6 @@ public class RobotContainer {
         if(operatorController.getRawButton(10)) {
             m_Cradle.driveMotorNoPID(0, true);
         } else {
-            // if(operatorController.getRawAxis(3) > .2 && operatorController.getRawAxis(3) > operatorController.getRawAxis(2)) {
-            // m_Cradle.driveMotorNoPID(.5, false);
-            // } else if(operatorController.getRawAxis(2) > .2 && operatorController.getRawAxis(2) > operatorController.getRawAxis(3)) {
-            // m_Cradle.driveMotorNoPID(.5, true);
-            // } else {
-            //     m_Cradle.driveMotorNoPID(0, true);
-            // }
-
             if(operatorController.getRawButton(8)) {
                 m_Cradle.driveMotorNoPID(.3, true);
             } else if (operatorController.getLeftTriggerAxis() > .1) {
@@ -233,7 +176,6 @@ public class RobotContainer {
             }
 
         }
-        //m_Elevator.driveMotorNoPID(operatorController.getRawAxis(1), true);
     }
 
     
@@ -253,24 +195,6 @@ public class RobotContainer {
     public void autopath() {
         //3 inch is the width of the entire bumper. 30 inches offset bc our back wheels will start on the line, 27 from center of wheel to other edge of chassis, and 3 inches with bumper
         //88 inches - 30 inches = 58 inches
-
-        // manualAuto(1, 0);
-        // if(mTimer.get() > 2) {
-        //     manualAuto(0, 0);
-        // }   if(mTimer.get() > 5) {
-        //     manualAuto(20, .5);
-        //     mTimer.stop();
-        //     resetTimer();
-        // }
-
-        // manualAuto(56, -(.5*Math.PI)); //drives forward
-        // // if(mTimer.get() > 2) {
-        // //     manualAuto(58, .5);
-        // if(mTimer.get() > 8) {
-        //     m_Elevator.driveMotor(32);
-        // } if (mTimer.get() > 13) {
-        //     m_Cradle.driveMotorNoPID(.5, false);
-        // }
         manualAuto(56, (.5*Math.PI), false); //never switch to true
         // if (mTimer.get() > 6) {
         //     m_Elevator.driveMotor(19);
@@ -291,9 +215,4 @@ public class RobotContainer {
     public void stopTimer() {
         mTimer.stop();
     }
-
-    public void temp() {
-        m_Elevator.getElevatorRotations();
-    }
-
 }

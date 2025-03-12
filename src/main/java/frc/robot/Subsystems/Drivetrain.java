@@ -5,26 +5,13 @@
 package frc.robot.Subsystems;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
-import com.thethriftybot.Conversion;
-
 import java.io.IOException;
-import java.util.function.BooleanSupplier;
-
 import org.json.simple.parser.ParseException;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-//import com.pathplanner.lib.commands.FollowPathHolonomic;
-import com.pathplanner.lib.path.PathPlannerPath;
-// import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
-// import com.pathplanner.lib.util.PIDConstants;
-// import com.pathplanner.lib.util.ReplanningConfig;
-
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -33,13 +20,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Robot;
 
 /** Represents a swerve drive style drivetrain. */
 

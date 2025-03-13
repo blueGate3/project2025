@@ -7,6 +7,7 @@ import com.pathplanner.lib.commands.FollowPathCommand;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.CvSink;
 import edu.wpi.first.cscore.CvSource;
+import edu.wpi.first.cscore.VideoSource;
 import edu.wpi.first.cameraserver.*;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -19,7 +20,17 @@ public class Robot extends TimedRobot {
   RobotContainer m_RobotContainer = new RobotContainer();
   private Command m_autonomousCommand;
 
+  /**
+ * Uses the CameraServer class to automatically capture video from a USB webcam and send it to the
+ * FRC dashboard without doing any vision processing. This is the easiest way to get camera images
+ * to the dashboard. Just add this to the robot class constructor.
+ */
   public Robot() {
+    // CameraServer.putVideo(null, 0, 0);
+    CameraServer.startAutomaticCapture().setResolution(720, 500);
+    //CameraServer.getVideo().getSource().setFPS(60);
+    //CameraServer.putVideo("DriverFeed", 200, 500);
+
     // Creates UsbCamera and MjpegServer [1] and connects them
     // Creates the CvSink and connects it to the UsbCamera
     // CvSink cvSink = CameraServer.getVideo();
@@ -75,7 +86,7 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     m_RobotContainer.readDriverController();
     m_RobotContainer.letDriverCook();
-    m_RobotContainer.letOperatorCook();
+    m_RobotContainer.letOperatorCookUpdated();
   }
 
   @Override

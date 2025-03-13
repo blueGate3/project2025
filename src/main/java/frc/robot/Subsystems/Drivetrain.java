@@ -184,10 +184,9 @@ public class Drivetrain extends SubsystemBase {
         System.out.println("NavX Angle (Degrees)" + navx.getAngle());
         var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(driverXStick, driverYStick, driverRotateStick, robotRotation));
 
-        // if(!fieldRelative) { //drives robot relative (obviously)
-        //     swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromRobotRelativeSpeeds(driverXStick, driverYStick, driverRotateStick, robotRotation));
-        // }
-
+        if(!fieldRelative) { //drives robot relative (obviously)
+            swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(driverXStick, driverYStick, driverRotateStick, robotRotation));
+        }
         if(!defenseHoldingMode) {
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
             m_frontRight.setDesiredState(swerveModuleStates[0]);
@@ -196,10 +195,10 @@ public class Drivetrain extends SubsystemBase {
             m_backRight.setDesiredState(swerveModuleStates[3]);
         } else if (defenseHoldingMode){
             //creates X pattern with wheels so we cant be pushed around. 
-            m_frontLeft.setDesiredState(new SwerveModuleState(0.0, new Rotation2d((Math.PI / 4))));
-            m_frontRight.setDesiredState(new SwerveModuleState(0.0, new Rotation2d(3 * (Math.PI / 4))));
-            m_backLeft.setDesiredState(new SwerveModuleState(0.0, new Rotation2d((3 * Math.PI / 4))));
-            m_backRight.setDesiredState(new SwerveModuleState(0.0, new Rotation2d((Math.PI / 4))));
+            m_frontLeft.setDesiredState(new SwerveModuleState(0.001, new Rotation2d((Math.PI / 4))));
+            m_frontRight.setDesiredState(new SwerveModuleState(0.001, new Rotation2d(3 * (Math.PI / 4))));
+            m_backLeft.setDesiredState(new SwerveModuleState(0.001, new Rotation2d((3 * Math.PI / 4))));
+            m_backRight.setDesiredState(new SwerveModuleState(0.001, new Rotation2d((Math.PI / 4))));
         }
      }
 

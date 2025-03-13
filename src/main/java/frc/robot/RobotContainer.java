@@ -101,38 +101,28 @@ public class RobotContainer {
         //Driver stick getters
         driverXStick = -Math.pow(driverController.getRawAxis(0), 3);
         driverYStick = -Math.pow(driverController.getRawAxis(1), 3);
-        driverRotStick = -Math.pow(driverController.getRawAxis(2), 3);
+        driverRotStick = -Math.pow(driverController.getRawAxis(4), 3);
     }
 
     /**
      * Gordon Ramsey himself couldn't do better. 
      */
     public void letDriverCook () {
-        if(driverController.getRawButton(3)) {
+        if(driverController.getRawButton(2)) {
             //creates X with wheels so we can't be pushed around.
             drivetrain.drive(0, 0, 0, true, false, true);
-        } else if (driverController.getRawButton(2)){
+        } else if (driverController.getRawButton(4)){
             drivetrain.resetNavX();
+        } else if (driverController.getRawButton(1)) {
+            drivetrain.drive(driverXStick/10, driverYStick/10, driverRotStick/5, false, false, false);
         } else {
             drivetrain.drive(driverXStick, driverYStick, driverRotStick + .01, true, false, false); //the rotation being .01% is so we have a holding position in the rotate position, so the wheels are all good, but there's not enough power to actually drive it. 
         }
     }
 
-    // public void readOperatorController() {
-    //     operatorAButton = operatorController.getAButton();
-    //     operatorBButton = operatorController.getBButton();
-    //     operatorXButton = operatorController.getXButton();
-    //     operatorYButton = operatorController.getYButton();
-
-    //     operatorLeftTrigger = operatorController.getLeftTriggerAxis();
-    //     operatorRightTrigger = operatorController.getRightTriggerAxis();
-    //     operatorLB = operatorController.getLeftBumperButton();
-    //     operatorRB = operatorController.getRightBumperButton();
-    // }
-
-    public void letOperatorCook() {
+    public void letOperatorCookUpdated() {
         //determines/switches mode
-        if(operatorController.getRawButton(6)) {
+        if(operatorController.getRawButton(6)) { //right bumper
             manualOperateElevator = false;
         }
         if(operatorController.getRawButton(5)) { //left bumper
@@ -164,17 +154,12 @@ public class RobotContainer {
         //System.out.println("Right trigger: " + operatorController.getRawAxis(3));
         //m_Elevator.getElevatorRotations();
 
-        if(operatorController.getRawButton(10)) {
-            m_Cradle.driveMotorNoPID(0, true);
+        if(operatorController.getRawAxis(3) > .2) {
+            m_Cradle.driveMotorNoPID(Math.pow(operatorController.getRawAxis(3), 3), false);
+        } else if (operatorController.getRawAxis(2) > .2) {
+            m_Cradle.driveMotorNoPID(Math.pow(operatorController.getRawAxis(2), 3), true);
         } else {
-            if(operatorController.getRawButton(8)) {
-                m_Cradle.driveMotorNoPID(.3, true);
-            } else if (operatorController.getLeftTriggerAxis() > .1) {
-                m_Cradle.driveMotorNoPID(operatorController.getLeftTriggerAxis(), false);
-            } else {
-                m_Cradle.driveMotorNoPID(0, false);
-            }
-
+            m_Cradle.driveMotorNoPID(0, false);
         }
     }
 

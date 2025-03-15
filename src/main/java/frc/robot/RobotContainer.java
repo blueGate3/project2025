@@ -180,7 +180,7 @@ public class RobotContainer {
     public void autopath() {
         //3 inch is the width of the entire bumper. 30 inches offset bc our back wheels will start on the line, 27 from center of wheel to other edge of chassis, and 3 inches with bumper
         //88 inches - 30 inches = 58 inches
-        manualAuto(89, (.5*Math.PI), false); //never switch to true
+        manualAuto(53, (.5*Math.PI), false); //never switch to true
         // if (mTimer.get() > 6) {
         //     m_Elevator.driveMotor(19);
         // } if (mTimer.get() > 9) {
@@ -188,10 +188,10 @@ public class RobotContainer {
         // } if (mTimer.get() >10) {
         //     m_Cradle.driveMotorNoPID(0, false);
         // }
-        if(mTimer.get() > 8) {
+        if(mTimer.get() > 5) {
             m_Elevator.driveMotor(72.5 - elevatorOffset);
         }
-        if(mTimer.get()>11) {
+        if(mTimer.get()>9) {
             m_Cradle.driveMotorNoPID(.75, false);
         }
         if(mTimer.get()>13) {

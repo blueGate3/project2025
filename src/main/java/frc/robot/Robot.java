@@ -26,8 +26,9 @@ public class Robot extends TimedRobot {
  * to the dashboard. Just add this to the robot class constructor.
  */
   public Robot() {
-    CameraServer.startAutomaticCapture().setResolution(1080, 720);
-  
+    CameraServer.startAutomaticCapture().setFPS(60); //.setResolution(1080, 720);
+    // CameraServer.startAutomaticCapture(setConfigJson()
+
   }
 
   @Override

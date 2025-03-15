@@ -24,7 +24,7 @@ public class SwerveModule extends SubsystemBase {
         private static final double kWheelDiameter = .1016; // 0.1016 M wheel diameter (4")
         private static final double kWheelCircumference = Math.PI * kWheelDiameter;
         private static final double turningWheelGearRatio = 150/7; //standard steering gear ratio on MK4i 
-        private static final double drivingWheelGearRatio = 6.12; //L3 gear ratio for driving, max velocity of 19.3 ft/sec
+        private static final double drivingWheelGearRatio = 5.36; //L3 gear ratio for driving, max velocity of 19.3 ft/sec
         private static final double rpmToVelocityScaler = (kWheelCircumference/(drivingWheelGearRatio*60)); //SDS Mk4I standard gear ratio from motor to wheel, divide by 60 to go from secs to mins
         private static final double rotationsToDistanceScaler = kWheelCircumference / drivingWheelGearRatio; //x is number of rotations. 
         /*
@@ -88,7 +88,7 @@ public class SwerveModule extends SubsystemBase {
 
             m_driveMotorConfig.closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-                .outputRange(-.1, .1) //sets max speed to 1/10 of full power
+                .outputRange(-.2, .2) //sets max speed to 1/10 of full power
                 .pid(.3, 0, 0.4);
 
             // m_driveMotorConfig.encoder
@@ -149,7 +149,9 @@ public class SwerveModule extends SubsystemBase {
         }
 
         public void driveAutoOnRots(double driverRots, double turnRots) {
-            driverRots = driverRots * (2*Math.PI / drivingWheelGearRatio);
+            driverRots = (driverRots * ((4*Math.PI) / drivingWheelGearRatio))/5;
+            
+            //driverRots = driverRots * (2*Math.PI / drivingWheelGearRatio);
             //turnRots *= turningWheelGearRatio;
             m_driveController.setReference((driverRots), ControlType.kPosition); //2 inch radius wheels, now we have inches conversion
             //m_driveController.setReference((driverRots*2*Math.PI*2), ControlType.kPosition); //2 inch radius wheels, now we have inches conversion

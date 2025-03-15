@@ -58,7 +58,7 @@ public class RobotContainer {
     private double driverRotStick = 0;
 
     private double positionRotations = 0;
-
+    private final double elevatorOffset = 5.5; //inches, it' disitance from bottom of tray to ground.
     private boolean manualOperateElevator = false;
 
     //konami code: up up down down left right left right B A 
@@ -132,19 +132,19 @@ public class RobotContainer {
         if(manualOperateElevator) {
             m_Elevator.driveMotorNoPID(Math.pow((operatorController.getRawAxis(1)),3), true);
         } else {
-            //offset from robot bottom to the bottom of the cradle is 10.5 inches, will have to factor this in. ... or will we?
+            //offset from robot bottom to the bottom of the cradle is 5 inches, will have to factor this in. ... or will we?
             if(operatorController.getRawButton(4)) {
-                positionRotations = 41 -10.5;
+                positionRotations = 34.5 - elevatorOffset; //this worked for L2 before: 41-10.5, goes to 33 inches
                 System.out.println("Y");
             } else if (operatorController.getRawButton(2)) {
                 System.out.println("B");
-                positionRotations = 41 -10.5 + 16.5;
+                positionRotations = 48.25 - elevatorOffset; //41 -10.5 + 16.5 this is what it was before, i think it worked?
             } else if (operatorController.getRawButton(3)) {
                 System.out.println("X");
-                positionRotations = 60;
+                positionRotations = 72.5 - elevatorOffset; //should be l4?
             } else if (operatorController.getRawButton(1)) {
                 System.out.println("A");
-                positionRotations = 0;
+                positionRotations = 0; //no offset, we want to start at the 5.5 inches up
             }
             m_Elevator.driveMotor(positionRotations);
 
@@ -180,7 +180,7 @@ public class RobotContainer {
     public void autopath() {
         //3 inch is the width of the entire bumper. 30 inches offset bc our back wheels will start on the line, 27 from center of wheel to other edge of chassis, and 3 inches with bumper
         //88 inches - 30 inches = 58 inches
-        manualAuto(56, (.5*Math.PI), false); //never switch to true
+        manualAuto(89, (.5*Math.PI), false); //never switch to true
         // if (mTimer.get() > 6) {
         //     m_Elevator.driveMotor(19);
         // } if (mTimer.get() > 9) {
@@ -188,6 +188,15 @@ public class RobotContainer {
         // } if (mTimer.get() >10) {
         //     m_Cradle.driveMotorNoPID(0, false);
         // }
+        if(mTimer.get() > 8) {
+            m_Elevator.driveMotor(72.5 - elevatorOffset);
+        }
+        if(mTimer.get()>11) {
+            m_Cradle.driveMotorNoPID(.75, false);
+        }
+        if(mTimer.get()>13) {
+            m_Cradle.driveMotorNoPID(0, false);
+        }
 
     }
 

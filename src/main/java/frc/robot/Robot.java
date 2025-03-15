@@ -26,16 +26,8 @@ public class Robot extends TimedRobot {
  * to the dashboard. Just add this to the robot class constructor.
  */
   public Robot() {
-    // CameraServer.putVideo(null, 0, 0);
-    CameraServer.startAutomaticCapture().setResolution(720, 500);
-    //CameraServer.getVideo().getSource().setFPS(60);
-    //CameraServer.putVideo("DriverFeed", 200, 500);
-
-    // Creates UsbCamera and MjpegServer [1] and connects them
-    // Creates the CvSink and connects it to the UsbCamera
-    // CvSink cvSink = CameraServer.getVideo();
-    // Creates the CvSource and MjpegServer [2] and connects them
-    // CvSource outputStream = CameraServer.putVideo("Blur", 640, 480);
+    CameraServer.startAutomaticCapture().setResolution(1080, 720);
+  
   }
 
   @Override

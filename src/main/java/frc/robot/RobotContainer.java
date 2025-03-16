@@ -26,19 +26,15 @@ import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.simulation.DriverStationDataJNI;
 import edu.wpi.first.hal.simulation.RoboRioDataJNI;
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj.event.EventLoop;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Subsystems.Elevator;
 import frc.robot.Subsystems.Cradle;
@@ -50,6 +46,8 @@ public class RobotContainer {
     private final Cradle m_Cradle = new Cradle();
     private final SendableChooser<Command> autoChooser;
     private Timer mTimer = new Timer();
+    private AddressableLED m_driverLED;
+    private AddressableLEDBuffer m_driverLEDBuffer; 
     /*
      * Collection of driver status buttons and joysticks, initially set to do nothing. 
      */
@@ -118,6 +116,34 @@ public class RobotContainer {
         } else {
             drivetrain.drive(driverXStick, driverYStick, driverRotStick + .01, true, false, false); //the rotation being .01% is so we have a holding position in the rotate position, so the wheels are all good, but there's not enough power to actually drive it. 
         }
+    }
+
+    public void startLEDs() {
+        m_driverLED = new AddressableLED(1);
+        m_driverLEDBuffer = new AddressableLEDBuffer(30); //the int here is how many LEDs there are
+        m_driverLED.setLength(m_driverLEDBuffer.getLength());
+        m_driverLED.setData(m_driverLEDBuffer);
+        m_driverLED.start();
+
+        //example from WPILIB
+        // Create an LED pattern that sets the entire strip to solid red
+        //LEDPattern red = LEDPattern.solid(Color.kRed);
+        // Apply the LED pattern to the data buffer
+        //red.applyTo(m_ledBuffer);
+        // Write the data to the LED strip
+        //m_led.setData(m_ledBuffer);
+    }
+
+    public void runLEDs() {
+        LEDPattern red = LEDPattern.solid(Color.kRed);
+        LEDPattern green = LEDPattern.solid(Color.kGreen);
+
+        if(driverController.getLeftBumperButton()) {
+            green.applyTo(m_driverLEDBuffer);
+        } else {
+            red.applyTo(m_driverLEDBuffer);
+        }
+        m_driverLED.setData(m_driverLEDBuffer);
     }
 
     public void letOperatorCookUpdated() {

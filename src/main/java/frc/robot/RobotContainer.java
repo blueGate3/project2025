@@ -39,6 +39,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Subsystems.Elevator;
 import frc.robot.Subsystems.Cradle;
@@ -48,8 +49,9 @@ public class RobotContainer {
     private final Drivetrain drivetrain = new Drivetrain();
     private final Elevator m_Elevator = new Elevator();
     private final Cradle m_Cradle = new Cradle();
-    private final SendableChooser<Command> autoChooser;
     private Timer mTimer = new Timer();
+    private AddressableLED m_LED;
+    private AddressableLEDBuffer m_LEDBuffer;
     /*
      * Collection of driver status buttons and joysticks, initially set to do nothing. 
      */
@@ -66,10 +68,28 @@ public class RobotContainer {
     XboxController operatorController = new XboxController(1);
 
     public RobotContainer () {
-        autoChooser = AutoBuilder.buildAutoChooser();
-        //autoChooser.addOption("TestPath-Rotate", x);
-        SmartDashboard.putData("Auto Chooser", autoChooser);
+
     }
+
+    public void startLEDs() {
+        m_LED = new AddressableLED(0);
+        m_LEDBuffer = new AddressableLEDBuffer(18);
+        m_LED.setLength(m_LEDBuffer.getLength());
+        m_LED.setData(m_LEDBuffer);
+        m_LED.start();
+    }
+
+    public void updateLEDs() {
+        LEDPattern red = LEDPattern.solid(Color.kRed);
+        LEDPattern green = LEDPattern.solid(Color.kRed);
+        if(driverController.getRawButton(6)) {
+            green.applyTo(m_LEDBuffer);
+        } else {
+            red.applyTo(m_LEDBuffer);
+        }
+        m_LED.setData(m_LEDBuffer);
+    }
+
 
     public Command getAutonomousCommand() {
         try{
@@ -99,9 +119,9 @@ public class RobotContainer {
 
     public void readDriverController() {
         //Driver stick getters
-        driverXStick = -Math.pow(driverController.getRawAxis(0), 3);
-        driverYStick = -Math.pow(driverController.getRawAxis(1), 3);
-        driverRotStick = -Math.pow(driverController.getRawAxis(4), 3);
+        driverXStick = Math.pow(driverController.getRawAxis(0), 3);
+        driverYStick = Math.pow(driverController.getRawAxis(1), 3);
+        driverRotStick = Math.pow(driverController.getRawAxis(4), 3);
     }
 
     /**
@@ -180,7 +200,7 @@ public class RobotContainer {
     public void autopath() {
         //3 inch is the width of the entire bumper. 30 inches offset bc our back wheels will start on the line, 27 from center of wheel to other edge of chassis, and 3 inches with bumper
         //88 inches - 30 inches = 58 inches
-        manualAuto(53, (.5*Math.PI), false); //never switch to true
+        manualAuto(53, (.5*Math.PI), true); //never switch to true //ALWAYS SWITCH TO TRUE I LOST AN AUTO BC OF THIS ITS JOVER YALL
         // if (mTimer.get() > 6) {
         //     m_Elevator.driveMotor(19);
         // } if (mTimer.get() > 9) {

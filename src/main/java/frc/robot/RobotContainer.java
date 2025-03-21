@@ -26,15 +26,10 @@ import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.simulation.DriverStationDataJNI;
 import edu.wpi.first.hal.simulation.RoboRioDataJNI;
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj.event.EventLoop;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -50,8 +45,6 @@ public class RobotContainer {
     private final Elevator m_Elevator = new Elevator();
     private final Cradle m_Cradle = new Cradle();
     private Timer mTimer = new Timer();
-    private AddressableLED m_LED;
-    private AddressableLEDBuffer m_LEDBuffer;
     /*
      * Collection of driver status buttons and joysticks, initially set to do nothing. 
      */
@@ -69,25 +62,6 @@ public class RobotContainer {
 
     public RobotContainer () {
 
-    }
-
-    public void startLEDs() {
-        m_LED = new AddressableLED(0);
-        m_LEDBuffer = new AddressableLEDBuffer(18);
-        m_LED.setLength(m_LEDBuffer.getLength());
-        m_LED.setData(m_LEDBuffer);
-        m_LED.start();
-    }
-
-    public void updateLEDs() {
-        LEDPattern red = LEDPattern.solid(Color.kRed);
-        LEDPattern green = LEDPattern.solid(Color.kRed);
-        if(driverController.getRawButton(6)) {
-            green.applyTo(m_LEDBuffer);
-        } else {
-            red.applyTo(m_LEDBuffer);
-        }
-        m_LED.setData(m_LEDBuffer);
     }
 
 

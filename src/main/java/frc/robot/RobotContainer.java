@@ -17,10 +17,7 @@ public class RobotContainer {
     private final Drivetrain drivetrain = new Drivetrain();
     private final Elevator m_Elevator = new Elevator();
     private final Cradle m_Cradle = new Cradle();
-    private final SendableChooser<Command> autoChooser;
     private Timer mTimer = new Timer();
-    private AddressableLED m_driverLED;
-    private AddressableLEDBuffer m_driverLEDBuffer; 
     /*
      * Collection of driver status buttons and joysticks, initially set to do nothing. 
      */
@@ -37,10 +34,9 @@ public class RobotContainer {
     XboxController operatorController = new XboxController(1);
 
     public RobotContainer () {
-        autoChooser = AutoBuilder.buildAutoChooser();
-        //autoChooser.addOption("TestPath-Rotate", x);
-        SmartDashboard.putData("Auto Chooser", autoChooser);
+
     }
+
 
     public Command getAutonomousCommand() {
         try{
@@ -91,6 +87,7 @@ public class RobotContainer {
         }
     }
 
+<<<<<<< HEAD
     public void startLEDs() {
         m_driverLED = new AddressableLED(1);
         m_driverLEDBuffer = new AddressableLEDBuffer(30); //the int here is how many LEDs there are?
@@ -119,6 +116,8 @@ public class RobotContainer {
         m_driverLED.setData(m_driverLEDBuffer);
     }
 
+=======
+>>>>>>> 102c2cffaed37d7f0170e7edc9bd55d1a9b7e9f4
     public void letOperatorCookUpdated() {
         //determines/switches mode
         if(operatorController.getRawButton(6)) { //right bumper
@@ -176,8 +175,19 @@ public class RobotContainer {
     public void autopath() {
         //3 inch is the width of the entire bumper. 30 inches offset bc our back wheels will start on the line, 27 from center of wheel to other edge of chassis, and 3 inches with bumper
         //88 inches - 30 inches = 58 inches
+<<<<<<< HEAD
         manualAuto(53, (.5*Math.PI), true); //never switch to true //ALWAYS SWITCH TO TRUE (check again if you rezero offsets for wheels idk why)
         
+=======
+        manualAuto(53, (.5*Math.PI), true); //never switch to true //ALWAYS SWITCH TO TRUE I LOST AN AUTO BC OF THIS ITS JOVER YALL
+        // if (mTimer.get() > 6) {
+        //     m_Elevator.driveMotor(19);
+        // } if (mTimer.get() > 9) {
+        //     m_Cradle.driveMotorNoPID(1, false);
+        // } if (mTimer.get() >10) {
+        //     m_Cradle.driveMotorNoPID(0, false);
+        // }
+>>>>>>> 102c2cffaed37d7f0170e7edc9bd55d1a9b7e9f4
         if(mTimer.get() > 5) {
             m_Elevator.driveMotor(72.5 - elevatorOffset);
         }

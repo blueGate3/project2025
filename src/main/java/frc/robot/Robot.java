@@ -27,7 +27,6 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     //m_RobotContainer.temp();
-    m_RobotContainer.runLEDs();
   }
 
   @Override
@@ -65,6 +64,7 @@ public class Robot extends TimedRobot {
     m_RobotContainer.readDriverController();
     m_RobotContainer.letDriverCook();
     m_RobotContainer.letOperatorCookUpdated();
+    //m_RobotContainer.updateLEDs();
   }
 
   @Override

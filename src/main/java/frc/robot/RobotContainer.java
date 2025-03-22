@@ -86,38 +86,6 @@ public class RobotContainer {
             drivetrain.drive(driverXStick, driverYStick, driverRotStick + .01, true, false, false); //the rotation being .01% is so we have a holding position in the rotate position, so the wheels are all good, but there's not enough power to actually drive it. 
         }
     }
-
-<<<<<<< HEAD
-    public void startLEDs() {
-        m_driverLED = new AddressableLED(1);
-        m_driverLEDBuffer = new AddressableLEDBuffer(30); //the int here is how many LEDs there are?
-        m_driverLED.setLength(m_driverLEDBuffer.getLength());
-        m_driverLED.setData(m_driverLEDBuffer);
-        m_driverLED.start();
-
-        //example from WPILIB
-        // Create an LED pattern that sets the entire strip to solid red
-        //LEDPattern red = LEDPattern.solid(Color.kRed);
-        // Apply the LED pattern to the data buffer
-        //red.applyTo(m_ledBuffer);
-        // Write the data to the LED strip
-        //m_led.setData(m_ledBuffer);
-    }
-
-    public void runLEDs() {
-        LEDPattern red = LEDPattern.solid(Color.kRed);
-        LEDPattern green = LEDPattern.solid(Color.kGreen);
-
-        if(driverController.getRawButton(6)) {
-            green.applyTo(m_driverLEDBuffer);
-        } else {
-            red.applyTo(m_driverLEDBuffer);
-        }
-        m_driverLED.setData(m_driverLEDBuffer);
-    }
-
-=======
->>>>>>> 102c2cffaed37d7f0170e7edc9bd55d1a9b7e9f4
     public void letOperatorCookUpdated() {
         //determines/switches mode
         if(operatorController.getRawButton(6)) { //right bumper
@@ -175,19 +143,8 @@ public class RobotContainer {
     public void autopath() {
         //3 inch is the width of the entire bumper. 30 inches offset bc our back wheels will start on the line, 27 from center of wheel to other edge of chassis, and 3 inches with bumper
         //88 inches - 30 inches = 58 inches
-<<<<<<< HEAD
         manualAuto(53, (.5*Math.PI), true); //never switch to true //ALWAYS SWITCH TO TRUE (check again if you rezero offsets for wheels idk why)
-        
-=======
-        manualAuto(53, (.5*Math.PI), true); //never switch to true //ALWAYS SWITCH TO TRUE I LOST AN AUTO BC OF THIS ITS JOVER YALL
-        // if (mTimer.get() > 6) {
-        //     m_Elevator.driveMotor(19);
-        // } if (mTimer.get() > 9) {
-        //     m_Cradle.driveMotorNoPID(1, false);
-        // } if (mTimer.get() >10) {
-        //     m_Cradle.driveMotorNoPID(0, false);
-        // }
->>>>>>> 102c2cffaed37d7f0170e7edc9bd55d1a9b7e9f4
+
         if(mTimer.get() > 5) {
             m_Elevator.driveMotor(72.5 - elevatorOffset);
         }

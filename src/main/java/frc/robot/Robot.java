@@ -21,7 +21,6 @@ public class Robot extends TimedRobot {
     UsbCamera driverCam = CameraServer.startAutomaticCapture();
     driverCam.setResolution(1280, 720); //TODO look at other 16:9 resolutions
     driverCam.setFPS(60);
-    m_RobotContainer.startLEDs();
   }
 
   @Override

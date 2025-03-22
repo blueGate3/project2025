@@ -22,6 +22,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.DriveConst;
 
 /** Represents a swerve drive style drivetrain. */
 
@@ -37,13 +38,6 @@ public class Drivetrain extends SubsystemBase {
 
     Pose2d m_pose;
     private final AHRS navx = new AHRS(NavXComType.kMXP_SPI); 
-
-    // Locations of each swerve module relative to the center of the robot
-    // private final Translation2d m_frontRightLocation = new Translation2d( 0.3175, -0.3175);//side length total is at 29.5 inches including modules. Divided by 2 and set to meters is .37465 meters from one side to the tip of the module
-    // private final Translation2d m_frontLeftLocation = new Translation2d(0.3175,  0.3175);//the frc kinematics section has the coordinates so x is front-back, where front is positive, and y is left-right, where left is positive. it's communist to the extreme but will affect the way we initialize our module locations.
-    // private final Translation2d m_backLeftLocation = new Translation2d(-0.3175,  0.3175);//continued: that's the reason for the strange abnormal abhorrent disgusting affronts-before-God translation signs. 
-    // private final Translation2d m_backRightLocation = new Translation2d( -0.3175, -0.3175);
-
     private final Translation2d m_frontRightLocation = new Translation2d( -0.3175, 0.3175);//side length total is at 29.5 inches including modules. Divided by 2 and set to meters is .37465 meters from one side to the tip of the module, minus a bit bc module is only like 1/2 distance. 
     private final Translation2d m_frontLeftLocation = new Translation2d(0.3175,  0.3175);//the frc kinematics section has the coordinates so x is front-back, where front is positive, and y is left-right, where left is positive. it's communist to the extreme but will affect the way we initialize our module locations.
     private final Translation2d m_backLeftLocation = new Translation2d(0.3175,  -0.3175);//continued: that's the reason for the strange abnormal abhorrent disgusting affronts-before-God translation signs. 
@@ -51,10 +45,10 @@ public class Drivetrain extends SubsystemBase {
 
 
     // Constructor for each swerve module
-    private final SwerveModule m_frontRight = new SwerveModule(3, 4, false, false); //
-    private final SwerveModule m_frontLeft = new SwerveModule(1, 2, false, false); //
-    private final SwerveModule m_backLeft = new SwerveModule(7, 8, false, false); //
-    private final SwerveModule m_backRight = new SwerveModule(5, 6, false, false); //
+    private final SwerveModule m_frontLeft = new SwerveModule(DriveConst.FLDrive, DriveConst.FLTURN); //
+    private final SwerveModule m_frontRight = new SwerveModule(DriveConst.FRDrive, DriveConst.FRTurn); //
+    private final SwerveModule m_backRight = new SwerveModule(DriveConst.BRDrive, DriveConst.BRTurn); //
+    private final SwerveModule m_backLeft = new SwerveModule(DriveConst.BLDrive, DriveConst.BLTurn); //
 
     // Swerve Drive Kinematics (note the ordering [frontRight, frontLeft, backLeft, backRight] [counterclockwise from the frontRight])
     private final SwerveDriveKinematics m_kinematics = new SwerveDriveKinematics(m_frontRightLocation, m_frontLeftLocation, m_backLeftLocation, m_backRightLocation);

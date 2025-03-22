@@ -6,31 +6,26 @@ import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkBase.*;
 
-public class Elevator {
+public class NewElevator {
     private SparkFlex m_elevatorMotor;
     private SparkFlexConfig m_elevatorMotorConfig;
     private SparkClosedLoopController m_elevatorController;
-    private AbsoluteEncoder m_elevatorEncoder;
-    private final double elevatorEncoderScalar = (Math.PI * 1.94); //
 
-    public Elevator() {
+    public NewElevator() {
         m_elevatorMotor = new SparkFlex(9, SparkLowLevel.MotorType.kBrushless);
         m_elevatorMotorConfig = new SparkFlexConfig();
-        m_elevatorEncoder = m_elevatorMotor.getAbsoluteEncoder();
-    
-        m_elevatorMotorConfig.encoder
-        .positionConversionFactor(1); //note Prngles Hot Ones collab is very good apparently
+
+
         m_elevatorMotorConfig
         .idleMode(IdleMode.kBrake)
         .inverted(true)
-        .smartCurrentLimit(40);
+        .smartCurrentLimit(80); //can't run for too long
         m_elevatorMotor.getEncoder().setPosition(0);
 
         m_elevatorMotorConfig.closedLoop
         .pid(1.2, 0, .4)
-        .feedbackSensor(FeedbackSensor.kPrimaryEncoder) //when using old method, primaryEncoder was the only thing that worked, absoluteEncoder should work tho.
-        .positionWrappingEnabled(true) //this and line below it allow for position wrapping between 0 and 2pi radians 
-        //.positionWrappingInputRange(0, 2*Math.PI)
+        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+        .positionWrappingEnabled(true)
         .outputRange(1, 1);
     
         m_elevatorController = m_elevatorMotor.getClosedLoopController();

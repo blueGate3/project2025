@@ -2,35 +2,9 @@ package frc.robot;
 
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-
-import java.security.cert.TrustAnchor;
-
-import javax.naming.OperationNotSupportedException;
-
-import org.ejml.dense.block.MatrixOps_DDRB;
-
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathPlannerPath;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkMax;
-
-import edu.wpi.first.hal.AllianceStationID;
-import edu.wpi.first.hal.FRCNetComm.tResourceType;
-import edu.wpi.first.hal.simulation.DriverStationDataJNI;
-import edu.wpi.first.hal.simulation.RoboRioDataJNI;
-import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
-import edu.wpi.first.wpilibj.event.BooleanEvent;
-import edu.wpi.first.wpilibj.event.EventLoop;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -38,7 +12,6 @@ import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Subsystems.Elevator;
 import frc.robot.Subsystems.Cradle;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class RobotContainer {
     private final Drivetrain drivetrain = new Drivetrain();
@@ -97,9 +70,9 @@ public class RobotContainer {
 
     public void readDriverController() {
         //Driver stick getters
-        driverXStick = -Math.pow(driverController.getRawAxis(0), 3);
-        driverYStick = -Math.pow(driverController.getRawAxis(1), 3);
-        driverRotStick = -Math.pow(driverController.getRawAxis(4), 3);
+        driverXStick = Math.pow(driverController.getRawAxis(0), 3);
+        driverYStick = Math.pow(driverController.getRawAxis(1), 3);
+        driverRotStick = Math.pow(driverController.getRawAxis(4), 3);
     }
 
     /**
@@ -120,7 +93,7 @@ public class RobotContainer {
 
     public void startLEDs() {
         m_driverLED = new AddressableLED(1);
-        m_driverLEDBuffer = new AddressableLEDBuffer(30); //the int here is how many LEDs there are
+        m_driverLEDBuffer = new AddressableLEDBuffer(30); //the int here is how many LEDs there are?
         m_driverLED.setLength(m_driverLEDBuffer.getLength());
         m_driverLED.setData(m_driverLEDBuffer);
         m_driverLED.start();
@@ -138,7 +111,7 @@ public class RobotContainer {
         LEDPattern red = LEDPattern.solid(Color.kRed);
         LEDPattern green = LEDPattern.solid(Color.kGreen);
 
-        if(driverController.getLeftBumperButton()) {
+        if(driverController.getRawButton(6)) {
             green.applyTo(m_driverLEDBuffer);
         } else {
             red.applyTo(m_driverLEDBuffer);
@@ -176,9 +149,6 @@ public class RobotContainer {
 
         }
         //axis 2 is left, axis 3 is right
-        //System.out.println("Left trigger: " + operatorController.getRawAxis(2));
-        //System.out.println("Right trigger: " + operatorController.getRawAxis(3));
-        //m_Elevator.getElevatorRotations();
 
         if(operatorController.getRawAxis(3) > .2) {
             m_Cradle.driveMotorNoPID(Math.pow(operatorController.getRawAxis(3), 3), false);
@@ -206,14 +176,8 @@ public class RobotContainer {
     public void autopath() {
         //3 inch is the width of the entire bumper. 30 inches offset bc our back wheels will start on the line, 27 from center of wheel to other edge of chassis, and 3 inches with bumper
         //88 inches - 30 inches = 58 inches
-        manualAuto(53, (.5*Math.PI), false); //never switch to true
-        // if (mTimer.get() > 6) {
-        //     m_Elevator.driveMotor(19);
-        // } if (mTimer.get() > 9) {
-        //     m_Cradle.driveMotorNoPID(1, false);
-        // } if (mTimer.get() >10) {
-        //     m_Cradle.driveMotorNoPID(0, false);
-        // }
+        manualAuto(53, (.5*Math.PI), true); //never switch to true //ALWAYS SWITCH TO TRUE (check again if you rezero offsets for wheels idk why)
+        
         if(mTimer.get() > 5) {
             m_Elevator.driveMotor(72.5 - elevatorOffset);
         }

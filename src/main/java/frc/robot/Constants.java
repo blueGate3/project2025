@@ -1,15 +1,54 @@
 package frc.robot;
 
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+
 public class Constants {
     public class CradleConst {
         public static final int leftID = 0;
         public static final int rightID = 0;
     }
 
-    public class ElevatorConst {
+    public class ElevatorConst { //in the spirit of consistency, unfortunately we must convert everything into meters. 
+        public static final double inchToMeter = 0.0254; //multiply inches by to get meters.
+        public static final double spoolDiameter = 0.0254; //our diameter is 1 inch, but it seemed cleaner to have two variables im sorry if i offended anyone. 
+        public static final double elevatorOffset = 0.1397; //meters, it' disitance from bottom of tray to ground.
+        public static final double elevatorGearRatio = 9; //9:1. may switch to 4,5 or 6.
+        public static final double rotationToMeterScaler = (Math.PI*spoolDiameter)/elevatorGearRatio; //math should be right, just multiply to get meters from rotations
+
         public static final int leftID = 0;
         public static final int rightID = 0;
+
+        //elevator starts 5.5 inches, or .14 meters, off the ground, form bottom tip of tray to floor
+        public static final double homePosition = elevatorOffset; 
+        public static final double L2Height = 0.8763 - elevatorOffset;
+        public static final double L3Height = 1.22555 - elevatorOffset;
+        public static final double L4Height = 1.8415 - elevatorOffset;
+        //im sorry for capitalizing L at the beginning but it looked weird otherwise
+        public TrapezoidProfile.State homeState = new TrapezoidProfile.State(homePosition, 0);
+        public TrapezoidProfile.State L2state = new TrapezoidProfile.State(L2Height, 0); //we score L1 by shooting at L2 and missing
+        public TrapezoidProfile.State L3state = new TrapezoidProfile.State(L3Height, 0);
+        public TrapezoidProfile.State L4state = new TrapezoidProfile.State(L4Height, 0);
+
+        /*from https://www.reca.lc/linear
+         * 9:1 w/ 80% efficiency, 53lb load, 2 NEO Vortex, 1.708 m distance, 60A max current: 
+         * .95 max vel, 17.35 max accel, .44V kG, 11.97 kV, .07 kA, 1.82 seconds total from home to L4
+         * 6:1 w/ 80% efficiency, 53lb load, 2 NEO Vortex, 1.708 m distance, 60A max current: 
+         * 1.38 max vel, 14.52 max accel, .67V kG, 11.97 kV, .11 kA, 1.38 seconds total from home to L4
+         */
+
+         //right now at 9:1, 245.2 is stall load, 1.82 seconds 0-L4
+        public static double kMaxVelocity = .95; //m/s
+        public static double kMaxAcceleration = 17.35; //m/s^2
+        public static double kDt = 0.02; //delta time im assuming, things are called every 20 ms so should be good
+        public static double kP = 1.3; //retune all PID
+        public static double kI = 0.0;
+        public static double kD = 0.7;
+        public static double kS = 1.1; //todo 
+        public static double kG = .44; //real, V
+        public static double kV = 2.66; //real, V*s/m. 
+        public static double kA = .07; //real, V*s^2/m 
     }
+
     public class DriveConst {
 
         //CAN IDs for all our drivesystem

@@ -1,62 +1,83 @@
 package frc.robot.Subsystems;
+
+import frc.robot.Constants.DriveConst;
+import frc.robot.Constants.ElevatorConst;
+
 import com.revrobotics.spark.*;
 import com.revrobotics.*;
 import com.revrobotics.spark.config.*;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkBase.*;
+import edu.wpi.first.math.controller.ElevatorFeedforward;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.system.LinearSystem;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 
 public class NewElevator {
-    private SparkFlex m_elevatorMotor;
-    private SparkFlexConfig m_elevatorMotorConfig;
-    private SparkClosedLoopController m_elevatorController;
+  private SparkFlex m_leftMotor;
+  private SparkFlex m_rightMotor;
+  private SparkFlexConfig m_leftMotorConfig;
+  private SparkFlexConfig m_rightMotorConfig;
+  private SparkClosedLoopController m_Controller;
+  private RelativeEncoder m_Encoder;
 
-    public NewElevator() {
-        m_elevatorMotor = new SparkFlex(9, SparkLowLevel.MotorType.kBrushless);
-        m_elevatorMotorConfig = new SparkFlexConfig();
-
-
-        m_elevatorMotorConfig
-        .idleMode(IdleMode.kBrake)
-        .inverted(true)
-        .smartCurrentLimit(80); //can't run for too long
-        m_elevatorMotor.getEncoder().setPosition(0);
-
-        m_elevatorMotorConfig.closedLoop
-        .pid(1.2, 0, .4)
-        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        .positionWrappingEnabled(true)
-        .outputRange(1, 1);
+  // private ElevatorSim m_ElevatorSim = new ElevatorSim(
+  //   ElevatorConst.kV,
+  //   ElevatorConst.kA,
+  //     new DCMotor(12,
+  //     3.65, 
+  //     218, 
+  //     3.54, 
+  //     702.04, //6704 rpm, max for a vortex
+  //     2), 
+  //   0, //starts at floor
+  //   ElevatorConst.L4Height, //max height
+  //   true, 
+  //   ElevatorConst.homePosition, //starting position, this is the bottom of the chute for the cradle. 
+  //   null);
+  private ElevatorFeedforward m_ElevatorFeedforward = new ElevatorFeedforward(
+    ElevatorConst.kS, 
+    ElevatorConst.kG, 
+    ElevatorConst.kV);
+  public TrapezoidProfile.State currentState = new TrapezoidProfile.State();
     
-        m_elevatorController = m_elevatorMotor.getClosedLoopController();
-        m_elevatorMotor.configure(m_elevatorMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    
-    }
+  private TrapezoidProfile m_Profile = new TrapezoidProfile(
+    new Constraints(ElevatorConst.kMaxVelocity, ElevatorConst.kMaxAcceleration));
+  
+  public NewElevator() {
+    m_leftMotor = new SparkFlex(ElevatorConst.leftID, SparkLowLevel.MotorType.kBrushless);
+    m_rightMotor = new SparkFlex(ElevatorConst.rightID, SparkLowLevel.MotorType.kBrushless);
+    m_leftMotorConfig = new SparkFlexConfig();
+    m_rightMotorConfig = new SparkFlexConfig();
 
-    
+    m_leftMotorConfig
+    .idleMode(IdleMode.kBrake)
+    .inverted(true)
+    .smartCurrentLimit(60);
+    m_leftMotorConfig.closedLoop
+    .pid(1.2, 0, .4)
+    .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+    .positionWrappingEnabled(true); //may not need or may be actively bad idk
 
-  /**
-   * 
-   * @param positionRotations
-   */
-  public void driveMotor(double heightInches) {
-    /*
-     * 32 inches = L1 and L2
-     * 48 inches = L3
-     * 72 inches = L4
-     * Diameter of spinny thing = 1 inch
-     * currently offset is 8.5
-     */
-    heightInches *= Math.PI * 1; //times one bc that's the diameter of the spool, just wanted to have it in there to show I did it..
-    m_elevatorController.setReference(heightInches, ControlType.kPosition);
+    m_leftMotorConfig.encoder.positionConversionFactor(ElevatorConst.rotationToMeterScaler); //switches us from motor rotations to meters
+    m_leftMotor.getEncoder().setPosition(ElevatorConst.homePosition);
+
+    m_rightMotorConfig.follow(ElevatorConst.leftID);
+    m_rightMotor.configure(m_rightMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    m_Controller = m_leftMotor.getClosedLoopController();
+    m_leftMotor.configure(m_leftMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+
   }
 
-  public void driveMotorNoPID(double power, boolean reversed) {
-    if(reversed) {
-      m_elevatorMotor.set(-power);
-    } else {
-      m_elevatorMotor.set(power);
-    }
-    System.out.println("ElevatorHeight" + (m_elevatorMotor.getEncoder().getPosition()*Math.PI));
+  public void setPosition() {
+
   }
+
+
 }

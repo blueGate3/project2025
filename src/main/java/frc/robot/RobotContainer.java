@@ -36,39 +36,12 @@ public class RobotContainer {
     public RobotContainer () {
 
     }
-
-
-    public Command getAutonomousCommand() {
-        try{
-            // Load the path you want to follow using its name in the GUI
-            PathPlannerPath path = PathPlannerPath.fromPathFile("RedPathOne");
-    
-            // Create a path following command using AutoBuilder. This will also trigger event markers.
-            return AutoBuilder.followPath(path);
-        } catch (Exception e) {
-            DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
-            return Commands.none();
-        }
-      }
-
-    //for fun and to look really cool when first connected to FMS
-    public void setupDataSpew() {
-        if (DriverStation.isFMSAttached()) {
-            System.out.println("Connected to the Field Management System.");
-            System.out.println("Current match number: " + DriverStation.getMatchNumber());
-            System.out.println("Current Alliance: " + DriverStation.getAlliance());
-            System.out.println("Current DriverStation Location: " + DriverStation.getLocation());
-            System.out.println("Current Event: " + DriverStation.getEventName());
-            System.out.println("Game specific message: " + DriverStation.getGameSpecificMessage());
-            System.out.println("Good luck!!!");
-        }
-    }
-
     public void readDriverController() {
         //Driver stick getters
-        driverXStick = Math.pow(driverController.getRawAxis(0), 3);
-        driverYStick = Math.pow(driverController.getRawAxis(1), 3);
-        driverRotStick = Math.pow(driverController.getRawAxis(4), 3);
+        driverXStick = driverController.getRawAxis(0);
+        driverYStick = driverController.getRawAxis(1);
+        driverRotStick = driverController.getRawAxis(4);
+
     }
 
     /**
@@ -80,8 +53,6 @@ public class RobotContainer {
             drivetrain.drive(0, 0, 0, true, false, true);
         } else if (driverController.getRawButton(4)){
             drivetrain.resetNavX();
-        } else if (driverController.getRawButton(1)) {
-            drivetrain.drive(driverXStick/10, driverYStick/10, driverRotStick/5, false, false, false);
         } else {
             drivetrain.drive(driverXStick, driverYStick, driverRotStick + .01, true, false, false); //the rotation being .01% is so we have a holding position in the rotate position, so the wheels are all good, but there's not enough power to actually drive it. 
         }
@@ -116,7 +87,6 @@ public class RobotContainer {
 
         }
         //axis 2 is left, axis 3 is right
-
         if(operatorController.getRawAxis(3) > .2) {
             m_Cradle.driveMotorNoPID(Math.pow(operatorController.getRawAxis(3), 3), false);
         } else if (operatorController.getRawAxis(2) > .2) {
@@ -154,6 +124,14 @@ public class RobotContainer {
         if(mTimer.get()>13) {
             m_Cradle.driveMotorNoPID(0, false);
         }
+
+        //NEW AUTO USING ULTRASONIC SENSORS
+        manualAuto(53, (.5*Math.PI), true);
+
+
+
+
+
 
     }
 

@@ -3,13 +3,26 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot;
+import com.pathplanner.lib.commands.FollowPathCommand;
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.CvSink;
+import edu.wpi.first.cscore.CvSource;
 import edu.wpi.first.cscore.UsbCamera;
+import edu.wpi.first.cscore.VideoSource;
+import edu.wpi.first.cameraserver.*;
+import edu.wpi.first.wpilibj.AddressableLED;
+import edu.wpi.first.wpilibj.AddressableLEDBuffer;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 public class Robot extends TimedRobot {
 
   RobotContainer m_RobotContainer = new RobotContainer();
-
+  private Command m_autonomousCommand;
 
   /**
  * Uses the CameraServer class to automatically capture video from a USB webcam and send it to the
@@ -17,10 +30,9 @@ public class Robot extends TimedRobot {
  * to the dashboard. Just add this to the robot class constructor.
  */
   public Robot() {
-    //what we're trying now
-    UsbCamera driverCam = CameraServer.startAutomaticCapture();
-    driverCam.setResolution(1280, 720); //TODO look at other 16:9 resolutions
-    driverCam.setFPS(60);
+    UsbCamera m_Camera = CameraServer.startAutomaticCapture();
+    m_Camera.setFPS(60);
+    m_Camera.setResolution(1080, 720); //todo look up proper ratios.
   }
 
   @Override
@@ -38,7 +50,8 @@ public class Robot extends TimedRobot {
   public void disabledExit() {}
 
   @Override
-  public void autonomousInit() {m_RobotContainer.resetDriveEncoder();
+  public void autonomousInit() {
+    m_RobotContainer.resetDriveEncoder();
     m_RobotContainer.resetTimer();
     m_RobotContainer.startTimer();
   }

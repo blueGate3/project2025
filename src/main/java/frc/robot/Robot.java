@@ -73,9 +73,10 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-    m_RobotContainer.readDriverController();
-    m_RobotContainer.letDriverCook();
-    m_RobotContainer.letOperatorCookUpdated();
+    // m_RobotContainer.readDriverController();
+    // m_RobotContainer.letDriverCook();
+    // m_RobotContainer.letOperatorCookUpdated();
+    m_RobotContainer.runElevatorTests();
     //m_RobotContainer.updateLEDs();
   }
 

@@ -13,10 +13,12 @@ import static edu.wpi.first.units.Units.Volts;
 import com.revrobotics.*;
 import com.revrobotics.spark.config.*;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkBase.*;
 import edu.wpi.first.util.datalog.*;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -44,6 +46,8 @@ public class NewElevator extends SubsystemBase{
   private SparkClosedLoopController m_Controller;
   private RelativeEncoder m_Encoder;
 
+  private double feedForward;
+
   //might need none of this
   //Not entirely sure what these lines do... https://docs.wpilib.org/en/stable/docs/software/basic-programming/java-units.html and https://github.com/wpilibsuite/allwpilib/blob/main/wpilibjExamples/src/main/java/edu/wpi/first/wpilibj/examples/sysidroutine/subsystems/Drive.java
   //for later... something about not reallocating memory but apparently we need these for data logging idk why.
@@ -65,7 +69,7 @@ public class NewElevator extends SubsystemBase{
       log.motor("Left Elevator Motor: ")
           .voltage(
               m_appliedVoltage.mut_replace(
-                  m_leftMotor.get() * RobotController.getBatteryVoltage(), Volts))
+                  m_leftMotor.getAppliedOutput() * RobotController.getBatteryVoltage(), Volts))
           .linearPosition(m_distance.mut_replace(m_leftMotor.getEncoder().getPosition(), Meters))
           .linearVelocity(
               m_velocity.mut_replace(m_leftMotor.getEncoder().getVelocity(), MetersPerSecond));
@@ -73,7 +77,7 @@ public class NewElevator extends SubsystemBase{
       log.motor("Right Elevator Motor: ")
           .voltage(
               m_appliedVoltage.mut_replace(
-                  m_rightMotor.get() * RobotController.getBatteryVoltage(), Volts))
+                  m_rightMotor.getAppliedOutput() * RobotController.getBatteryVoltage(), Volts))
           .linearPosition(m_distance.mut_replace(m_rightMotor.getEncoder().getPosition(), Meters))
           .linearVelocity(
               m_velocity.mut_replace(m_rightMotor.getEncoder().getVelocity(), MetersPerSecond));
@@ -101,6 +105,10 @@ public class NewElevator extends SubsystemBase{
     .inverted(true)
     .smartCurrentLimit(60);
     m_leftMotorConfig.closedLoop
+    .maxMotion.maxVelocity(ElevatorConst.kMaxVelocity)
+    .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal)
+    .maxAcceleration(ElevatorConst.kMaxAcceleration);
+    m_leftMotorConfig.closedLoop
     .pid(ElevatorConst.kP, ElevatorConst.kI, ElevatorConst.kD)
     .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
     .positionWrappingEnabled(true); //may not need or may be actively bad idk
@@ -118,8 +126,30 @@ public class NewElevator extends SubsystemBase{
 
   }
 
-  public void setPosition() {
+  //WPILIB Example
+  //   if (m_joystick.getRawButtonPressed(2)) {
+  //     m_goal = new TrapezoidProfile.State(5, 0);
+  //   } else if (m_joystick.getRawButtonPressed(3)) {
+  //     m_goal = new TrapezoidProfile.State();
+  //   }
 
+  //   // Retrieve the profiled setpoint for the next timestep. This setpoint moves
+  //   // toward the goal while obeying the constraints.
+  //   m_setpoint = m_profile.calculate(kDt, m_setpoint, m_goal);
+
+  //   // Send setpoint to offboard controller PID
+  //   m_motor.setSetpoint(
+  //       ExampleSmartMotorController.PIDMode.kPosition,
+  //       m_setpoint.position,
+  //       m_feedforward.calculate(m_setpoint.velocity) / 12.0);
+  // }
+
+  public void setPosition(TrapezoidProfile.State m_DesiredState) { //double check this is good; https://docs.revrobotics.com/revlib/spark/closed-loop/getting-started-with-pid-tuning#arbitrary-feed-forward
+    currentState = m_Profile.calculate(ElevatorConst.kDt, currentState, m_DesiredState);
+    feedForward = m_ElevatorFeedforward.calculate(currentState.velocity);
+    m_Controller.setReference(currentState.position
+    , ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0, feedForward);
+    
   }
 
   /**

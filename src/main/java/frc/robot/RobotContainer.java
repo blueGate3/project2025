@@ -11,12 +11,15 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Subsystems.Elevator;
+import frc.robot.Subsystems.NewElevator;
 import frc.robot.Subsystems.Cradle;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 public class RobotContainer {
     private final Drivetrain drivetrain = new Drivetrain();
     private final Elevator m_Elevator = new Elevator();
     private final Cradle m_Cradle = new Cradle();
+    private final NewElevator m_NewElevator = new NewElevator();
     private Timer mTimer = new Timer();
     /*
      * Collection of driver status buttons and joysticks, initially set to do nothing. 
@@ -42,6 +45,20 @@ public class RobotContainer {
         driverYStick = driverController.getRawAxis(1);
         driverRotStick = driverController.getRawAxis(4);
 
+    }
+
+    public void runElevatorTests() {
+        if(operatorController.getRawButton(0)) { //A
+            m_NewElevator.sysIdQuasistatic(SysIdRoutine.Direction.kForward);
+        } else if(operatorController.getRawButton(1)) { //X
+            m_NewElevator.sysIdQuasistatic(SysIdRoutine.Direction.kReverse);
+        } else if(operatorController.getRawButton(2)) { //B
+            m_NewElevator.sysIdDynamic(SysIdRoutine.Direction.kForward);
+        } else if(operatorController.getRawButton(3)) { //Y
+            m_NewElevator.sysIdDynamic(SysIdRoutine.Direction.kReverse);
+        } else {
+            m_NewElevator.driveMotorNoPID(0, true);
+        }
     }
 
     /**

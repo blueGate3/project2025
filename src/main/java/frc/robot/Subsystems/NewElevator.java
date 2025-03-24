@@ -140,5 +140,14 @@ public class NewElevator extends SubsystemBase{
     return routine.dynamic(direction);
   }
 
+  public void driveMotorNoPID(double power, boolean reversed) {
+    if(reversed) {
+      m_leftMotor.set(-power);
+      m_rightMotor.set(-power);
+    } else {
+      m_leftMotor.set(power);
+      m_rightMotor.set(power);
+    }
+  }
 
 }

@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Subsystems.Elevator;
 import frc.robot.Subsystems.NewElevator;
+import frc.robot.Subsystems.Rangefinder;
 import frc.robot.Subsystems.Cradle;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
@@ -20,6 +21,9 @@ public class RobotContainer {
     private final Elevator m_Elevator = new Elevator();
     private final Cradle m_Cradle = new Cradle();
     private final NewElevator m_NewElevator = new NewElevator();
+    private final Rangefinder rangefinderOne = new Rangefinder(3, 1);
+    private final Rangefinder rangefinderTwo = new Rangefinder(5, 2);
+    private double distanceDriven = 0;
     private Timer mTimer = new Timer();
     /*
      * Collection of driver status buttons and joysticks, initially set to do nothing. 
@@ -31,6 +35,8 @@ public class RobotContainer {
     private double positionRotations = 0;
     private final double elevatorOffset = 5.5; //inches, it' disitance from bottom of tray to ground.
     private boolean manualOperateElevator = false;
+    private boolean inPosition = false;
+    private boolean yAligned = false;
 
     //konami code: up up down down left right left right B A 
     XboxController driverController = new XboxController(0);
@@ -143,13 +149,18 @@ public class RobotContainer {
         }
 
         //NEW AUTO USING ULTRASONIC SENSORS
-        manualAuto(53, (.5*Math.PI), true);
-
-
-
-
-
-
+        if (!yAligned) {
+            manualAuto(53, (.5*Math.PI), true); //drives up until our y axis is aligned
+        } else {
+            if(rangefinderOne.getRange() < 10 || rangefinderOne.getRange() > 5) {
+                inPosition = true;
+                m_Elevator.driveMotor(72.5 - elevatorOffset);
+                
+            } else if (!inPosition) {
+                drivetrain.drive(0, .01, 0, yAligned, manualOperateElevator, inPosition);
+            }
+        }
+        
     }
 
     public void startTimer() {

@@ -14,6 +14,7 @@ public class Constants {
         public static final double elevatorOffset = 0.1397; //meters, it' disitance from bottom of tray to ground.
         public static final double elevatorGearRatio = 9; //9:1. may switch to 4,5 or 6.
         public static final double rotationToMeterScaler = (Math.PI*spoolDiameter)/elevatorGearRatio; //math should be right, just multiply to get meters from rotations
+        public static final int maxCurrent = 60;
 
         public static final int leftID = 0;
         public static final int rightID = 0;

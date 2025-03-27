@@ -44,20 +44,21 @@ public class NewElevator extends SubsystemBase{
   private SparkFlexConfig m_leftMotorConfig;
   private SparkFlexConfig m_rightMotorConfig;
   private SparkClosedLoopController m_Controller;
-  private RelativeEncoder m_Encoder;
-
-  private double feedForward;
-
-  //might need none of this
-  //Not entirely sure what these lines do... https://docs.wpilib.org/en/stable/docs/software/basic-programming/java-units.html and https://github.com/wpilibsuite/allwpilib/blob/main/wpilibjExamples/src/main/java/edu/wpi/first/wpilibj/examples/sysidroutine/subsystems/Drive.java
-  //for later... something about not reallocating memory but apparently we need these for data logging idk why.
-  // Mutable holder for unit-safe voltage values, persisted to avoid reallocation.
-  private final MutVoltage m_appliedVoltage = Volts.mutable(0);
-  // Mutable holder for unit-safe linear distance values, persisted to avoid reallocation.
-  private final MutDistance m_distance = Meters.mutable(0);
-  // Mutable holder for unit-safe linear velocity values, persisted to avoid reallocation.
-  private final MutLinearVelocity m_velocity = MetersPerSecond.mutable(0);
+  private double feedForwardValue;
   
+  public TrapezoidProfile.State m_setpoint = new TrapezoidProfile.State();
+
+  private TrapezoidProfile m_Profile = new TrapezoidProfile(
+    new Constraints(ElevatorConst.kMaxVelocity, ElevatorConst.kMaxAcceleration));
+
+  private ElevatorFeedforward m_ElevatorFeedforward = new ElevatorFeedforward(
+    ElevatorConst.kS, 
+    ElevatorConst.kG, 
+    ElevatorConst.kV); //according to wpilib, kA can be omitted.
+
+  private final MutVoltage m_appliedVoltage = Volts.mutable(0);// Mutable holders for unit-safe linear velocity, acceleration and distance values, persisted to avoid reallocation. from a wpilib example for sysID
+  private final MutDistance m_distance = Meters.mutable(0);
+  private final MutLinearVelocity m_velocity = MetersPerSecond.mutable(0);
   SysIdRoutine routine = new SysIdRoutine(
     new SysIdRoutine.Config(),
     new SysIdRoutine.Mechanism(voltage -> {
@@ -69,7 +70,7 @@ public class NewElevator extends SubsystemBase{
       log.motor("Left Elevator Motor: ")
           .voltage(
               m_appliedVoltage.mut_replace(
-                  m_leftMotor.getAppliedOutput() * RobotController.getBatteryVoltage(), Volts))
+                  m_leftMotor.getAppliedOutput() * RobotController.getBatteryVoltage(), Volts)) //may be just getOutput()
           .linearPosition(m_distance.mut_replace(m_leftMotor.getEncoder().getPosition(), Meters))
           .linearVelocity(
               m_velocity.mut_replace(m_leftMotor.getEncoder().getVelocity(), MetersPerSecond));
@@ -83,17 +84,11 @@ public class NewElevator extends SubsystemBase{
               m_velocity.mut_replace(m_rightMotor.getEncoder().getVelocity(), MetersPerSecond));
 
     }, this)
-    );
+  );
   
-  private ElevatorFeedforward m_ElevatorFeedforward = new ElevatorFeedforward(
-    ElevatorConst.kS, 
-    ElevatorConst.kG, 
-    ElevatorConst.kV);
-  public TrapezoidProfile.State currentState = new TrapezoidProfile.State();
-    
-  private TrapezoidProfile m_Profile = new TrapezoidProfile(
-    new Constraints(ElevatorConst.kMaxVelocity, ElevatorConst.kMaxAcceleration));
-  
+
+
+
   public NewElevator() {
     m_leftMotor = new SparkFlex(ElevatorConst.leftID, SparkLowLevel.MotorType.kBrushless);
     m_rightMotor = new SparkFlex(ElevatorConst.rightID, SparkLowLevel.MotorType.kBrushless);
@@ -103,53 +98,46 @@ public class NewElevator extends SubsystemBase{
     m_leftMotorConfig
     .idleMode(IdleMode.kBrake)
     .inverted(true)
-    .smartCurrentLimit(60);
+    .smartCurrentLimit(ElevatorConst.maxCurrent);
+
     m_leftMotorConfig.closedLoop
-    .maxMotion.maxVelocity(ElevatorConst.kMaxVelocity)
-    .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal)
-    .maxAcceleration(ElevatorConst.kMaxAcceleration);
+      .maxMotion.maxVelocity(ElevatorConst.kMaxVelocity)
+      .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal)
+      .maxAcceleration(ElevatorConst.kMaxAcceleration);
+
     m_leftMotorConfig.closedLoop
-    .pid(ElevatorConst.kP, ElevatorConst.kI, ElevatorConst.kD)
-    .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-    .positionWrappingEnabled(true); //may not need or may be actively bad idk
+      .pid(ElevatorConst.kP, 
+      ElevatorConst.kI, 
+      ElevatorConst.kD)
+      .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
 
     m_leftMotorConfig.encoder
-    .velocityConversionFactor(ElevatorConst.rotationToMeterScaler*60) //times 60 for minutes to seconds, hopefully
-    .positionConversionFactor(ElevatorConst.rotationToMeterScaler); //switches us from motor rotations to meters
-    m_leftMotor.getEncoder().setPosition(ElevatorConst.homePosition);
+      .velocityConversionFactor(ElevatorConst.rotationToMeterScaler*60) //times 60 for minutes to seconds, hopefully
+      .positionConversionFactor(ElevatorConst.rotationToMeterScaler); //switches us from motor rotations to meters
 
-    m_rightMotorConfig.follow(ElevatorConst.leftID);
-    m_rightMotor.configure(m_rightMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    m_leftMotor.getEncoder().setPosition(ElevatorConst.homePosition);
 
     m_Controller = m_leftMotor.getClosedLoopController();
     m_leftMotor.configure(m_leftMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
+    m_rightMotorConfig.follow(ElevatorConst.leftID);
+    m_rightMotor.configure(m_rightMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+
   }
 
-  //WPILIB Example
-  //   if (m_joystick.getRawButtonPressed(2)) {
-  //     m_goal = new TrapezoidProfile.State(5, 0);
-  //   } else if (m_joystick.getRawButtonPressed(3)) {
-  //     m_goal = new TrapezoidProfile.State();
-  //   }
-
-  //   // Retrieve the profiled setpoint for the next timestep. This setpoint moves
-  //   // toward the goal while obeying the constraints.
-  //   m_setpoint = m_profile.calculate(kDt, m_setpoint, m_goal);
-
-  //   // Send setpoint to offboard controller PID
-  //   m_motor.setSetpoint(
-  //       ExampleSmartMotorController.PIDMode.kPosition,
-  //       m_setpoint.position,
-  //       m_feedforward.calculate(m_setpoint.velocity) / 12.0);
-  // }
-
-  public void setPosition(TrapezoidProfile.State m_DesiredState) { //double check this is good; https://docs.revrobotics.com/revlib/spark/closed-loop/getting-started-with-pid-tuning#arbitrary-feed-forward
-    currentState = m_Profile.calculate(ElevatorConst.kDt, currentState, m_DesiredState);
-    feedForward = m_ElevatorFeedforward.calculate(currentState.velocity);
-    m_Controller.setReference(currentState.position
-    , ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0, feedForward);
+  public void setPosition(TrapezoidProfile.State m_goalState) { //double check this is good; https://docs.revrobotics.com/revlib/spark/closed-loop/getting-started-with-pid-tuning#arbitrary-feed-forward
+    // Retrieve the profiled setpoint for the next timestep. This setpoint moves
+    // toward the goal while obeying the constraints. - wpilib
+    m_setpoint = m_Profile.calculate(feedForwardValue, m_setpoint, m_goalState);
+    feedForwardValue = m_ElevatorFeedforward.calculate(m_setpoint.velocity); 
     
+    m_Controller.setReference(
+      m_setpoint.position,
+      ControlType.kPosition,
+      ClosedLoopSlot.kSlot0,
+      feedForwardValue
+    );
   }
 
   /**

@@ -36,4 +36,6 @@ public class Rangefinder {
         m_sensorOutput.set(false);
     }
 
+    public void robotPeriodic() {
+    }
 }

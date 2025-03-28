@@ -37,7 +37,6 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
-    //m_RobotContainer.temp();
   }
 
   @Override
@@ -51,20 +50,14 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
-    m_RobotContainer.resetDriveEncoder();
-    m_RobotContainer.resetTimer();
-    m_RobotContainer.startTimer();
   }
 
   @Override
   public void autonomousPeriodic() {
-    //m_autonomousCommand.schedule();
-    m_RobotContainer.autopath();
   }
 
   @Override
   public void autonomousExit() {
-    m_RobotContainer.stopTimer();
   }
 
   @Override
@@ -73,11 +66,6 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-    // m_RobotContainer.readDriverController();
-    // m_RobotContainer.letDriverCook();
-    // m_RobotContainer.letOperatorCookUpdated();
-    m_RobotContainer.runElevatorTests();
-    //m_RobotContainer.updateLEDs();
   }
 
   @Override
@@ -85,7 +73,6 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testInit() {
-
   }
 
   @Override

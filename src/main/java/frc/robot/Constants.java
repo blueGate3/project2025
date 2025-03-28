@@ -25,10 +25,10 @@ public class Constants {
         public static final double L3Height = 1.22555 - elevatorOffset;
         public static final double L4Height = 1.8415 - elevatorOffset;
         //im sorry for capitalizing L at the beginning but it looked weird otherwise
-        public TrapezoidProfile.State homeState = new TrapezoidProfile.State(homePosition, 0);
-        public TrapezoidProfile.State L2state = new TrapezoidProfile.State(L2Height, 0); //we score L1 by shooting at L2 and missing
-        public TrapezoidProfile.State L3state = new TrapezoidProfile.State(L3Height, 0);
-        public TrapezoidProfile.State L4state = new TrapezoidProfile.State(L4Height, 0);
+        public static final TrapezoidProfile.State homeState = new TrapezoidProfile.State(homePosition, 0);
+        public static final TrapezoidProfile.State L2state = new TrapezoidProfile.State(L2Height, 0); //we score L1 by shooting at L2 and missing
+        public static final TrapezoidProfile.State L3state = new TrapezoidProfile.State(L3Height, 0);
+        public static final TrapezoidProfile.State L4state = new TrapezoidProfile.State(L4Height, 0);
 
         /*from https://www.reca.lc/linear
          * 9:1 w/ 80% efficiency, 53lb load, 2 NEO Vortex, 1.708 m distance, 60A max current: 
@@ -76,4 +76,19 @@ public class Constants {
         public static final double kMaxSpeed = 5.88; // 5.88 meters per second or 19.3 ft/s (max speed of SDS Mk4i with Vortex motor)
         public static final double turnEncoderScalar = 2* Math.PI;
     }
+
+    	// Auto constants
+	public static final double X_REEF_ALIGNMENT_P = 3.3;
+	public static final double Y_REEF_ALIGNMENT_P = 3.3;
+	public static final double ROT_REEF_ALIGNMENT_P = 0.058;
+
+	public static final double ROT_SETPOINT_REEF_ALIGNMENT = 0;  // Rotation
+	public static final double ROT_TOLERANCE_REEF_ALIGNMENT = 1;
+	public static final double X_SETPOINT_REEF_ALIGNMENT = -0.34;  // Vertical pose
+	public static final double X_TOLERANCE_REEF_ALIGNMENT = 0.02;
+	public static final double Y_SETPOINT_REEF_ALIGNMENT = 0.16;  // Horizontal pose
+	public static final double Y_TOLERANCE_REEF_ALIGNMENT = 0.02;
+
+	public static final double DONT_SEE_TAG_WAIT_TIME = 1;
+	public static final double POSE_VALIDATION_TIME = 0.3;
 }

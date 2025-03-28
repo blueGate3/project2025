@@ -27,14 +27,8 @@ import frc.robot.Constants.DriveConst;
 /** Represents a swerve drive style drivetrain. */
 
 public class Drivetrain extends SubsystemBase {
-    // kMaxSpeed was 2 AND kmaxangularspeed was pi/3 (before testing [district champs])
-    // SOLID SPEEDS 3.25 M/S /AND PI/2.25 ROT/S
     public static final double kMaxSpeed = 5.88; // 5.88 meters per second or 19.3 ft/s (max speed of SDS Mk4i with Vortex motor)
     public static final double kMaxAngularSpeed = Math.PI; // 1/2 rotation per second
-    //boolean onBlueAlliance;
-
-    int invert = 1; //this will change depending on the alliance we are put on, it will be multiplied by -1 if we are red alliance and then multiplied by all of the drive inputs so we still drive the correct way and can remain blue alliance oriented for apriltags. 
-    //more information can be found at https://docs.wpilib.org/en/stable/docs/software/basic-programming/coordinate-system.html 
 
     Pose2d m_pose;
     private final AHRS navx = new AHRS(NavXComType.kMXP_SPI); 
@@ -74,40 +68,6 @@ public class Drivetrain extends SubsystemBase {
             m_kinematics, 
             navx.getRotation2d(), initialPositions
         );
-        
-        try {
-            config = RobotConfig.fromGUISettings();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (ParseException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        AutoBuilder.configure(
-            this::getCurrentPose2d, // Robot pose supplier
-            this::setPose, // Method to reset odometry (will be called if your auto has a starting pose)
-            this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-            (speeds, feedforwards) -> driveAutonomous(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
-            new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
-                    new PIDConstants(5.0, 0.0, 0.1), // Translation PID constants
-                    new PIDConstants(5.0, 0.0, 0.1) // Rotation PID constants
-            ),
-            config, // The robot configuration
-            () -> {
-              // Boolean supplier that controls when the path will be mirrored for the red alliance
-              // This will flip the path being followed to the red side of the field.
-              // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-
-              var alliance = DriverStation.getAlliance();
-              if (alliance.isPresent()) {
-                return alliance.get() == DriverStation.Alliance.Red;
-              }
-              return false;
-            },
-            this // Reference to this subsystem to set requirements
-    );
   }
     /**
      * Updates the odometry pose
@@ -127,7 +87,6 @@ public class Drivetrain extends SubsystemBase {
         m_frontLeft.setDesiredState(moduleStates[1]);
         m_backLeft.setDesiredState(moduleStates[2]);
         m_backRight.setDesiredState(moduleStates[3]);
-
     }
     
     /**
@@ -173,7 +132,7 @@ public class Drivetrain extends SubsystemBase {
      * @param reefRotate whether we are rotating reef
      */
      @SuppressWarnings("ParameterName")
-     public void drive(double driverXStick, double driverYStick, double driverRotateStick, boolean fieldRelative, boolean reefRotate, boolean defenseHoldingMode) {
+     public void drive(double driverXStick, double driverYStick, double driverRotateStick, boolean fieldRelative, boolean defenseHoldingMode) {
         Rotation2d robotRotation = new Rotation2d(Math.toRadians(navx.getAngle()));
         System.out.println("NavX Angle (Degrees)" + navx.getAngle());
         var swerveModuleStates = m_kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(driverXStick, driverYStick, driverRotateStick, robotRotation));

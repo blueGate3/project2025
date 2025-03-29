@@ -100,10 +100,10 @@ public class Elevator extends SubsystemBase{
     .inverted(true)
     .smartCurrentLimit(ElevatorConst.maxCurrent);
 
-    m_leftMotorConfig.closedLoop
-      .maxMotion.maxVelocity(ElevatorConst.kMaxVelocity)
-      .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal)
-      .maxAcceleration(ElevatorConst.kMaxAcceleration);
+    // m_leftMotorConfig.closedLoop
+    //   .maxMotion.maxVelocity(ElevatorConst.kMaxVelocity)
+    //   .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal)
+    //   .maxAcceleration(ElevatorConst.kMaxAcceleration);
 
     m_leftMotorConfig.closedLoop
       .pid(ElevatorConst.kP, 

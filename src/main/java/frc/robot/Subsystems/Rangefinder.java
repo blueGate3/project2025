@@ -9,7 +9,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Rangefinder {
     private AnalogInput m_sensorInput;
     private DigitalOutput m_sensorOutput;
-    private static final double voltToInchScaler = 0.0492;
+    private double voltScaleFactor = 0;
+    private double rangeCM = 0;
     /**
      * Creates a new Ultrasonic Range Finder
      * @param dio The channel on the Analog In part of the RIO, this is where 
@@ -29,13 +30,12 @@ public class Rangefinder {
      * @return range in inches.
      */
     public double getRange() {
-        return (voltToInchScaler*(5/RobotController.getCurrent5V())); //returns what percentage of 5V is, multiplied by the scalar to convert to inches
+        voltScaleFactor = 5/RobotController.getBatteryVoltage();
+        rangeCM = m_sensorInput.getValue()*voltScaleFactor*.125;
+        return rangeCM; //could condense but nah may need it later.
     }
 
     public void turnOff() {
         m_sensorOutput.set(false);
-    }
-
-    public void robotPeriodic() {
     }
 }

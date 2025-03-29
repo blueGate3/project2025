@@ -50,10 +50,12 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
+    m_RobotContainer.AutoStart();
   }
 
   @Override
   public void autonomousPeriodic() {
+    m_RobotContainer.Auto();
   }
 
   @Override
@@ -67,6 +69,8 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     m_RobotContainer.drive();
+    m_RobotContainer.testElevator();
+    //m_RobotContainer.operate();
   }
 
   @Override

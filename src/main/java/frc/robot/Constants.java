@@ -12,12 +12,12 @@ public class Constants {
         public static final double inchToMeter = 0.0254; //multiply inches by to get meters.
         public static final double spoolDiameter = 0.0254; //our diameter is 1 inch, but it seemed cleaner to have two variables im sorry if i offended anyone. 
         public static final double elevatorOffset = 0.1397; //meters, it' disitance from bottom of tray to ground.
-        public static final double elevatorGearRatio = 9; //9:1. may switch to 4,5 or 6.
+        public static final double elevatorGearRatio = 4; //9:1. may switch to 4,5 or 6.
         public static final double rotationToMeterScaler = (Math.PI*spoolDiameter)/elevatorGearRatio; //math should be right, just multiply to get meters from rotations
         public static final int maxCurrent = 60;
 
-        public static final int leftID = 12;
-        public static final int rightID = 11;
+        public static final int leftID = 11;
+        public static final int rightID = 10;
 
         //elevator starts 5.5 inches, or .14 meters, off the ground, form bottom tip of tray to floor
         public static final double homePosition = elevatorOffset; 
@@ -75,20 +75,20 @@ public class Constants {
         public static final double kModuleMaxAngularAcceleration = 2 * Math.PI; // radians per second squared
         public static final double kMaxSpeed = 5.88; // 5.88 meters per second or 19.3 ft/s (max speed of SDS Mk4i with Vortex motor)
         public static final double turnEncoderScalar = 2* Math.PI;
+
+        public static final double speedLimiter = .2;
     }
 
     	// Auto constants
-	public static final double X_REEF_ALIGNMENT_P = 3.3;
-	public static final double Y_REEF_ALIGNMENT_P = 3.3;
-	public static final double ROT_REEF_ALIGNMENT_P = 0.058;
+	public static final double X_REEF_ALIGNMENT_P = 0.25;
+	public static final double Y_REEF_ALIGNMENT_P = 0.25;
+	public static final double ROT_REEF_ALIGNMENT_P = 0.0075;
 
-	public static final double ROT_SETPOINT_REEF_ALIGNMENT = 0;  // Rotation
+	public static final double ROT_SETPOINT_REEF_ALIGNMENT = -.25;  // Rotation
 	public static final double ROT_TOLERANCE_REEF_ALIGNMENT = 1;
-	public static final double X_SETPOINT_REEF_ALIGNMENT = -0.34;  // Vertical pose
-	public static final double X_TOLERANCE_REEF_ALIGNMENT = 0.02;
-	public static final double Y_SETPOINT_REEF_ALIGNMENT = 0.16;  // Horizontal pose
-	public static final double Y_TOLERANCE_REEF_ALIGNMENT = 0.02;
+	public static final double X_SETPOINT_REEF_ALIGNMENT = -.21;  // Vertical pose
+	public static final double X_TOLERANCE_REEF_ALIGNMENT = 1;
+	public static final double Y_SETPOINT_REEF_ALIGNMENT = -.57;  // Horizontal pose
+	public static final double Y_TOLERANCE_REEF_ALIGNMENT = 1;
 
-	public static final double DONT_SEE_TAG_WAIT_TIME = 1;
-	public static final double POSE_VALIDATION_TIME = 0.3;
 }

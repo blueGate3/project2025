@@ -97,7 +97,7 @@ public class Elevator extends SubsystemBase{
 
     m_leftMotorConfig
     .idleMode(IdleMode.kBrake)
-    .inverted(true)
+    .inverted(false)
     .smartCurrentLimit(ElevatorConst.maxCurrent);
 
     // m_leftMotorConfig.closedLoop
@@ -138,6 +138,7 @@ public class Elevator extends SubsystemBase{
       // ClosedLoopSlot.kSlot0,
       // feedForwardValue
     );
+    System.out.println("Encoder reading elevator: " + m_leftMotor.getEncoder().getPosition());
   }
 
   /**
@@ -161,11 +162,18 @@ public class Elevator extends SubsystemBase{
   public void driveMotorNoPID(double power, boolean reversed) {
     if(reversed) {
       m_leftMotor.set(-power);
-      m_rightMotor.set(-power);
     } else {
       m_leftMotor.set(power);
-      m_rightMotor.set(power);
     }
+
+    System.out.println("Left motor applied power: " + m_leftMotor.getAppliedOutput() + " right motor: " + m_rightMotor.getAppliedOutput());
   }
 
+  public void switchToCoast() {
+
+  }
+
+  public void resetEncoders() {
+    m_leftMotor.getEncoder().setPosition(ElevatorConst.homePosition);
+  }
 }

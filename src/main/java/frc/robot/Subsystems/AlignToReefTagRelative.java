@@ -49,14 +49,15 @@ public class AlignToReefTagRelative extends Command {
       double ySpeed = -yController.calculate(postions[0]);
       double rotValue = -rotController.calculate(postions[4]);
 
-      m_drivetrain.drive(xSpeed, ySpeed, rotValue, false, false);
+      m_drivetrain.drive(-xSpeed, ySpeed, rotValue, false, false);
 
       if (!rotController.atSetpoint() ||
           !yController.atSetpoint() ||
           !xController.atSetpoint()) {
+            //m_drivetrain.drive(xSpeed, ySpeed, rotValue, false, false); //maybe this should be here instead?
       }
     } else {
-      m_drivetrain.drive(0, 0, 0, false, true);
+      m_drivetrain.drive(0, 0, 0, false, false);
     }
   }
 

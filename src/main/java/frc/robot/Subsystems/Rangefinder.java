@@ -29,7 +29,7 @@ public class Rangefinder {
      * @return range in inches.
      */
     public double getRange() {
-        return (voltToInchScaler*(5/RobotController.getCurrent5V())); //returns what percentage of 5V is, multiplied by the scalar to convert to inches
+        return (m_sensorInput.getValue()*voltToInchScaler*(5/RobotController.getCurrent5V())); //returns what percentage of 5V is, multiplied by the scalar to convert to inches
     }
 
     public void turnOff() {

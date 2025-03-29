@@ -16,8 +16,8 @@ public class Constants {
         public static final double rotationToMeterScaler = (Math.PI*spoolDiameter)/elevatorGearRatio; //math should be right, just multiply to get meters from rotations
         public static final int maxCurrent = 60;
 
-        public static final int leftID = 0;
-        public static final int rightID = 0;
+        public static final int leftID = 12;
+        public static final int rightID = 11;
 
         //elevator starts 5.5 inches, or .14 meters, off the ground, form bottom tip of tray to floor
         public static final double homePosition = elevatorOffset; 

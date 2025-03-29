@@ -134,9 +134,9 @@ public class Elevator extends SubsystemBase{
     
     m_Controller.setReference(
       m_setpoint.position,
-      ControlType.kPosition,
-      ClosedLoopSlot.kSlot0,
-      feedForwardValue
+      ControlType.kPosition //,
+      // ClosedLoopSlot.kSlot0,
+      // feedForwardValue
     );
   }
 

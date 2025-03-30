@@ -27,15 +27,8 @@ public class AlignToReefTagRelative extends Command {
   }
 
   public void AutoAlignStart(boolean isRightScore) {
-
-    rotController.setSetpoint(Constants.ROT_SETPOINT_REEF_ALIGNMENT);
-    rotController.setTolerance(Constants.ROT_TOLERANCE_REEF_ALIGNMENT);
-
-    xController.setSetpoint(Constants.X_SETPOINT_REEF_ALIGNMENT);
-    xController.setTolerance(Constants.X_TOLERANCE_REEF_ALIGNMENT);
-
-    yController.setSetpoint(isRightScore ? Constants.Y_SETPOINT_REEF_ALIGNMENT : -Constants.Y_SETPOINT_REEF_ALIGNMENT);
-    yController.setTolerance(Constants.Y_TOLERANCE_REEF_ALIGNMENT);
+    xController.setSetpoint(isRightScore ? Constants.X_SETPOINT_REEF_ALIGNMENT : -Constants.X_SETPOINT_REEF_ALIGNMENT);
+    xController.setTolerance(Constants.Y_TOLERANCE_REEF_ALIGNMENT);
 
     tagID = LimelightHelpers.getFiducialID("");
   }
@@ -46,15 +39,13 @@ public class AlignToReefTagRelative extends Command {
       double[] postions = LimelightHelpers.getBotPose_TargetSpace("");
 
       double xSpeed = xController.calculate(postions[2]);
-      double ySpeed = -yController.calculate(postions[0]);
-      double rotValue = -rotController.calculate(postions[4]);
+      //double ySpeed = -yController.calculate(postions[0]);
+      //double rotValue = -rotController.calculate(postions[4]);
 
-      m_drivetrain.drive(-xSpeed, ySpeed, rotValue, false, false);
+      //m_drivetrain.drive(-xSpeed, 0, 0, false, false);
 
-      if (!rotController.atSetpoint() ||
-          !yController.atSetpoint() ||
-          !xController.atSetpoint()) {
-            //m_drivetrain.drive(xSpeed, ySpeed, rotValue, false, false); //maybe this should be here instead?
+      if (!rotController.atSetpoint()) {
+            m_drivetrain.drive(xSpeed, 0, 0, false, false); //maybe this should be here instead?
       }
     } else {
       m_drivetrain.drive(0, 0, 0, false, false);

@@ -74,7 +74,7 @@ public class RobotContainer {
 
         driverXStick *= DriveConst.speedLimiter;
         driverYStick *= DriveConst.speedLimiter;
-        driverRotStick *= DriveConst.speedLimiter;
+        driverRotStick *= .5;
 
 
         if(driverController.getLeftBumperButton() || driverController.getRightBumperButton()) { //get left bumper

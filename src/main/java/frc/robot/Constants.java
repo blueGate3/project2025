@@ -86,15 +86,15 @@ public class Constants {
     }
 
     	// Auto constants
-	public static final double X_REEF_ALIGNMENT_P = 0.25;
-	public static final double Y_REEF_ALIGNMENT_P = 0.25;
-	public static final double ROT_REEF_ALIGNMENT_P = 0.0075;
+	public static final double X_REEF_ALIGNMENT_P = 0.15;
+	public static final double Y_REEF_ALIGNMENT_P = 0.0;
+	public static final double ROT_REEF_ALIGNMENT_P = 0.0;
 
-	public static final double ROT_SETPOINT_REEF_ALIGNMENT = -.25;  // Rotation
-	public static final double ROT_TOLERANCE_REEF_ALIGNMENT = 1;
-	public static final double X_SETPOINT_REEF_ALIGNMENT = -.21;  // Vertical pose
-	public static final double X_TOLERANCE_REEF_ALIGNMENT = 1;
-	public static final double Y_SETPOINT_REEF_ALIGNMENT = -.57;  // Horizontal pose
+	public static final double X_SETPOINT_REEF_ALIGNMENT = 0;  // Vertical pose
+	public static final double X_TOLERANCE_REEF_ALIGNMENT = .01;
+	public static final double Y_SETPOINT_REEF_ALIGNMENT = -.16;  // Horizontal pose
 	public static final double Y_TOLERANCE_REEF_ALIGNMENT = 1;
+    public static final double ROT_SETPOINT_REEF_ALIGNMENT = -.25;  // Rotation
+	public static final double ROT_TOLERANCE_REEF_ALIGNMENT = 1;
 
 }

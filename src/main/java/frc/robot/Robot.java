@@ -69,8 +69,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     m_RobotContainer.drive();
-    m_RobotContainer.testElevator();
-    //m_RobotContainer.operate();
+    m_RobotContainer.operate();
   }
 
   @Override

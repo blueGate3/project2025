@@ -96,14 +96,14 @@ public class Elevator extends SubsystemBase{
     m_rightMotorConfig = new SparkFlexConfig();
 
     m_leftMotorConfig
-    .idleMode(IdleMode.kBrake)
+    .idleMode(IdleMode.kCoast)
     .inverted(false)
     .smartCurrentLimit(ElevatorConst.maxCurrent);
-
-    // m_leftMotorConfig.closedLoop
-    //   .maxMotion.maxVelocity(ElevatorConst.kMaxVelocity)
-    //   .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal)
-    //   .maxAcceleration(ElevatorConst.kMaxAcceleration);
+    
+    m_rightMotorConfig
+    .idleMode(IdleMode.kCoast)
+    .inverted(false)
+    .smartCurrentLimit(ElevatorConst.maxCurrent);
 
     m_leftMotorConfig.closedLoop
       .pid(ElevatorConst.kP, 

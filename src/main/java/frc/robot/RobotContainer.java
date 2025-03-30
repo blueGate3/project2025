@@ -109,7 +109,7 @@ public class RobotContainer {
 
 
         if(manualOperateElevator) {
-            m_Elevator.driveMotorNoPID(Math.pow(operatorController.getRawAxis(1), 3), false);
+            m_Elevator.driveMotorNoPID((operatorController.getRawAxis(1)), false);
         } else {
 
             if(operatorController.getYButton()) {

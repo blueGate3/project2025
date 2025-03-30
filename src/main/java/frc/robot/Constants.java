@@ -11,7 +11,7 @@ public class Constants {
     public class ElevatorConst { //in the spirit of consistency, unfortunately we must convert everything into meters. 
         public static final double inchToMeter = 0.0254; //multiply inches by to get meters.
         public static final double spoolDiameter = 0.0254; //our diameter is 1 inch, but it seemed cleaner to have two variables im sorry if i offended anyone. 
-        public static final double elevatorOffset = 0.1397; //meters, it' disitance from bottom of tray to ground.
+        public static final double elevatorOffset = 0.11; //meters, it' disitance from bottom of tray to ground.
         public static final double elevatorGearRatio = 4; //9:1. may switch to 4,5 or 6.
         public static final double rotationToMeterScaler = (Math.PI*spoolDiameter)/elevatorGearRatio; //math should be right, just multiply to get meters from rotations
         public static final int maxCurrent = 60;
@@ -21,9 +21,15 @@ public class Constants {
 
         //elevator starts 5.5 inches, or .14 meters, off the ground, form bottom tip of tray to floor
         public static final double homePosition = elevatorOffset; 
-        public static final double L2Height = 0.8763 - elevatorOffset;
-        public static final double L3Height = 1.22555 - elevatorOffset;
-        public static final double L4Height = 1.8415 - elevatorOffset;
+        // public static final double L2Height = 0.8763 - elevatorOffset;
+        // public static final double L3Height = 1.22555 - elevatorOffset;
+        // public static final double L4Height = 1.8415 - elevatorOffset;
+
+        
+        public static final double L2Height = 0.8763;
+        public static final double L3Height = 1.22555;
+        public static final double L4Height = 1.8415;
+
         //im sorry for capitalizing L at the beginning but it looked weird otherwise
         public static final TrapezoidProfile.State homeState = new TrapezoidProfile.State(homePosition, 0);
         public static final TrapezoidProfile.State L2state = new TrapezoidProfile.State(L2Height, 0); //we score L1 by shooting at L2 and missing
@@ -41,7 +47,7 @@ public class Constants {
         public static double kMaxVelocity = .95; //m/s
         public static double kMaxAcceleration = 17.35; //m/s^2
         public static double kDt = 0.02; //delta time im assuming, things are called every 20 ms so should be good
-        public static double kP = 1.3; //retune all PID
+        public static double kP = 1.8; //retune all PID
         public static double kI = 0.0;
         public static double kD = 0.7;
         public static double kS = 1.1; //todo 

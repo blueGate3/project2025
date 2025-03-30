@@ -44,10 +44,10 @@ public class Constants {
          */
 
          //right now at 9:1, 245.2 is stall load, 1.82 seconds 0-L4
-        public static double kMaxVelocity = .95; //m/s
+        public static double kMaxVelocity = 2.5; //m/s
         public static double kMaxAcceleration = 17.35; //m/s^2
         public static double kDt = 0.02; //delta time im assuming, things are called every 20 ms so should be good
-        public static double kP = 1.8; //retune all PID
+        public static double kP = 3.2; //retune all PID
         public static double kI = 0.0;
         public static double kD = 0.7;
         public static double kS = 1.1; //todo 

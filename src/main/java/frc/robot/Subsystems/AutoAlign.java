@@ -19,35 +19,44 @@ import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Constants;
 
 public class AutoAlign {
-  double x, y, rot;
+  double x, y, rot, xSpeed, ySpeed, rotSpeed;
+  Drivetrain m_drivetrain;
 
-
-  public AutoAlign() {
-
+  public AutoAlign(Drivetrain drivetrain) {
+    m_drivetrain = drivetrain;
   }
-  public double alignX(boolean leftBar) {
-    if(leftBar) {
-      x = calculateXDistance() + Constants.X_SETPOINT_REEF_ALIGNMENT; //you double minus because of the way it will return, look at picture from 3/30/2025 (or ask jack mcallister to send it to you if you're not me)
-    } else {
+
+  public double aimX(boolean leftBar) {
+    if(leftBar) { //may need to flip the signs between the if/else depending on which side returns positive. 
       x = calculateXDistance() - Constants.X_SETPOINT_REEF_ALIGNMENT;
+    } else {
+      x = calculateXDistance() + Constants.X_SETPOINT_REEF_ALIGNMENT; //calculate distance should return negative.
     }
-    x *= Constants.X_REEF_ALIGNMENT_P;
-    if(x < Constants.X_TOLERANCE_REEF_ALIGNMENT || x > -Constants.X_TOLERANCE_REEF_ALIGNMENT) { //if within tolerances
+
+    if(x < Constants.X_TOLERANCE_REEF_ALIGNMENT && x > -Constants.X_TOLERANCE_REEF_ALIGNMENT) { //if within tolerances
       x=0;
     }
+
+    x *= Constants.X_REEF_ALIGNMENT_P;
+    //x *= -1; //probably shouldn't need. 
     return x;
   }
 
-  public double alignY() {
+  public double aimY() {
     y = (calculateYDistance() - Constants.Y_SETPOINT_REEF_ALIGNMENT) * Constants.Y_REEF_ALIGNMENT_P;
-    if (y < Constants.Y_TOLERANCE_REEF_ALIGNMENT || y > -Constants.Y_TOLERANCE_REEF_ALIGNMENT) {
+    if (y < Constants.Y_TOLERANCE_REEF_ALIGNMENT && y > -Constants.Y_TOLERANCE_REEF_ALIGNMENT) {
       y = 0;
     }
     return y;
   }
 
-  public double aimRot() {
-    return 1;//temp so no errors
+  public double aimRot(boolean leftBar) {
+    if(leftBar) {
+      rot = LimelightHelpers.getTX("") + Constants.ROT_SETPOINT_REEF_ALIGNMENT; //in case degrees are negative
+    } else {
+      rot = LimelightHelpers.getTX("") - Constants.ROT_SETPOINT_REEF_ALIGNMENT;
+    }
+    return rot*Constants.ROT_REEF_ALIGNMENT_P;
   }
 
   public double calculateXDistance() { //can return negative
@@ -55,7 +64,14 @@ public class AutoAlign {
     //returns meters.
   }
   public double calculateYDistance() {
-    return Constants.LIMELIGHT_OFFSET * Math.tan(Math.toRadians(LimelightHelpers.getTY(""))); //returns meters. 
+    return Constants.LIMELIGHT_OFFSET / Math.tan(Math.toRadians(LimelightHelpers.getTY(""))); //returns meters. 
+  }
+
+  public void autoAlign(boolean leftBar) {
+    xSpeed = aimX(leftBar);
+    ySpeed = aimY();
+    rotSpeed = aimRot(leftBar);
+    m_drivetrain.drive(xSpeed, ySpeed, 0, false, false); //rot zero for now
   }
 
   //TODO DOUBLE CHECK MATH, USE WHITEBOARD PICTURE, MAKE SURE TAN IS OKAY (DISTANCE GETTERS CAN RETURN NEGATIVE), THEN ACTUALLY SLAP A DRIVE FUNCTION ON THIS THING

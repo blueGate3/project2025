@@ -15,7 +15,7 @@ import frc.robot.Subsystems.Elevator;
 import frc.robot.Subsystems.Rangefinder;
 import frc.robot.Constants.DriveConst;
 import frc.robot.Constants.ElevatorConst;
-import frc.robot.Subsystems.AlignToReefTagRelative;
+import frc.robot.Subsystems.AutoAlign;
 import frc.robot.Subsystems.Cradle;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
@@ -24,7 +24,7 @@ public class RobotContainer {
     private final Cradle m_Cradle = new Cradle();
     private final Elevator m_Elevator = new Elevator();
     private final Rangefinder rangefinderOne = new Rangefinder(3, 1);
-    private final AlignToReefTagRelative autoAligner = new AlignToReefTagRelative(drivetrain); //please work
+    private AutoAlign m_AutoAlign = new AutoAlign(drivetrain);
     private TrapezoidProfile.State m_wantedState = ElevatorConst.homeState;
     private Timer m_timer = new Timer();
 
@@ -52,20 +52,20 @@ public class RobotContainer {
         m_timer.start();
     }
 
-    public void Auto() { //TODO WILL NEED TO PUT IN FUNCTION TO RAISE ELEVATOR HEIGHT TALL ENOUGH SO OUR LIMELIGHT CAN SEE
-        if(isAutoAutoAligning) {
-            isAutoAutoAligning = false;
-            autoAligner.AutoAlignStart(true);
-        }
-        autoAligner.AutoAlignPeriodic();
+    // public void Auto() { //TODO WILL NEED TO PUT IN FUNCTION TO RAISE ELEVATOR HEIGHT TALL ENOUGH SO OUR LIMELIGHT CAN SEE
+    //     if(isAutoAutoAligning) {
+    //         isAutoAutoAligning = false;
+    //         autoAligner.AutoAlignStart(true);
+    //     }
+    //     autoAligner.AutoAlignPeriodic();
 
-        if(m_timer.get() > 7) {
-            m_Elevator.setPosition(ElevatorConst.L4state);
-        } 
-        if (m_timer.get() > 13) {
-            m_Cradle.driveMotorNoPID(1, false);
-        }
-    }
+    //     if(m_timer.get() > 7) {
+    //         m_Elevator.setPosition(ElevatorConst.L4state);
+    //     } 
+    //     if (m_timer.get() > 13) {
+    //         m_Cradle.driveMotorNoPID(1, false);
+    //     }
+    // }
 
     public void drive() {
         driverXStick = driverController.getRawAxis(0);
@@ -76,21 +76,13 @@ public class RobotContainer {
         driverYStick *= DriveConst.speedLimiter;
         driverRotStick *= .5;
 
-
-        if(driverController.getLeftBumperButton() || driverController.getRightBumperButton()) { //get left bumper
-
-            //called once initially during the holding loop so we start our auto alignment. 
-            if(driverController.getLeftBumperButton() && !isAutoAligning) { //only activates the first time around so we aren't constantly doing a bunch of extra work. i should really switch to command based at some point. 
-                autoAligner.AutoAlignStart(true);
-                isAutoAligning = true;
-            } else if(driverController.getRightBumperButton() && !isAutoAligning) { //only activates the first time around so we aren't constantly doing a bunch of extra work. i should really switch to command based at some point. 
-                autoAligner.AutoAlignStart(false);
-                isAutoAligning = true;
+        if(driverController.getLeftBumperButton() || driverController.getRightBumperButton()) {
+            if(driverController.getLeftBumperButton()) {
+                m_AutoAlign.autoAlign(true);
+            } else if (driverController.getRightBumperButton()) {
+                m_AutoAlign.autoAlign(false);
             }
-            autoAligner.AutoAlignPeriodic(); //keeps running as long as a bumper is pressed. 
-        } else { //rest of our main logic.
-            isAutoAligning = false; //resets state back to false if the bumper stops being pressed so we can restart if need be. 
-
+        } else {
             drivetrain.drive(
             driverXStick, 
             driverYStick, 
@@ -106,7 +98,6 @@ public class RobotContainer {
         } else if ( operatorController.getRightBumperButton()) {
             manualOperateElevator = false;
         }
-
 
         if(manualOperateElevator) {
             m_Elevator.driveMotorNoPID((operatorController.getRawAxis(1)), false);
@@ -125,7 +116,6 @@ public class RobotContainer {
                 m_wantedState = ElevatorConst.homeState;
             }
             m_Elevator.setPosition(m_wantedState);
-
         }
 
         //axis 2 is ____, axis 3 is ____ 
@@ -136,7 +126,6 @@ public class RobotContainer {
         } else {
             m_Cradle.driveMotorNoPID(0, false);
         }
-
         if(operatorController.getRawButton(10)) {
             m_Elevator.resetEncoders();
         }

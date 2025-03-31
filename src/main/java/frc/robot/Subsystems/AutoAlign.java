@@ -28,9 +28,9 @@ public class AutoAlign {
 
   public double aimX(boolean leftBar) {
     if(leftBar) { //may need to flip the signs between the if/else depending on which side returns positive. 
-      x = calculateXDistance() - Constants.X_SETPOINT_REEF_ALIGNMENT;
+      x = calculateXDistance() + Constants.X_SETPOINT_REEF_ALIGNMENT;
     } else {
-      x = calculateXDistance() + Constants.X_SETPOINT_REEF_ALIGNMENT; //calculate distance should return negative.
+      x = calculateXDistance() - Constants.X_SETPOINT_REEF_ALIGNMENT; //calculate distance should return negative.
     }
 
     if(x < Constants.X_TOLERANCE_REEF_ALIGNMENT && x > -Constants.X_TOLERANCE_REEF_ALIGNMENT) { //if within tolerances
@@ -47,7 +47,7 @@ public class AutoAlign {
     if (y < Constants.Y_TOLERANCE_REEF_ALIGNMENT && y > -Constants.Y_TOLERANCE_REEF_ALIGNMENT) {
       y = 0;
     }
-    return y;
+    return -y;
   }
 
   public double aimRot(boolean leftBar) {
@@ -68,10 +68,15 @@ public class AutoAlign {
   }
 
   public void autoAlign(boolean leftBar) {
-    xSpeed = aimX(leftBar);
-    ySpeed = aimY();
-    rotSpeed = aimRot(leftBar);
-    m_drivetrain.drive(xSpeed, ySpeed, 0, false, false); //rot zero for now
+    //put function so that we only run this if we have a limelight.
+    if(LimelightHelpers.getTV("")) {
+      xSpeed = aimX(leftBar);
+      ySpeed = aimY();
+      rotSpeed = aimRot(leftBar);
+      m_drivetrain.drive(xSpeed, ySpeed, 0, false, false); //rot zero for now
+    } else {
+      System.out.println("No target! ");
+    }
   }
 
   //TODO DOUBLE CHECK MATH, USE WHITEBOARD PICTURE, MAKE SURE TAN IS OKAY (DISTANCE GETTERS CAN RETURN NEGATIVE), THEN ACTUALLY SLAP A DRIVE FUNCTION ON THIS THING

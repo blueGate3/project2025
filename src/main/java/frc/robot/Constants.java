@@ -96,23 +96,24 @@ public class Constants {
     }
 
     	// Auto constants
-	public static final double X_REEF_ALIGNMENT_P = 0.0;
-	public static final double Y_REEF_ALIGNMENT_P = 0.0;
+	public static final double X_REEF_ALIGNMENT_P = 0.5;
+	public static final double Y_REEF_ALIGNMENT_P = 0.08;
 	public static final double ROT_REEF_ALIGNMENT_P = 0.0;
 
-
+    //Distance between poles is 13 inches from center to center
     //Tolerances are in meters. 
-	public static final double X_SETPOINT_REEF_ALIGNMENT = 0;  // Vertical pose
-	public static final double X_TOLERANCE_REEF_ALIGNMENT = 0;
+	public static final double X_SETPOINT_REEF_ALIGNMENT = 0.165;  //distance from center of pole to center of limelight
+	public static final double X_TOLERANCE_REEF_ALIGNMENT = 0.02;
 
-	public static final double Y_SETPOINT_REEF_ALIGNMENT = 0;  // Horizontal pose
-	public static final double Y_TOLERANCE_REEF_ALIGNMENT = 0;
+	public static final double Y_SETPOINT_REEF_ALIGNMENT = .758;  //Distance from limelight to Apriltag with bumpers (along y axis) //.558
+	public static final double Y_TOLERANCE_REEF_ALIGNMENT = .05;
 
-    public static final double ROT_SETPOINT_REEF_ALIGNMENT = 0;  // Rotation
+    public static final double ROT_SETPOINT_REEF_ALIGNMENT = 0;  // Rotation, in degrees
 	public static final double ROT_TOLERANCE_REEF_ALIGNMENT = 0;
 
-    public static final double LIMELIGHT_HEIGHT = 0; //height of limelight from ground in meters
-    public static final double APRILTAG_HEIGHT = 0; //Center of apriltag to ground in meters
+    public static final double LIMELIGHT_HEIGHT = .381; //height of limelight from ground in meters
+    public static final double APRILTAG_HEIGHT = .305
+        ; //Center of apriltag to ground in meters
     public static final double LIMELIGHT_OFFSET = LIMELIGHT_HEIGHT-APRILTAG_HEIGHT;
 
 }

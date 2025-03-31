@@ -166,7 +166,7 @@ public class Elevator extends SubsystemBase{
       m_leftMotor.set(power);
     }
 
-    System.out.println("Left motor applied power: " + m_leftMotor.getAppliedOutput() + " right motor: " + m_rightMotor.getAppliedOutput());
+    //System.out.println("Left motor applied power: " + m_leftMotor.getAppliedOutput() + " right motor: " + m_rightMotor.getAppliedOutput());
   }
 
   public void switchToCoast() {

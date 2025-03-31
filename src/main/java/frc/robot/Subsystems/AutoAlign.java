@@ -39,7 +39,7 @@ public class AutoAlign {
   }
 
   public double alignY() {
-    y = calculateYDistance() * Constants.Y_REEF_ALIGNMENT_P;
+    y = (calculateYDistance() - Constants.Y_SETPOINT_REEF_ALIGNMENT) * Constants.Y_REEF_ALIGNMENT_P;
     if (y < Constants.Y_TOLERANCE_REEF_ALIGNMENT || y > -Constants.Y_TOLERANCE_REEF_ALIGNMENT) {
       y = 0;
     }

@@ -44,7 +44,7 @@ public class AutoAlign {
   }
 
   public double aimY() {
-    y = (calculateYDistance() - Constants.Y_SETPOINT_REEF_ALIGNMENT);
+    y = (calculateYDistance()+.1);
     // if(y< Constants.Y_TOLERANCE_REEF_ALIGNMENT) {
     //   y=0;
     // }

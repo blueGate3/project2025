@@ -53,6 +53,10 @@ public class AutoAlign {
     return -y; //negative because back is forward with controllers
   }
 
+  public double alignRot() {
+    return (LimelightHelpers.getTXNC("") - Constants.ROT_SETPOINT_REEF_ALIGNMENT) * Constants.ROT_REEF_ALIGNMENT_P;
+  }
+
   public double calculateXDistance() { //can return negative
     return calculateYDistance() * Math.tan(Math.toRadians(LimelightHelpers.getTX(""))); //use trig and you'll figure it out, this is the offset along the x axis from where we wanna be (distance from camera center to apriltag center)
     //returns meters.
@@ -66,7 +70,7 @@ public class AutoAlign {
     if(LimelightHelpers.getTV("")) {
       xSpeed = aimX(leftBar);
       ySpeed = aimY();
-      m_drivetrain.drive(xSpeed, ySpeed, 0, false, false); //rot zero for now
+      m_drivetrain.drive(0, 0, alignRot(), false, false); //rot zero for now
     } else {
       System.out.println("No target! ");
     }

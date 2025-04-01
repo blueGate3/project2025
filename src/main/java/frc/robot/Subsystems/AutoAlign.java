@@ -13,7 +13,6 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Constants.AlignConst;
 import frc.robot.Subsystems.LimelightHelpers;
 import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Constants;
@@ -46,7 +45,10 @@ public class AutoAlign {
 
   public double aimY() {
     y = (calculateYDistance() - Constants.Y_SETPOINT_REEF_ALIGNMENT);
-    
+    // if(y< Constants.Y_TOLERANCE_REEF_ALIGNMENT) {
+    //   y=0;
+    // }
+
     y*= Constants.Y_REEF_ALIGNMENT_P;
     return -y; //negative because back is forward with controllers
   }

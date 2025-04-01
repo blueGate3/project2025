@@ -44,10 +44,10 @@ public class Constants {
          */
 
          //right now at 9:1, 245.2 is stall load, 1.82 seconds 0-L4
-        public static double kMaxVelocity = 2.5; //m/s
-        public static double kMaxAcceleration = 17.35; //m/s^2
+        public static double kMaxVelocity = 2.09; //m/s
+        public static double kMaxAcceleration = 17.75; //m/s^2
         public static double kDt = 0.02; //delta time im assuming, things are called every 20 ms so should be good
-        public static double kP = 3.2; //retune all PID
+        public static double kP = 3.8; //raise?
         public static double kI = 0.0;
         public static double kD = 0.7;
         public static double kS = 1.1; //todo 
@@ -85,18 +85,8 @@ public class Constants {
         public static final double speedLimiter = .2;
     }
 
-    public class AlignConst {
-        public static final double kP = 0.01;
-        public static final double kI = 0.0;
-        public static final double kD = 0.0;
-
-        public static final double tolerance = .1;
-        
-        public static final double xOffset = 1;
-    }
-
     	// Auto constants
-	public static final double X_REEF_ALIGNMENT_P = 0.7;
+	public static final double X_REEF_ALIGNMENT_P = 0.8;
 	public static final double Y_REEF_ALIGNMENT_P = 0.14;
 	public static final double ROT_REEF_ALIGNMENT_P = 0.01;
 
@@ -105,7 +95,7 @@ public class Constants {
 	public static final double X_SETPOINT_REEF_ALIGNMENT = 0.165;  //distance from center of pole to center of limelight
 	public static final double X_TOLERANCE_REEF_ALIGNMENT = 0.02;
 
-	public static final double Y_SETPOINT_REEF_ALIGNMENT = .458+.192;  //Distance from limelight to Apriltag with bumpers (along y axis) //.558
+	public static final double Y_SETPOINT_REEF_ALIGNMENT = .83;  //Distance from limelight to Apriltag with bumpers (along y axis) //.6858
 	public static final double Y_TOLERANCE_REEF_ALIGNMENT = .05;
 
     public static final double ROT_SETPOINT_REEF_ALIGNMENT = 1;  // Rotation, in degrees

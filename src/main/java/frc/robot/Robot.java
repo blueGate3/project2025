@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -23,6 +24,7 @@ public class Robot extends TimedRobot {
 
   RobotContainer m_RobotContainer = new RobotContainer();
   private Command m_autonomousCommand;
+  private Spark m_ledSpark;
 
   /**
  * Uses the CameraServer class to automatically capture video from a USB webcam and send it to the
@@ -33,10 +35,13 @@ public class Robot extends TimedRobot {
     UsbCamera m_Camera = CameraServer.startAutomaticCapture();
     m_Camera.setFPS(60);
     m_Camera.setResolution(1080, 720); //todo look up proper ratios.
+
+    m_ledSpark = new Spark(0);
   }
 
   @Override
   public void robotPeriodic() {
+    m_ledSpark.set(.77);
   }
 
   @Override

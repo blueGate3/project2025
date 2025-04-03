@@ -78,9 +78,9 @@ public class RobotContainer {
 
         if(driverController.getLeftBumperButton() || driverController.getRightBumperButton()) {
             if(driverController.getLeftBumperButton()) {
-                m_AutoAlign.autoAlign(true);
+                m_AutoAlign.autoAlignReef(true);
             } else if (driverController.getRightBumperButton()) {
-                m_AutoAlign.autoAlign(false);
+                m_AutoAlign.autoAlignReef(false);
             }
         } else {
             drivetrain.drive(

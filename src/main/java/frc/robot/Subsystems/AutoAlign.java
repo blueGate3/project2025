@@ -16,9 +16,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Subsystems.LimelightHelpers;
 import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Constants;
+import frc.robot.Constants.AlignConst;
 
 public class AutoAlign {
-  double x, y, rot, xSpeed, ySpeed, rotSpeed;
+  double x, y, rot, xSpeed, ySpeed, rotSpeed, desiredDegree;
+  int tag;
   Drivetrain m_drivetrain;
 
   public AutoAlign(Drivetrain drivetrain) {
@@ -65,18 +67,47 @@ public class AutoAlign {
     return Constants.LIMELIGHT_OFFSET / Math.tan(Math.toRadians(LimelightHelpers.getTY(""))); //returns meters. 
   }
 
-  public void autoAlign(boolean leftBar) {
+  public double getTagRot() { //https://firstfrc.blob.core.windows.net/frc2025/FieldAssets/2025FieldDrawings-FieldLayoutAndMarking.pdf
+    if(LimelightHelpers.getTV("")) {
+      tag = (int) LimelightHelpers.getFiducialID("");
+        switch (tag) { 
+          case 10: case 21: desiredDegree = 1; break; 
+          case 11: case 20: desiredDegree = 1; break; 
+          case 6: case 19: desiredDegree = 1; break; 
+          case 7: case 18: desiredDegree = 180; break; 
+          case 8: case 17: desiredDegree = 1; break; 
+          case 9: case 22: desiredDegree = 1; break; 
+      }
+    } else {
+      System.out.println("No target! ");
+    }
+    return desiredDegree;
+  }
+ 
+  public double aimRot(double desiredDegrees) {
+    rot = desiredDegrees - m_drivetrain.getNavXHeading();
+    rot *= Constants.ROT_REEF_ALIGNMENT_P;
+    if(rot < AlignConst.rotTol && rot > -AlignConst.rotTol) {
+      rot=0;
+    }
+    return rot;
+  }
+
+  public void autoAlignReef(boolean leftBar) {
     //put function so that we only run this if we have a limelight.
     if(LimelightHelpers.getTV("")) {
       xSpeed = aimX(leftBar);
       ySpeed = aimY();
+      rotSpeed = aimRot(getTagRot());
+      m_drivetrain.drive(xSpeed, ySpeed, rotSpeed, false, false); //rot zero for now
       m_drivetrain.drive(0, 0, alignRot(), false, false); //rot zero for now
     } else {
       System.out.println("No target! ");
     }
   }
 
-  //TODO DOUBLE CHECK MATH, USE WHITEBOARD PICTURE, MAKE SURE TAN IS OKAY (DISTANCE GETTERS CAN RETURN NEGATIVE), THEN ACTUALLY SLAP A DRIVE FUNCTION ON THIS THING
-  //ALSO ADD ROTATION, THIS IS JUST X AND Y
-  //U GOT THIS JACK U FRICKIN ROCK
+  public void autoAlignHP() {
+    
+  }
+
 }

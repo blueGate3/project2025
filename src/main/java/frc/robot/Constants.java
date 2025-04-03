@@ -85,6 +85,19 @@ public class Constants {
         public static final double speedLimiter = .2;
     }
 
+    public class AlignConst {
+        public static final double pX = 0.7;
+        public static final double pY = 0.14;
+        public static final double pRot = 0.01;
+
+        public static final double xTol = .02; //meters
+        public static final double yTol = .05; //meters
+        public static final double rotTol = .5; //degrees
+        
+        public static final double xSet = .165;
+        public static final double ySet = .1;
+    }
+
     	// Auto constants
 	public static final double X_REEF_ALIGNMENT_P = 0.8;
 	public static final double Y_REEF_ALIGNMENT_P = 0.4;

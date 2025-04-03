@@ -171,4 +171,7 @@ public class Drivetrain extends SubsystemBase {
      public void resetNavX() {
         navx.reset();
      }
+     public double getNavXHeading() {
+        return navx.getAngle();
+     }
 }

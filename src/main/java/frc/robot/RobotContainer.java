@@ -1,29 +1,18 @@
 package frc.robot;
 
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.path.PathPlannerPath;
-
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.*;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Subsystems.Elevator;
-import frc.robot.Subsystems.Rangefinder;
 import frc.robot.Constants.DriveConst;
 import frc.robot.Constants.ElevatorConst;
 import frc.robot.Subsystems.AutoAlign;
 import frc.robot.Subsystems.Cradle;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 public class RobotContainer {
     private final Drivetrain drivetrain = new Drivetrain();
     private final Cradle m_Cradle = new Cradle();
     private final Elevator m_Elevator = new Elevator();
-    private final Rangefinder rangefinderOne = new Rangefinder(3, 1);
     private AutoAlign m_AutoAlign = new AutoAlign(drivetrain);
     private TrapezoidProfile.State m_wantedState = ElevatorConst.homeState;
     private Timer m_timer = new Timer();
@@ -35,8 +24,6 @@ public class RobotContainer {
     private double driverYStick = 0;
     private double driverRotStick = 0;
     private boolean manualOperateElevator = true;
-    private boolean isAutoAligning = false;
-    private boolean isAutoAutoAligning = true; //auto align in autonomous, just a switch so we can run something once. 
     //private boolean areWeGood = false;
 
     //konami code: up up down down left right left right B A 

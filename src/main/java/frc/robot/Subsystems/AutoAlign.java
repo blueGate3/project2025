@@ -6,15 +6,6 @@
 
 package frc.robot.Subsystems;
 
-import java.lang.constant.Constable;
-
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Subsystems.LimelightHelpers;
-import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Constants;
 import frc.robot.Constants.AlignConst;
 
@@ -100,7 +91,6 @@ public class AutoAlign {
       ySpeed = aimY();
       rotSpeed = aimRot(getTagRot());
       m_drivetrain.drive(xSpeed, ySpeed, rotSpeed, false, false); //rot zero for now
-      m_drivetrain.drive(0, 0, alignRot(), false, false); //rot zero for now
     } else {
       System.out.println("No target! ");
     }

@@ -63,12 +63,18 @@ public class RobotContainer {
         driverYStick *= DriveConst.speedLimiter;
         driverRotStick *= .5;
 
+        if(driverController.getAButton()) {
+            drivetrain.resetNavX();
+        }
+
         if(driverController.getLeftBumperButton() || driverController.getRightBumperButton()) {
             if(driverController.getLeftBumperButton()) {
                 m_AutoAlign.autoAlignReef(true);
             } else if (driverController.getRightBumperButton()) {
                 m_AutoAlign.autoAlignReef(false);
             }
+        } else if(driverController.getLeftTriggerAxis() > .25 || driverController.getRightTriggerAxis() > .25){ 
+            m_AutoAlign.autoAlignHP();
         } else {
             drivetrain.drive(
             driverXStick, 

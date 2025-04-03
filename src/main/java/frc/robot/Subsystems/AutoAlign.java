@@ -1,7 +1,6 @@
-// Copyright (c) FIRST and other WPILib contributors.
+// Copyright (c) FIRST and other WPILib contributors. Coded by Jack McAllister, with a special shoutout to Mountain Dew (my unofficial sponsor)
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
-
 //https://docs.limelightvision.io/docs/docs-limelight/tutorials/tutorial-swerve-aiming-and-ranging
 
 package frc.robot.Subsystems;
@@ -19,8 +18,6 @@ public class AutoAlign {
   }
 
   public double aimX(boolean leftBar) {
-    System.out.println("X distance: " +calculateXDistance());
-    System.out.println("Y distance: " +calculateYDistance());
     if(leftBar) { //may need to flip the signs between the if/else depending on which side returns positive. 
       x = calculateXDistance() ;//+ Constants.X_SETPOINT_REEF_ALIGNMENT;
     } else {
@@ -37,17 +34,10 @@ public class AutoAlign {
   }
 
   public double aimY() {
-    y = (calculateYDistance()+.1);
-    // if(y< Constants.Y_TOLERANCE_REEF_ALIGNMENT) {
-    //   y=0;
-    // }
+    y = (calculateYDistance()+.1); //delete constant later when we have time.
 
     y*= Constants.Y_REEF_ALIGNMENT_P;
     return -y; //negative because back is forward with controllers
-  }
-
-  public double alignRot() {
-    return (LimelightHelpers.getTXNC("") - Constants.ROT_SETPOINT_REEF_ALIGNMENT) * Constants.ROT_REEF_ALIGNMENT_P;
   }
 
   public double calculateXDistance() { //can return negative
@@ -58,8 +48,9 @@ public class AutoAlign {
     return Constants.LIMELIGHT_OFFSET / Math.tan(Math.toRadians(LimelightHelpers.getTY(""))); //returns meters. 
   }
 
-  public double getTagRot() { //https://firstfrc.blob.core.windows.net/frc2025/FieldAssets/2025FieldDrawings-FieldLayoutAndMarking.pdf
-    if(LimelightHelpers.getTV("")) {
+  public double getTagRot(String limelightName) { //https://firstfrc.blob.core.windows.net/frc2025/FieldAssets/2025FieldDrawings-FieldLayoutAndMarking.pdf
+
+    if(LimelightHelpers.getTV(limelightName)) {
       tag = (int) LimelightHelpers.getFiducialID("");
         switch (tag) { 
           case 10: case 21: desiredDegree = 1; break; 
@@ -74,9 +65,8 @@ public class AutoAlign {
     }
     return desiredDegree;
   }
- 
   public double aimRot(double desiredDegrees) {
-    rot = desiredDegrees - m_drivetrain.getNavXHeading();
+    rot = desiredDegrees - m_drivetrain.getNavXHeading(); //may need to invert
     rot *= Constants.ROT_REEF_ALIGNMENT_P;
     if(rot < AlignConst.rotTol && rot > -AlignConst.rotTol) {
       rot=0;
@@ -84,20 +74,34 @@ public class AutoAlign {
     return rot;
   }
 
+  public double aimXHP() {
+    x = calculateXDistance() - AlignConst.hpX;
+  if(x < Constants.X_TOLERANCE_REEF_ALIGNMENT && x > -Constants.X_TOLERANCE_REEF_ALIGNMENT) { //if within tolerances
+    x=0;
+  }
+  x *= Constants.X_REEF_ALIGNMENT_P;
+  return x;
+  }
+
   public void autoAlignReef(boolean leftBar) {
-    //put function so that we only run this if we have a limelight.
-    if(LimelightHelpers.getTV("")) {
+    if(LimelightHelpers.getTV(AlignConst.reefLimelight)) {
       xSpeed = aimX(leftBar);
       ySpeed = aimY();
-      rotSpeed = aimRot(getTagRot());
+      rotSpeed = aimRot(getTagRot(AlignConst.reefLimelight));
       m_drivetrain.drive(xSpeed, ySpeed, rotSpeed, false, false); //rot zero for now
     } else {
-      System.out.println("No target! ");
+      System.out.println("No target for reef! ");
     }
   }
 
   public void autoAlignHP() {
-    
+    if(LimelightHelpers.getTV(AlignConst.hpLimelight)) {
+      xSpeed = aimXHP();
+      ySpeed = aimY();
+      rotSpeed = aimRot(getTagRot(AlignConst.hpLimelight));
+      m_drivetrain.drive(xSpeed, ySpeed, rotSpeed, false, false); //rot zero for now
+    } else {
+      System.out.println("No target for human player station! ");
+    }
   }
-
 }

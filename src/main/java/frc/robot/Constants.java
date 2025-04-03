@@ -86,6 +86,9 @@ public class Constants {
     }
 
     public class AlignConst {
+        public static final String reefLimelight = ""; //change to "reef" when we get second limnelight on friday
+        public static final String hpLimelight = "hp";
+
         public static final double pX = 0.7;
         public static final double pY = 0.14;
         public static final double pRot = 0.01;
@@ -96,6 +99,9 @@ public class Constants {
         
         public static final double xSet = .165;
         public static final double ySet = .1;
+
+        
+        public static final double hpX = 0.0;
     }
 
     	// Auto constants

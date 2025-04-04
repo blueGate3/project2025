@@ -91,7 +91,7 @@ public class Constants {
 
         public static final double pX = 0.7;
         public static final double pY = 0.14;
-        public static final double pRot = 0.01;
+        public static final double pRot = 0.001;
 
         public static final double xTol = .02; //meters
         public static final double yTol = .05; //meters

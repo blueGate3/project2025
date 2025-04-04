@@ -34,10 +34,10 @@ public class AutoAlign {
   }
 
   public double aimY() {
-    y = (calculateYDistance()+.1); //delete constant later when we have time.
+    y = (calculateYDistance()+.4); //delete constant later when we have time.
 
     y*= Constants.Y_REEF_ALIGNMENT_P;
-    return -y; //negative because back is forward with controllers
+    return y; //negative because back is forward with controllers
   }
 
   public double calculateXDistance() { //can return negative
@@ -56,18 +56,21 @@ public class AutoAlign {
           case 10: case 21: desiredDegree = 1; break; 
           case 11: case 20: desiredDegree = 1; break; 
           case 6: case 19: desiredDegree = 1; break; 
-          case 7: case 18: desiredDegree = 180; break; 
+          case 7: case 18: desiredDegree = -180; break; 
           case 8: case 17: desiredDegree = 1; break; 
           case 9: case 22: desiredDegree = 1; break; 
       }
     } else {
       System.out.println("No target! ");
     }
+    System.out.println("Desired Degrees: " + desiredDegree);
     return desiredDegree;
   }
   public double aimRot(double desiredDegrees) {
     rot = desiredDegrees - m_drivetrain.getNavXHeading(); //may need to invert
+    System.out.println("Navx Reading: " + m_drivetrain.getNavXHeading());
     rot *= Constants.ROT_REEF_ALIGNMENT_P;
+    rot *= -1;
     if(rot < AlignConst.rotTol && rot > -AlignConst.rotTol) {
       rot=0;
     }

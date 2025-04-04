@@ -13,9 +13,9 @@ public class NewAutoAlign {
 
   public double aimX(boolean leftBar) {
     if(leftBar) { //may need to flip the signs between the if/else depending on which side returns positive. 
-      x = calculateXDistance() ;//+ Constants.X_SETPOINT_REEF_ALIGNMENT;
+      x = calculateXDistance() +.04 ;//+ Constants.X_SETPOINT_REEF_ALIGNMENT;
     } else {
-      x = calculateXDistance() - Constants.X_SETPOINT_REEF_ALIGNMENT - .041; //calculate distance should return negative.
+      x = calculateXDistance() - Constants.X_SETPOINT_REEF_ALIGNMENT - .14; //calculate distance should return negative.
     }
     if(x < Constants.X_TOLERANCE_REEF_ALIGNMENT && x > -Constants.X_TOLERANCE_REEF_ALIGNMENT) { //if within tolerances
       x=0;
@@ -40,7 +40,7 @@ public class NewAutoAlign {
 
   
   public void align(boolean leftBar) { //for now this only lines up the x, not the y. The y and rot will be taken care of in the approach function
-    if(LimelightHelpers.getTV(AlignConst.reefLimelight)) {
+    if(LimelightHelpers.getTV("")) {
       xSpeed = aimX(leftBar);
       m_drivetrain.drive(xSpeed, 0, 0, false, false); //rot zero for now
     } else {

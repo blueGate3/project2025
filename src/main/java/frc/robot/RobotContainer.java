@@ -4,6 +4,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.*;
 import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Subsystems.Elevator;
+import frc.robot.Subsystems.NewAutoAlign;
 import frc.robot.Constants.DriveConst;
 import frc.robot.Constants.ElevatorConst;
 import frc.robot.Subsystems.AutoAlign;
@@ -13,6 +14,7 @@ public class RobotContainer {
     private final Drivetrain drivetrain = new Drivetrain();
     private final Cradle m_Cradle = new Cradle();
     private final Elevator m_Elevator = new Elevator();
+    private final NewAutoAlign m_NewAutoAlign = new NewAutoAlign(drivetrain);
     private AutoAlign m_AutoAlign = new AutoAlign(drivetrain);
     private TrapezoidProfile.State m_wantedState = ElevatorConst.homeState;
     private Timer m_timer = new Timer();
@@ -63,18 +65,18 @@ public class RobotContainer {
         driverYStick *= DriveConst.speedLimiter;
         driverRotStick *= .5;
 
-        if(driverController.getAButton()) {
+        if(driverController.getYButton()) {
             drivetrain.resetNavX();
         }
 
         if(driverController.getLeftBumperButton() || driverController.getRightBumperButton()) {
             if(driverController.getLeftBumperButton()) {
-                m_AutoAlign.autoAlignReef(true);
+                m_NewAutoAlign.align(true);
             } else if (driverController.getRightBumperButton()) {
-                m_AutoAlign.autoAlignReef(false);
+                m_NewAutoAlign.align(false);
             }
-        } else if(driverController.getLeftTriggerAxis() > .25 || driverController.getRightTriggerAxis() > .25){ 
-            m_AutoAlign.autoAlignHP();
+        } else if(driverController.getAButton()) {
+            m_NewAutoAlign.approach();
         } else {
             drivetrain.drive(
             driverXStick, 

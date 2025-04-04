@@ -106,7 +106,7 @@ public class Constants {
 
     	// Auto constants
 	public static final double X_REEF_ALIGNMENT_P = 0.8; //.8
-	public static final double Y_REEF_ALIGNMENT_P = 0.28;
+	public static final double Y_REEF_ALIGNMENT_P = 0.28; //.4
 	public static final double ROT_REEF_ALIGNMENT_P = 0.02;
 
     //Distance between poles is 13 inches from center to center

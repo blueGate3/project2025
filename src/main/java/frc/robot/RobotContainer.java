@@ -26,7 +26,7 @@ public class RobotContainer {
     private double driverXStick = 0;
     private double driverYStick = 0;
     private double driverRotStick = 0;
-    private boolean manualOperateElevator = true;
+    private boolean manualOperateElevator = false;
     //private boolean areWeGood = false;
 
     //konami code: up up down down left right left right B A 
@@ -104,13 +104,13 @@ public class RobotContainer {
         } else {
 
             if(operatorController.getYButton()) {
-                m_wantedState = ElevatorConst.L2state;
+                m_wantedState = ElevatorConst.L4state;
             }
             if(operatorController.getBButton()) {
-                m_wantedState = ElevatorConst.L3state;
+                m_wantedState = ElevatorConst.L2state;
             }
             if(operatorController.getXButton()) {
-                m_wantedState = ElevatorConst.L4state;
+                m_wantedState = ElevatorConst.L3state;
             }
             if(operatorController.getAButton()) {
                 m_wantedState = ElevatorConst.homeState;

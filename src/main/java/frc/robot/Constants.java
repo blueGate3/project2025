@@ -91,7 +91,7 @@ public class Constants {
 
         public static final double pX = 0.7;
         public static final double pY = 0.14;
-        public static final double pRot = 0.001;
+        public static final double pRot = 0.003;
 
         public static final double xTol = .02; //meters
         public static final double yTol = .05; //meters
@@ -105,7 +105,7 @@ public class Constants {
     }
 
     	// Auto constants
-	public static final double X_REEF_ALIGNMENT_P = 0.8;
+	public static final double X_REEF_ALIGNMENT_P = 0.8; //.8
 	public static final double Y_REEF_ALIGNMENT_P = 0.4;
 	public static final double ROT_REEF_ALIGNMENT_P = 0.02;
 

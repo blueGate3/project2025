@@ -4,6 +4,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.*;
 import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Subsystems.Elevator;
+import frc.robot.Subsystems.LimelightHelpers;
 import frc.robot.Subsystems.NewAutoAlign;
 import frc.robot.Constants.DriveConst;
 import frc.robot.Constants.ElevatorConst;
@@ -41,29 +42,29 @@ public class RobotContainer {
         m_timer.start();
     }
 
-    // public void Auto() { //TODO WILL NEED TO PUT IN FUNCTION TO RAISE ELEVATOR HEIGHT TALL ENOUGH SO OUR LIMELIGHT CAN SEE
-    //     if(isAutoAutoAligning) {
-    //         isAutoAutoAligning = false;
-    //         autoAligner.AutoAlignStart(true);
-    //     }
-    //     autoAligner.AutoAlignPeriodic();
+    public void Auto() { //TODO WILL NEED TO PUT IN FUNCTION TO RAISE ELEVATOR HEIGHT TALL ENOUGH SO OUR LIMELIGHT CAN SEE
+        if(m_timer.get() < 2) {
+            m_Elevator.setPosition(ElevatorConst.L2state);
+        } 
+        if(m_timer.get() > 2.1 && m_timer.get() < 6) {
+            m_NewAutoAlign.approach();
+        }
+        if(m_timer.get() > 6.1 && m_timer.get() < 11) {
+            m_NewAutoAlign.aimX(false);
+        } 
+        if(m_timer.get() > 11.1 && m_timer.get() < 14) {
+            m_Elevator.setPosition(ElevatorConst.L4state);
+        }
+        if(m_timer.get() > 14) {
+            m_Cradle.driveMotorNoPID(.7, false);
+        }
 
-    //     if(m_timer.get() > 7) {
-    //         m_Elevator.setPosition(ElevatorConst.L4state);
-    //     } 
-    //     if (m_timer.get() > 13) {
-    //         m_Cradle.driveMotorNoPID(1, false);
-    //     }
-    // }
+    }
 
     public void drive() {
         driverXStick = driverController.getRawAxis(0);
         driverYStick = driverController.getRawAxis(1);
         driverRotStick = driverController.getRawAxis(4);
-
-        driverXStick *= DriveConst.speedLimiter;
-        driverYStick *= DriveConst.speedLimiter;
-        driverRotStick *= .5;
 
         if(driverController.getYButton()) {
             drivetrain.resetNavX();
@@ -130,6 +131,13 @@ public class RobotContainer {
         m_Elevator.driveMotorNoPID(operatorController.getRawAxis(1), false);
     }
 
+    public void runLimelightLED() {
+        if(driverController.getRawButton(2)) {
+            LimelightHelpers.setLEDMode_ForceOn("");
+        } else {
+            LimelightHelpers.setLEDMode_ForceOff("");
+        }
+    }
     // public boolean areWeGood() {
     //     if(!areWeGood) {
     //         areWeGood = true; //we're so back

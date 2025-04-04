@@ -21,13 +21,10 @@ public class Robot extends TimedRobot {
     UsbCamera m_Camera = CameraServer.startAutomaticCapture();
     m_Camera.setFPS(60);
     m_Camera.setResolution(1080, 720); //todo look up proper ratios.
-
-    m_ledSpark = new Spark(0);
   }
 
   @Override
   public void robotPeriodic() {
-    m_ledSpark.set(.77);
   }
 
   @Override
@@ -46,6 +43,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousPeriodic() {
+    m_RobotContainer.Auto();
   }
 
   @Override
@@ -60,6 +58,7 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     m_RobotContainer.drive();
     m_RobotContainer.operate();
+    m_RobotContainer.runLimelightLED();
   }
 
   @Override

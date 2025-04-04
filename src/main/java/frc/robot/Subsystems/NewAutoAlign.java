@@ -49,15 +49,15 @@ public class NewAutoAlign {
   }
 
   public double lineupX() {
-    return (0 - calculateXDistance()) * Constants.X_REEF_ALIGNMENT_P; //where we want to be - where we are * proportion
+    return (calculateXDistance()-.1) * Constants.X_REEF_ALIGNMENT_P; //where we want to be - where we are * proportion
   }
 
   public double lineupRot() {
-    return (0 - LimelightHelpers.getTX("")) * Constants.ROT_REEF_ALIGNMENT_P; //where we want to be - where we are * proportion
+    return (LimelightHelpers.getTX("")) * Constants.ROT_REEF_ALIGNMENT_P; //where we want to be - where we are * proportion
   }
 
   public void approach() { //gets us directly in line with target. hopefully. 
-    if(LimelightHelpers.getTV(AlignConst.reefLimelight)) {
+    if(LimelightHelpers.getTV("")) {
         xSpeed = lineupX();
         ySpeed = aimY();
         rotSpeed = lineupRot();

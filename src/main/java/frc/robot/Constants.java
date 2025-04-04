@@ -121,8 +121,7 @@ public class Constants {
 	public static final double ROT_TOLERANCE_REEF_ALIGNMENT = .05;
 
     public static final double LIMELIGHT_HEIGHT = .381; //height of limelight from ground in meters
-    public static final double APRILTAG_HEIGHT = .305
-        ; //Center of apriltag to ground in meters
+    public static final double APRILTAG_HEIGHT = .305; //Center of apriltag to ground in meters
     public static final double LIMELIGHT_OFFSET = LIMELIGHT_HEIGHT-APRILTAG_HEIGHT;
 
 }

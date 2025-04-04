@@ -61,7 +61,7 @@ public class NewAutoAlign {
         xSpeed = lineupX();
         ySpeed = aimY();
         rotSpeed = lineupRot();
-        m_drivetrain.drive(xSpeed, ySpeed, 0, false, false);
+        m_drivetrain.drive(xSpeed, ySpeed, 0, false, false); //hopefully add in rotation later 
     } else {
         System.out.println("No target for reef! ");
     }

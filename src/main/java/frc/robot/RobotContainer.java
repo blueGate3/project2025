@@ -1,5 +1,6 @@
 package frc.robot;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.*;
 import frc.robot.Subsystems.Drivetrain;
@@ -70,6 +71,10 @@ public class RobotContainer {
         driverYStick *= DriveConst.speedLimiter;
         driverRotStick *= .4;
 
+        driverXStick = MathUtil.applyDeadband(driverXStick, .08);
+        driverYStick = MathUtil.applyDeadband(driverYStick, .08);
+        driverRotStick = MathUtil.applyDeadband(driverRotStick, .08);
+
         if(driverController.getYButton()) {
             drivetrain.resetNavX();
         }
@@ -99,8 +104,10 @@ public class RobotContainer {
             manualOperateElevator = false;
         }
 
+
+
         if(manualOperateElevator) {
-            m_Elevator.driveMotorNoPID((operatorController.getRawAxis(1)), false);
+            m_Elevator.driveMotorNoPID((MathUtil.applyDeadband(operatorController.getRawAxis(1), .1)), false);
         } else {
 
             if(operatorController.getYButton()) {

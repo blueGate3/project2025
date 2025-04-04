@@ -43,12 +43,12 @@ public class RobotContainer {
         m_timer.start();
     }
 
-    public void Auto() { //TODO WILL NEED TO PUT IN FUNCTION TO RAISE ELEVATOR HEIGHT TALL ENOUGH SO OUR LIMELIGHT CAN SEE
+    public void Auto() { 
         if(m_timer.get() < 2) {
             m_Elevator.setPosition(ElevatorConst.L2state);
         } 
         if(m_timer.get() > 2.1 && m_timer.get() < 6) {
-            m_NewAutoAlign.approach();
+            drivetrain.drive(0, .05, 0, false, false);
         }
         if(m_timer.get() > 6.1 && m_timer.get() < 11) {
             m_NewAutoAlign.aimX(false);

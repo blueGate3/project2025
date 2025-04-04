@@ -19,7 +19,7 @@ public class AutoAlign {
 
   public double aimX(boolean leftBar) {
     if(leftBar) { //may need to flip the signs between the if/else depending on which side returns positive. 
-      x = calculateXDistance() ;//+ Constants.X_SETPOINT_REEF_ALIGNMENT;
+      x = calculateXDistance() -.1;//+ Constants.X_SETPOINT_REEF_ALIGNMENT;
     } else {
       x = calculateXDistance() - Constants.X_SETPOINT_REEF_ALIGNMENT - .041; //calculate distance should return negative.
     }
@@ -102,7 +102,7 @@ public class AutoAlign {
       xSpeed = aimXHP();
       ySpeed = aimY();
       rotSpeed = aimRot(getTagRot(AlignConst.hpLimelight));
-      m_drivetrain.drive(xSpeed, ySpeed, rotSpeed, false, false); //rot zero for now
+      m_drivetrain.drive(xSpeed, ySpeed, 0, false, false); //rot zero for now
     } else {
       System.out.println("No target for human player station! ");
     }

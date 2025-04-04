@@ -64,7 +64,7 @@ public class RobotContainer {
     public void drive() {
         driverXStick = driverController.getRawAxis(0);
         driverYStick = driverController.getRawAxis(1);
-        driverRotStick = driverController.getRawAxis(4);
+        driverRotStick = driverController.getRawAxis(4)/3;
 
         if(driverController.getYButton()) {
             drivetrain.resetNavX();

@@ -66,14 +66,19 @@ public class RobotContainer {
         driverXStick = driverController.getRawAxis(0);
         driverYStick = driverController.getRawAxis(1);
         driverRotStick = driverController.getRawAxis(4);
-
-        driverXStick *= DriveConst.speedLimiter;
-        driverYStick *= DriveConst.speedLimiter;
-        driverRotStick *= .4;
-
+        
         driverXStick = MathUtil.applyDeadband(driverXStick, .08);
         driverYStick = MathUtil.applyDeadband(driverYStick, .08);
         driverRotStick = MathUtil.applyDeadband(driverRotStick, .08);
+        if(driverController.getLeftTriggerAxis() > .4 || driverController.getRightTriggerAxis() > .4) { //slowmode enabled
+            driverXStick *= .15;
+            driverYStick *= .15;
+            driverRotStick *= .3;
+        } else {
+            driverXStick *= DriveConst.speedLimiter;
+            driverYStick *= DriveConst.speedLimiter;
+            driverRotStick *= .4;
+        }
 
         if(driverController.getYButton()) {
             drivetrain.resetNavX();

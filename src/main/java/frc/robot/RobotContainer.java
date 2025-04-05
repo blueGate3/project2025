@@ -43,9 +43,9 @@ public class RobotContainer {
     }
 
     public void Auto() { 
-        if(m_timer.get() < 2) {
-            m_Elevator.setPosition(ElevatorConst.L2state);
-        } 
+    //     if(m_timer.get() < 2) {
+    //         m_Elevator.setPosition(ElevatorConst.L2state);
+    //     } 
         if(m_timer.get() > 2.1 && m_timer.get() < 9) {
             drivetrain.drive(0, .07, 0, false, false);
         }

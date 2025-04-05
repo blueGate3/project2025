@@ -35,7 +35,6 @@ public class RobotContainer {
     XboxController operatorController = new XboxController(1);
 
     public RobotContainer () {
-
     }
 
     public void AutoStart() {
@@ -47,13 +46,10 @@ public class RobotContainer {
         if(m_timer.get() < 2) {
             m_Elevator.setPosition(ElevatorConst.L2state);
         } 
-        if(m_timer.get() > 2.1 && m_timer.get() < 6) {
-            drivetrain.drive(0, .05, 0, false, false);
+        if(m_timer.get() > 2.1 && m_timer.get() < 9) {
+            drivetrain.drive(0, .07, 0, false, false);
         }
-        if(m_timer.get() > 6.1 && m_timer.get() < 11) {
-            m_NewAutoAlign.aimX(false);
-        } 
-        if(m_timer.get() > 11.1 && m_timer.get() < 14) {
+        if(m_timer.get() > 9 && m_timer.get() < 14) {
             m_Elevator.setPosition(ElevatorConst.L4state);
         }
         if(m_timer.get() > 14) {
@@ -77,7 +73,7 @@ public class RobotContainer {
         } else {
             driverXStick *= DriveConst.speedLimiter;
             driverYStick *= DriveConst.speedLimiter;
-            driverRotStick *= .4;
+            driverRotStick *= .66;
         }
 
         if(driverController.getYButton()) {

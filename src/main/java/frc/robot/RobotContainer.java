@@ -43,13 +43,16 @@ public class RobotContainer {
     }
 
     public void Auto() { 
-    //     if(m_timer.get() < 2) {
-    //         m_Elevator.setPosition(ElevatorConst.L2state);
-    //     } 
-        if(m_timer.get() > 2.1 && m_timer.get() < 9) {
-            drivetrain.drive(0, .07, 0, false, false);
+        if(m_timer.get() < 2 ) {
+            m_Elevator.setPosition(ElevatorConst.L2state);
+        } 
+        if(m_timer.get() > 2.1 && m_timer.get() < 8) {
+            drivetrain.drive(0, .17, 0, false, false);
         }
-        if(m_timer.get() > 9 && m_timer.get() < 14) {
+        if(m_timer.get() > 8 && m_timer.get() < 12) {
+            m_NewAutoAlign.align(true);        
+        }
+        if(m_timer.get() > 12 && m_timer.get() < 14) {
             m_Elevator.setPosition(ElevatorConst.L4state);
         }
         if(m_timer.get() > 14) {

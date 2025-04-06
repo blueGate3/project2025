@@ -15,7 +15,7 @@ public class NewAutoAlign {
     if(leftBar) { //may need to flip the signs between the if/else depending on which side returns positive. 
       x = calculateXDistance() +.04 ;//+ Constants.X_SETPOINT_REEF_ALIGNMENT;
     } else {
-      x = calculateXDistance() - Constants.X_SETPOINT_REEF_ALIGNMENT - .14; //calculate distance should return negative.
+      x = calculateXDistance() - Constants.X_SETPOINT_REEF_ALIGNMENT - .10; //calculate distance should return negative.
     }
     if(x < Constants.X_TOLERANCE_REEF_ALIGNMENT && x > -Constants.X_TOLERANCE_REEF_ALIGNMENT) { //if within tolerances
       x=0;

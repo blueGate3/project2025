@@ -82,7 +82,7 @@ public class Constants {
         public static final double kMaxSpeed = 5.88; // 5.88 meters per second or 19.3 ft/s (max speed of SDS Mk4i with Vortex motor)
         public static final double turnEncoderScalar = 2* Math.PI;
 
-        public static final double speedLimiter = .8;
+        public static final double speedLimiter = .62;
     }
 
     public class AlignConst {
@@ -105,8 +105,8 @@ public class Constants {
     }
 
     	// Auto constants
-	public static final double X_REEF_ALIGNMENT_P = 0.8; //.8
-	public static final double Y_REEF_ALIGNMENT_P = 0.28; //.4
+	public static final double X_REEF_ALIGNMENT_P = 0.65; //.8
+	public static final double Y_REEF_ALIGNMENT_P = 0.18; //.4
 	public static final double ROT_REEF_ALIGNMENT_P = 0.02;
 
     //Distance between poles is 13 inches from center to center

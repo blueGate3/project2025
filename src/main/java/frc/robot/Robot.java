@@ -3,14 +3,10 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot;
-import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.motorcontrol.Spark;
 public class Robot extends TimedRobot {
 
   RobotContainer m_RobotContainer = new RobotContainer();
-  private Spark m_ledSpark;
 
   /**
  * Uses the CameraServer class to automatically capture video from a USB webcam and send it to the

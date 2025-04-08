@@ -9,7 +9,6 @@ import frc.robot.Subsystems.LimelightHelpers;
 import frc.robot.Subsystems.NewAutoAlign;
 import frc.robot.Constants.DriveConst;
 import frc.robot.Constants.ElevatorConst;
-import frc.robot.Subsystems.AutoAlign;
 import frc.robot.Subsystems.Cradle;
 
 public class RobotContainer {
@@ -17,7 +16,6 @@ public class RobotContainer {
     private final Cradle m_Cradle = new Cradle();
     private final Elevator m_Elevator = new Elevator();
     private final NewAutoAlign m_NewAutoAlign = new NewAutoAlign(drivetrain);
-    private AutoAlign m_AutoAlign = new AutoAlign(drivetrain);
     private TrapezoidProfile.State m_wantedState = ElevatorConst.homeState;
     private Timer m_timer = new Timer();
 

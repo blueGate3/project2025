@@ -1,7 +1,6 @@
 package frc.robot.Subsystems;
 
 import frc.robot.Constants;
-import frc.robot.Constants.AlignConst;
 
 public class NewAutoAlign {
   double x, y, rot, xSpeed, ySpeed, rotSpeed, desiredDegree;

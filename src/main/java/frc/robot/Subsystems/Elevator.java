@@ -33,7 +33,7 @@ public class Elevator extends SubsystemBase{
   private SparkClosedLoopController m_Controller;
   private double feedForwardValue;
   
-  public TrapezoidProfile.State m_setpoint = new TrapezoidProfile.State();
+  public TrapezoidProfile.State m_setpoint = new TrapezoidProfile.State(ElevatorConst.homePosition, 0);
 
   private TrapezoidProfile m_Profile = new TrapezoidProfile(
     new Constraints(ElevatorConst.kMaxVelocity, ElevatorConst.kMaxAcceleration));

@@ -21,11 +21,6 @@ public class Constants {
 
         //elevator starts 5.5 inches, or .14 meters, off the ground, form bottom tip of tray to floor
         public static final double homePosition = elevatorOffset; 
-        // public static final double L2Height = 0.8763 - elevatorOffset;
-        // public static final double L3Height = 1.22555 - elevatorOffset;
-        // public static final double L4Height = 1.8415 - elevatorOffset;
-
-        
         public static final double L2Height = 0.8763;
         public static final double L3Height = 1.22555;
         public static final double L4Height = 1.8415;
@@ -44,16 +39,16 @@ public class Constants {
          */
 
          //right now at 9:1, 245.2 is stall load, 1.82 seconds 0-L4
-        public static double kMaxVelocity = 2.09; //m/s
-        public static double kMaxAcceleration = 17.75; //m/s^2
-        public static double kDt = 0.02; //delta time im assuming, things are called every 20 ms so should be good
-        public static double kP = 3.8; //raise?
-        public static double kI = 0.0;
-        public static double kD = 0.7;
-        public static double kS = 1.1; //todo 
-        public static double kG = .44; //real, V
-        public static double kV = 2.66; //real, V*s/m. 
-        public static double kA = .07; //real, V*s^2/m 
+        public static final double kMaxVelocity = 2.09; //m/s
+        public static final double kMaxAcceleration = 17.75; //m/s^2
+        public static final double kDt = 0.02; //delta time im assuming, things are called every 20 ms so should be good
+        public static final double kP = 3.8; //raise?
+        public static final double kI = 0.0;
+        public static final double kD = 0.7;
+        public static final double kS = 1.1; //todo 
+        public static final double kG = .44; //real, V
+        public static final double kV = 2.66; //real, V*s/m. 
+        public static final double kA = .07; //real, V*s^2/m 
     }
 
     public class DriveConst {
